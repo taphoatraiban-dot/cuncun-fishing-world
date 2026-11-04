@@ -29,7 +29,27 @@ const water=mesh(new THREE.PlaneGeometry(54,90),new THREE.MeshPhongMaterial({col
 for(const side of [-1,1]){const bank=mesh(new THREE.BoxGeometry(2,.3,90),mat(0xb3a17a),side*28,-.02,-25);for(let i=0;i<22;i++){const z=12-i*3.7,x=side*(31+(i%3)*1.8);const trunk=mesh(new THREE.CylinderGeometry(.15,.2,2,6),mat(0x765238),x,.8,z);mesh(new THREE.ConeGeometry(1.2,3,7),mat(0x347b49),x,3,z)}}
 const pier=mesh(new THREE.BoxGeometry(5,.28,9),mat(0x966b43),-8,.18,8);
 for(let i=0;i<5;i++)mesh(new THREE.BoxGeometry(4.9,.05,.07),mat(0xb98b58),-8,.35,4.4+i*1.8);
-const chair=mesh(new THREE.BoxGeometry(1.1,.7,1.2),mat(0x775235),-9,1,8);
+// Compact real-world fishing seat box with adjustable legs, cushion and side tray.
+const seatShell=mat(0x233b49),seatEdge=mat(0x70b6b4),seatCushion=mat(0x1b2932);
+const chair=mesh(new THREE.BoxGeometry(1.38,.65,1.32),seatShell,-9,.98,8);
+mesh(new THREE.BoxGeometry(1.46,.13,1.4),seatCushion,-9,1.36,8);
+mesh(new THREE.BoxGeometry(1.49,.07,1.43),seatEdge,-9,1.28,8);
+for(const x of [-9.58,-8.42])for(const z of [7.49,8.51]){
+ mesh(new THREE.CylinderGeometry(.075,.09,.88,8),seatEdge,x,.62,z);
+ mesh(new THREE.CylinderGeometry(.12,.12,.09,8),seatShell,x,.2,z);
+}
+mesh(new THREE.BoxGeometry(.76,.055,.72),seatEdge,-7.95,1.05,8.13);
+mesh(new THREE.BoxGeometry(.7,.1,.65),seatShell,-7.95,1.13,8.13);
+mesh(new THREE.BoxGeometry(.13,.85,.12),seatEdge,-7.95,.7,8.13);
+// V-shaped fishing rod rest and two-section support, aligned to the real rod.
+const rodRest=mat(0x202b36);
+mesh(new THREE.CylinderGeometry(.055,.075,1.35,8),seatEdge,-7.22,1.05,6.6);
+mesh(new THREE.BoxGeometry(.58,.12,.14),rodRest,-7.22,1.77,6.6);
+for(const side of [-1,1]){
+ const prong=mesh(new THREE.CylinderGeometry(.045,.055,.38,8),rodRest,-7.22+side*.26,1.96,6.6);
+ prong.rotation.z=side*.48;
+}
+
 // Wooden dock supports, side rails and fishing-station details.
 const dockWood=mat(0x62422d),dockTrim=mat(0xc99b61),metal=mat(0x33434b);
 for(const z of [4.3,8.1,12.1]){
