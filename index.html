@@ -2,12 +2,13 @@
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.module.js';
 const $=id=>document.getElementById(id),scene=new THREE.Scene();scene.background=new THREE.Color(0x81c6ec);scene.fog=new THREE.Fog(0x81c6ec,550,1450);const camera=new THREE.PerspectiveCamera(65,9/16,.1,1800),renderer=new THREE.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));$('scene').prepend(renderer.domElement);const light=new THREE.DirectionalLight(0xffffff,2);light.position.set(8,20,5);scene.add(light,new THREE.AmbientLight(0xffffff,1.2));const mat=c=>new THREE.MeshStandardMaterial({color:c,roughness:.7});function block(w,h,d,c,x,y,z){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat(c));m.position.set(x,y,z);scene.add(m);return m}// Organic, gently arched lake outline; narrow at both ends, winding along the banks.
 // Broad lagoon sections and a gently meandering centerline, visible from overhead.
-const lakeCenter=t=>9*Math.sin(t*Math.PI*2.6)+3*Math.sin(t*Math.PI*6);
-const lakeWidth=t=>12+24*Math.pow(Math.sin(Math.PI*t),.48)*(0.85+.15*Math.cos(t*Math.PI*4))+1.5*Math.sin(t*19);
+const lakeLength=240;
+const lakeCenter=t=>8*Math.sin(t*Math.PI*2)+2*Math.sin(t*Math.PI*6);
+const lakeWidth=t=>52+18*Math.sin(t*Math.PI*2)+3*Math.sin(t*17);
 const lakeEdge=(side,t)=>lakeCenter(t)+side*lakeWidth(t);
 const lakeVerts=[],lakeIdx=[],lakeSegments=300;
 for(let i=0;i<=lakeSegments;i++){
- const t=i/lakeSegments,z=12-t*1060,cap=Math.max(.015,Math.pow(Math.sin(Math.PI*t),.48));
+ const t=i/lakeSegments,z=12-t*lakeLength,cap=Math.max(.006,Math.pow(Math.sin(Math.PI*t),.57));
  for(const side of [-1,1])lakeVerts.push(lakeCenter(t)+side*lakeWidth(t)*cap,.025,z);
  if(i<lakeSegments){const k=i*2;lakeIdx.push(k,k+1,k+2,k+1,k+3,k+2)}
 }
@@ -15,11 +16,11 @@ const lakeGeometry=new THREE.BufferGeometry();
 lakeGeometry.setAttribute('position',new THREE.Float32BufferAttribute(lakeVerts,3));lakeGeometry.setIndex(lakeIdx);lakeGeometry.computeVertexNormals();
 const water=new THREE.Mesh(lakeGeometry,new THREE.MeshPhongMaterial({color:0x218da7,shininess:85,transparent:true,opacity:.9,side:THREE.DoubleSide}));
 scene.add(water);
-const terrain=new THREE.Mesh(new THREE.PlaneGeometry(180,1120),mat(0x578a42));
-terrain.rotation.x=-Math.PI/2;terrain.position.set(0,-.12,-510);scene.add(terrain);
+const terrain=new THREE.Mesh(new THREE.PlaneGeometry(220,310),mat(0x578a42));
+terrain.rotation.x=-Math.PI/2;terrain.position.set(0,-.12,-108);scene.add(terrain);
 block(6,.35,7,0x8b5630,0,-.05,5);// Semi-natural lake: 1,000 lightweight visual fishing seats (500 on each bank).
 // Seat occupancy and online capacity remain server-authoritative and are NOT implied here.
-const seatCount=1000,seatPerBank=500,seatSpacing=2.1;
+const seatCount=1000,seatPerBank=500,seatSpacing=.465;
 const bayGeo=new THREE.BoxGeometry(1.55,.18,1.6),bayMat=mat(0xb58a59);
 const chairGeo=new THREE.BoxGeometry(.65,.45,.6),chairMat=mat(0x76543a);
 const rodGeo=new THREE.BoxGeometry(.035,.035,1.9),rodMat=mat(0x303b3e);
@@ -31,7 +32,7 @@ for(const side of [-1,1]){
   // Shore paths curve alongside the water, rather than making straight rectangles.
   const pathVerts=[],pathIdx=[];
   for(let j=0;j<=lakeSegments;j++){
-    const t=j/lakeSegments,z=12-t*1060;
+    const t=j/lakeSegments,z=12-t*lakeLength;
     const x=lakeEdge(side,t);
     pathVerts.push(x+side*.35,.11,z,x+side*2.0,.11,z);
     if(j<lakeSegments){const k=j*2;pathIdx.push(k,k+1,k+2,k+1,k+3,k+2)}
@@ -42,7 +43,7 @@ for(const side of [-1,1]){
   for(let i=0;i<seatPerBank;i++){
     const id=(side===-1?0:500)+i;
     const z=9-i*seatSpacing;
-    const t=Math.min(.985,Math.max(.015,(12-z)/1060));
+    const t=Math.min(.985,Math.max(.015,(12-z)/lakeLength));
     const x=lakeEdge(side,t)+side*1.15;
     dummy.position.set(x,.25,z);dummy.rotation.set(0,0,0);dummy.scale.set(1,1,1);dummy.updateMatrix();bays.setMatrixAt(id,dummy.matrix);
     dummy.position.set(x+side*.5,.66,z+.35);dummy.updateMatrix();chairs.setMatrixAt(id,dummy.matrix);
@@ -51,7 +52,7 @@ for(const side of [-1,1]){
   // Mixed broadleaf trees with layered, irregular canopies instead of cones.
   const bark=mat(0x76543a),leafMats=[mat(0x367a3f),mat(0x4b9146),mat(0x276c42)];
   for(let i=0;i<38;i++){
-    const z=10-i*27.5,x=lakeEdge(side,Math.min(.98,Math.max(.02,(12-z)/1060)))+side*(7+(i%3)*1.1),h=2.5+(i%4)*.35;
+    const z=10-i*6.1,x=lakeEdge(side,Math.min(.98,Math.max(.02,(12-z)/lakeLength)))+side*(7+(i%3)*1.1),h=2.5+(i%4)*.35;
     const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.18,.35,h,7),bark);
     trunk.position.set(x,h/2+.12,z);scene.add(trunk);
     for(let j=0;j<4;j++){
@@ -63,15 +64,15 @@ for(const side of [-1,1]){
 }
 // Reeds follow the natural curved waterline.
 for(const side of [-1,1])for(let i=0;i<65;i++){
- const t=(i+.5)/66,z=12-t*1060,x=lakeEdge(side,t)+side*.3;
+ const t=(i+.5)/66,z=12-t*lakeLength,x=lakeEdge(side,t)+side*.3;
  const reed=new THREE.Mesh(new THREE.ConeGeometry(.15,.75,5),mat(i%2?0x6e9442:0x8a9c46));
  reed.position.set(x,.48,z);scene.add(reed);
 }
 // Rustic thatched rest huts on both shores; decorative, no gameplay changes.
 const hutRoofMat=mat(0x9c7945),hutWoodMat=mat(0x765039);
 for(const side of [-1,1]){
- for(const z of [-13,-88,-190,-350,-520,-700,-900]){
-  const t=Math.min(.98,Math.max(.02,(12-z)/1060));
+ for(const z of [-13,-45,-80,-115,-150,-185,-215]){
+  const t=Math.min(.98,Math.max(.02,(12-z)/lakeLength));
   const x=lakeEdge(side,t)+side*6.5;
   block(5,.25,5,0x9b7650,x,.25,z);
   for(const dx of [-2,2])for(const dz of [-2,2]){
@@ -85,7 +86,7 @@ for(const side of [-1,1]){
 // Rocks and lily pads around the near shore give the lake an organic character.
 const stoneMat=mat(0x87877b),lilyMat=mat(0x488d45);
 for(let i=0;i<90;i++){
- const side=i%2?-1:1,t=.02+(i/90)*.96,z=12-t*1060,x=lakeEdge(side,t);
+ const side=i%2?-1:1,t=.02+(i/90)*.96,z=12-t*lakeLength,x=lakeEdge(side,t);
  const rock=new THREE.Mesh(new THREE.DodecahedronGeometry(.24+(i%4)*.11,0),stoneMat);
  rock.position.set(x+side*(.25+(i%3)*.3),.16,z);rock.scale.set(1.4,.65,1);scene.add(rock);
  if(i%3===0){
@@ -111,7 +112,7 @@ for(const mesh of [bays,chairs,rods]){mesh.instanceMatrix.needsUpdate=true;mesh.
 const anglers=[];
 const skin=mat(0xe2b68c),pants=mat(0x334f6a),shirts=[mat(0x337ca2),mat(0xd96f44),mat(0x58a66d),mat(0xa17ec4)];
 function makeAngler(side,z,n){
- const t=Math.min(.985,Math.max(.015,(12-z)/1060)),x=lakeEdge(side,t)+side*1.55;
+ const t=Math.min(.985,Math.max(.015,(12-z)/lakeLength)),x=lakeEdge(side,t)+side*1.55;
  const g=new THREE.Group();g.position.set(x,0,z);
  const torso=new THREE.Mesh(new THREE.BoxGeometry(.55,.7,.4),shirts[n%shirts.length]);torso.position.y=1.13;g.add(torso);
  const head=new THREE.Mesh(new THREE.SphereGeometry(.25,8,6),skin);head.position.y=1.72;g.add(head);
@@ -123,7 +124,7 @@ function makeAngler(side,z,n){
  pole.rotation.z=side*.9;pole.position.set(-side*1.25,1.45,0);g.add(pole);
  g.rotation.y=side===-1?Math.PI/2:-Math.PI/2;scene.add(g);anglers.push(g);
 }
-for(const side of [-1,1])for(let i=0;i<14;i++)makeAngler(side,6-i*4.2,i+(side===1?1:0));
+for(const side of [-1,1])for(let i=0;i<14;i++)makeAngler(side,6-i*2.2,i+(side===1?1:0));
 // Numbered guide signs every 50 bays; individual seat IDs are derived from the index.
 for(let i=0;i<seatCount;i+=50){
   const side=i<500?-1:1,index=i%500;
@@ -136,8 +137,8 @@ for(let i=0;i<seatCount;i+=50){
 for(let i=-2;i<=2;i++)block(.08,.38,7,0xc58b55,i*1.15,.15,5);for(let i=0;i<28;i++){const a=i/28*Math.PI*2,r=25+Math.sin(i*7)*5,x=Math.cos(a)*r,z=Math.sin(a)*r;block(3,2,3,0x477e37,x,-.3,z);const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.25,.4,4),mat(0x785038));trunk.position.set(x,1.7,z);scene.add(trunk);const crown=new THREE.Mesh(new THREE.ConeGeometry(2.4,6,7),mat(0x287b48));crown.position.set(x,5,z);scene.add(crown)}const rod=block(.07,.07,7,0x222a35,1.7,1.1,1.2);rod.rotation.x=-.22;const ripples=[];for(let i=0;i<18;i++){const ring=new THREE.Mesh(new THREE.RingGeometry(.35,.42,32),new THREE.MeshBasicMaterial({color:0xb5f9ff,transparent:true,opacity:.32,side:THREE.DoubleSide,depthWrite:false}));ring.rotation.x=-Math.PI/2;ring.position.set(Math.sin(i*2.4)*11,.025,-2-i*.95);scene.add(ring);ripples.push(ring)}const fishes=[];for(let i=0;i<13;i++){const f=new THREE.Mesh(new THREE.SphereGeometry(.3,9,7),mat(i%3?0xffb65a:0xffdf35));f.position.set(Math.sin(i*3)*9,-.12,-3-i*1.5);scene.add(f);fishes.push(f)}// Visual-only server catch animation; the VPS remains authoritative for fish and points.
 const serverFish=new THREE.Group();const fishBody=new THREE.Mesh(new THREE.SphereGeometry(.7,16,10),mat(0xffcb55));serverFish.add(fishBody);const fishTail=new THREE.Mesh(new THREE.ConeGeometry(.4,.9,3),mat(0xff9d38));fishTail.rotation.z=Math.PI/2;fishTail.position.x=-.85;serverFish.add(fishTail);serverFish.position.set(0,1.4,-3);serverFish.visible=false;scene.add(serverFish);let serverFishUntil=0;let serverFishStart=0;let serverFishSize=1;const splash=new THREE.Group();for(let i=0;i<12;i++){const drop=new THREE.Mesh(new THREE.SphereGeometry(.075,6,5),mat(0x9ceaff));drop.userData.angle=i*Math.PI/6;splash.add(drop)}splash.visible=false;scene.add(splash);window.addEventListener('cuncun:server-catch',event=>{if(!event.detail||!event.detail.fish)return;const fishName=String(event.detail.fish).toLowerCase();serverFishSize=fishName.includes('boss')?2.1:(Number(event.detail.points||0)>=12?1.3:.8);fishBody.material.color.setHex(fishName.includes('boss')?0xffd52e:0xffcb55);serverFishStart=performance.now();serverFishUntil=serverFishStart+2800;serverFish.visible=true;splash.visible=true;serverFish.scale.setScalar(serverFishSize);$('catchlog').textContent='🌐 VPS: '+String(event.detail.fish)+' +'+Number(event.detail.points||0)+' điểm';say('🎉 Cá thật từ VPS! Điểm đã được máy chủ ghi nhận.');tone()});
 const boss=new THREE.Mesh(new THREE.SphereGeometry(2,20,12),mat(0xffd52e));boss.position.set(0,1,-11);boss.visible=false;scene.add(boss);let overview=false;function view(){
- if(overview){camera.position.set(0,130,-75);camera.lookAt(0,0,-190)}
- else{const z=2,t=(12-z)/1060,x=lakeEdge(-1,t)-2.8;camera.position.set(x,3.2,z+5);camera.lookAt(lakeCenter(t),1,z-11)}
+ if(overview){camera.position.set(0,185,-95);camera.lookAt(0,0,-108)}
+ else{const z=2,t=(12-z)/lakeLength,x=lakeEdge(-1,t)-2.8;camera.position.set(x,3.2,z+5);camera.lookAt(lakeCenter(t),1,z-11)}
  camera.updateProjectionMatrix()
 }view();function resize(){const e=$('scene');renderer.setSize(e.clientWidth,e.clientHeight);camera.aspect=e.clientWidth/e.clientHeight;camera.updateProjectionMatrix()}window.addEventListener('resize',resize);resize();let data=[];try{const saved=JSON.parse(localStorage.getItem('cuncun-fishing-3d-demo'));if(Array.isArray(saved))data=saved.filter(p=>p&&typeof p.name==='string'&&Number.isFinite(p.points)&&Number.isFinite(p.until)).slice(0,200)}catch{}let casts=new Set(),auto=false,lastAuto=0,castAt=new Map(),sessionCatches=0,sessionPoints=0,sound=false,audioCtx=null,simulating=false,lastSim=0,simIndex=0;const demoNames=['Cá Mập Xanh','Thợ Câu 01','Bé Cá Vàng','Vua Hồ Câu','Cần Thủ 88','Sóng Biển','Cá Chép Đỏ','Câu Thủ Pro'];function tone(){if(!sound)return;try{audioCtx??=new (window.AudioContext||window.webkitAudioContext)();const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type="sine";o.frequency.setValueAtTime(520,audioCtx.currentTime);o.frequency.exponentialRampToValueAtTime(900,audioCtx.currentTime+.14);g.gain.setValueAtTime(.05,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+.23);o.connect(g).connect(audioCtx.destination);o.start();o.stop(audioCtx.currentTime+.24)}catch{}}const fishTypes=[['Cá rô',2,5],['Cá chép',4,9],['Cá trắm',7,13],['Cá vàng',10,18],['Cá khổng lồ',20,35]];function catchFish(p){const roll=Math.random(),type=roll<.4?fishTypes[0]:roll<.7?fishTypes[1]:roll<.88?fishTypes[2]:roll<.97?fishTypes[3]:fishTypes[4];const pts=type[1]+Math.floor(Math.random()*(type[2]-type[1]+1));p.points+=pts;sessionCatches++;sessionPoints+=pts;$('stats').textContent='🎣 Số lượt câu: '+sessionCatches+' · 🐟 Tổng cá: '+sessionCatches+' · ⭐ Điểm phiên: '+sessionPoints;tone();draw();$('catchlog').textContent='🐟 '+p.name+' câu được '+type[0]+' +'+pts+' điểm';say('🎉 Kéo cá thành công! +'+pts+' điểm')}const name=()=>$('name').value.trim(),find=()=>data.find(p=>p.name.toLowerCase()===name().toLowerCase());function say(s){$('status').textContent=s}function draw(){data.sort((a,b)=>b.points-a.points);$('rank').replaceChildren();data.slice(0,20).forEach(p=>{const li=document.createElement('li');li.textContent=p.name+' — '+p.points+' điểm';$('rank').append(li)});$('leader').textContent='🏆 '+(data[0]?data[0].name+' '+data[0].points+' điểm':'Chưa có người chơi');try{localStorage.setItem('cuncun-fishing-3d-demo',JSON.stringify(data))}catch{}} $('add').onclick=()=>{if(!name())return say('Nhập tên trước');if(find())return say('Người chơi đã có, có thể cấp vé và câu tiếp');if(data.length>=200)return say('Đã đủ 200 người demo');data.push({name:name(),points:0,until:0});draw();say('Đã vào hồ: '+name())};$('ticket').onclick=()=>{const p=find();if(!p)return say('Thêm người chơi trước');p.until=Math.max(Date.now(),p.until)+600000;draw();say('Đã cấp vé 10 phút')};$('cast').onclick=()=>{const p=find();if(!p||p.until<Date.now())return say('Cần người chơi có vé còn hạn');casts.add(p.name);castAt.set(p.name,Date.now());say('🎣 Đang thả câu…')};$('catch').onclick=()=>{const p=find();if(!p||p.until<Date.now()||!casts.has(p.name))return say('Cần vé còn hạn và thả câu trước');if(Date.now()-(castAt.get(p.name)||0)<1500)return say('⏳ Cá chưa cắn câu, chờ thêm một chút');casts.delete(p.name);castAt.delete(p.name);catchFish(p)};$('boss').onclick=()=>{boss.visible=!boss.visible;say(boss.visible?'🐉 Boss xuất hiện!':'Boss đã rời hồ')};$('auto').onclick=()=>{auto=!auto;$('auto').textContent=auto?'⏸️ Tự động câu: BẬT':'▶️ Tự động câu: TẮT';say(auto?'Đã bật câu cá tự động cho người chơi đang chọn':'Đã tắt câu cá tự động')};$('resetcast').onclick=()=>{casts.delete(name());castAt.delete(name());say('Đã thu dây câu')};function toggleLive(force){const active=typeof force==='boolean'?force:!document.body.classList.contains('live-mode');document.body.classList.toggle('live-mode',active);$('live').textContent=active?'↩️ Thoát LIVE':'📺 Chế độ LIVE';requestAnimationFrame(resize)}$('live').onclick=()=>toggleLive();$('exitlive').onclick=()=>toggleLive(false);document.addEventListener('keydown',e=>{if(e.key==='Escape')toggleLive(false)});$('sound').onclick=()=>{sound=!sound;$('sound').textContent=sound?'🔊 Âm thanh: BẬT':'🔊 Âm thanh: TẮT';if(sound)tone()};$('simulate').onclick=()=>{simulating=!simulating;$('simulate').textContent=simulating?'⏸️ Mô phỏng LIVE: BẬT':'👥 Mô phỏng LIVE: TẮT';$('demoNotice').textContent=simulating?'🧪 ĐANG MÔ PHỎNG: Người chơi và lượt câu là dữ liệu mẫu, KHÔNG phải TikTok LIVE.':'⚠️ Chế độ thử nghiệm: chưa kết nối TikTok, chưa có người chơi trực tuyến.';say(simulating?'Đã bật mô phỏng nhiều người chơi':'Đã tắt mô phỏng')};$('clearDemo').onclick=()=>{data=data.filter(p=>!p.demo);draw();say('Đã xóa toàn bộ người chơi mẫu; giữ nguyên người chơi tự nhập')};$('camera').onclick=()=>{overview=!overview;view();say(overview?'Camera toàn cảnh LIVE':'Camera góc nhìn câu cá')};draw();say('Hồ câu 3D đã sẵn sàng');function animate(t){requestAnimationFrame(animate);if(serverFish.visible){const p=(t-serverFishStart)/2800;if(t>=serverFishUntil){serverFish.visible=false;splash.visible=false}else{serverFish.position.set(0,1.4+Math.sin(p*Math.PI)*3,-3);serverFish.rotation.y=p*Math.PI*4;serverFish.scale.setScalar(serverFishSize*(1+.35*Math.sin(p*Math.PI)));splash.children.forEach(drop=>{const a=drop.userData.angle;drop.position.set(Math.cos(a)*p*2.5,Math.max(.05,1.1+Math.sin(p*Math.PI)*1.5-p*1.1),-3+Math.sin(a)*p*1.5);drop.scale.setScalar(Math.max(.1,1-p))})}}if(simulating&&t-lastSim>2600){lastSim=t;const demoName=demoNames[simIndex++%demoNames.length];let p=data.find(p=>p.name===demoName&&p.demo);if(!p&&!data.some(p=>p.name.toLowerCase()===demoName.toLowerCase())&&data.length<200){p={name:demoName,points:0,until:Date.now()+600000,demo:true};data.push(p)}if(p){p.until=Date.now()+600000;catchFish(p)}}if(auto&&t-lastAuto>3800){lastAuto=t;const p=find();if(p&&p.until>Date.now()){catchFish(p)}else{auto=false;$('auto').textContent='▶️ Tự động câu: TẮT';say('Cần vào hồ và có vé còn hạn để câu tự động')}}ripples.forEach((r,i)=>{const scale=.7+(t*.0003+i*.17)%1.7;r.scale.setScalar(scale);r.material.opacity=.3*(1-(scale-.7)/1.7)});water.material.color.setHSL(.52,.65,.37+Math.sin(t*.001)*.015);fishes.forEach((f,i)=>{f.position.x=Math.sin(t*.0006+i)*8;f.position.z=-5-i*1.4+Math.cos(t*.0004+i)});if(boss.visible)boss.position.y=1+Math.sin(t*.002)*.8;renderer.render(scene,camera)}requestAnimationFrame(animate);
 </script><script src="./server-leaderboard.js" defer></script><script src="./online-fishing.js?v=20261104-2" defer></script></body></html>
