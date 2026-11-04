@@ -297,7 +297,7 @@ if(rod.userData.lastBend===undefined||Math.abs(rod.userData.lastBend-bent)>.035)
 const tip=new THREE.Vector3(-3.4-bent,4.4-bent*1.3,-1);
 lineCoords.set([tip.x,tip.y,tip.z,bob.position.x,bob.position.y,bob.position.z]);line.geometry.attributes.position.needsUpdate=true;
 ripples.forEach((r,i)=>{r.visible=active;r.position.x=phase==='fight'?fishModel.position.x:bob.position.x;r.position.z=phase==='fight'?fishModel.position.z:bob.position.z;const scale=.8+((now*(splash?.0014:.0006)+i/3)%1.7);r.scale.setScalar(scale);r.material.opacity=(splash?.6:.25)*(1-(scale-.8)/1.7)});
-lakeRipples.forEach(({ring,offset})=>{const cycle=(now*.00032+offset)%1;ring.scale.setScalar(.65+cycle*3.1);ring.material.opacity=(1-cycle)*.25;});
+lakeRipples.forEach(({ring,offset})=>{const cycle=(now*.00032+offset)%1;ring.visible=active;ring.position.x=bob.position.x;ring.position.z=bob.position.z;ring.scale.setScalar(.65+cycle*3.1);ring.material.opacity=(1-cycle)*(phase==='bite'?.48:phase==='fight'?.34:.2);});
 water.material.color.setHSL(.52,.6,.4+Math.sin(now*.001)*.012);
 meter.style.width=tension+'%';meter.style.background=tension>75?'#ef6258':'#eab65c';
 document.getElementById('tension-value').textContent=Math.round(tension)+'%';
