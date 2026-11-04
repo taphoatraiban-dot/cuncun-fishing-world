@@ -13,7 +13,25 @@ canvas{width:100%;height:auto;display:block;touch-action:none}.status{font-weigh
 #equipment-panel{margin-top:14px}#equipment-panel select{width:100%;padding:12px;border-radius:10px;background:#e8f6f6;color:#12313c;font-size:16px}#equipment-panel .equipment-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}#equipment-panel label{display:grid;gap:5px;font-size:14px;font-weight:700}@media(max-width:420px){#equipment-panel .equipment-grid{grid-template-columns:1fr}}
 #catch-banner{position:absolute;z-index:4;left:50%;top:24%;transform:translateX(-50%);width:min(86%,350px);padding:15px 18px;border:2px solid #ffe6a4;border-radius:18px;background:#11384eea;color:#fff;text-align:center;box-shadow:0 12px 35px #0008;pointer-events:none;font-weight:900;font-size:20px}#catch-banner[hidden]{display:none}#catch-banner small{display:block;font-size:13px;font-weight:600;margin-top:5px;color:#ffe8b0}@media(prefers-reduced-motion:reduce){.fill{transition:none}}
 .scene{box-shadow:0 18px 48px #0007;isolation:isolate}.scene:after{content:"";position:absolute;inset:auto 0 0;height:22%;background:linear-gradient(transparent,#061a27a6);pointer-events:none}.game-hud{position:absolute;z-index:2;top:10px;left:10px;right:10px;display:flex;justify-content:space-between;align-items:flex-start;gap:8px;pointer-events:none}.game-hud span{background:#062335c9;color:#fff;border:1px solid #a9f5e75c;padding:7px 10px;border-radius:999px;font-weight:800;font-size:12px;text-shadow:0 1px 2px #000}.game-title{color:#ffdf8e!important}.game-tools{display:flex;justify-content:flex-end;gap:8px;margin-top:10px}.game-tools button{padding:10px 14px;font-size:14px}.game-tools button[aria-expanded="false"]{background:#d1e5e9}#equipment-panel[hidden]{display:none}.scene-tip{position:absolute;z-index:2;bottom:12px;left:12px;color:#fff;font-size:12px;font-weight:700;text-shadow:0 2px 5px #000;pointer-events:none}.controls{margin-top:8px}.note{margin:10px 0}@media(max-width:420px){header{font-size:13px;padding:10px}main{padding:8px}.game-hud span{font-size:10px;padding:6px}.status{font-size:16px;min-height:45px}.controls button{font-size:15px;padding:13px 6px}}
-.fight-meters{margin:12px 0}.fight-meters label{display:flex;justify-content:space-between;gap:10px;font-size:14px;font-weight:750}.fight-meters .meter{margin:5px 0 12px}.fight-meters #catch-progress{background:#45d6a4}@media(max-width:699px){main{padding-bottom:calc(20px + env(safe-area-inset-bottom))}.controls{position:sticky;bottom:0;z-index:8;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;padding:8px 6px calc(8px + env(safe-area-inset-bottom));margin:0 -8px;background:#082431f5;border:1px solid #387785;border-radius:14px;box-shadow:0 -8px 28px #0008;backdrop-filter:blur(10px)}.controls button{font-size:13px;min-height:48px;padding:8px 3px;line-height:1.2}.controls #cast,.controls #hook,.controls #reel{background:#31c5b1}.controls button:disabled{opacity:.35}.status{padding:9px 4px;min-height:42px}}@media(min-width:700px){.controls{margin:12px 0 16px}}</style></head><body>
+.fight-meters{margin:12px 0}.fight-meters label{display:flex;justify-content:space-between;gap:10px;font-size:14px;font-weight:750}.fight-meters .meter{margin:5px 0 12px}.fight-meters #catch-progress{background:#45d6a4}@media(max-width:699px){main{padding-bottom:calc(20px + env(safe-area-inset-bottom))}.controls{position:sticky;bottom:0;z-index:8;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;padding:8px 6px calc(8px + env(safe-area-inset-bottom));margin:0 -8px;background:#082431f5;border:1px solid #387785;border-radius:14px;box-shadow:0 -8px 28px #0008;backdrop-filter:blur(10px)}.controls button{font-size:13px;min-height:48px;padding:8px 3px;line-height:1.2}.controls #cast,.controls #hook,.controls #reel{background:#31c5b1}.controls button:disabled{opacity:.35}.status{padding:9px 4px;min-height:42px}}@media(min-width:700px){.controls{margin:12px 0 16px}}/* Immersive mobile game view: scene first, controls within reach. */
+@media(max-width:699px){
+header{padding:8px 12px;font-size:12px;gap:6px}
+header strong{font-size:13px}header a{font-size:11px}
+main{padding:6px 8px 110px}
+main>.note:first-child{font-size:11px;line-height:1.35;padding:7px 10px;margin:4px 0 7px;border-radius:9px}
+.scene{border-radius:14px}
+.scene canvas{height:min(64dvh,600px);min-height:370px;object-fit:cover}
+.game-hud{top:7px;left:7px;right:7px}
+.game-hud span{font-size:9px;padding:5px 7px}
+.scene-tip{font-size:10px;bottom:8px;left:8px}
+.status{font-size:14px;min-height:35px;padding:7px 2px}
+.controls{position:fixed;left:8px;right:8px;bottom:calc(7px + env(safe-area-inset-bottom));margin:0;z-index:30;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;padding:7px;background:#082431ed;border:1px solid #58a9ad;border-radius:15px;box-shadow:0 8px 35px #000a}
+.controls button{min-height:43px;font-size:12px;padding:6px 2px}
+.game-tools{margin-top:5px}
+.fight-meters{margin:7px 0}
+.fight-meters .meter{margin:4px 0 6px;height:9px}
+}
+</style></head><body>
 <header><strong>🎣 CUNCUN · TẬP CÂU</strong><div><a href="./profile-demo.html">👤 Hồ sơ demo</a> · <a href="/">← Hồ chính</a></div></header>
 <main>
 <div class="note">🟢 <b>Chế độ luyện tập miễn phí.</b> Cá, điểm, mồi và vật phẩm trong màn này chỉ là mô phỏng; không lưu thành tích, không dùng vé và không gọi API giao dịch.</div>
