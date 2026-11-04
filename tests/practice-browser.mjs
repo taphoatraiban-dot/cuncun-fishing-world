@@ -55,6 +55,10 @@ try {
   await page.keyboard.press('r');
   assert.equal(await page.locator('#cast').isEnabled(),true);
   assert.match(await page.locator('#status').innerText(),/Sẵn sàng tập câu/);
+  // An explicit reset must also discard the old bite timer.
+  await page.waitForTimeout(6500);
+  assert.equal(await page.locator('#hook').isDisabled(),true);
+  assert.match(await page.locator('#status').innerText(),/Sẵn sàng tập câu/);
   await page.locator('#camera').click();
   assert.match(await page.locator('#camera').innerText(),/Cận phao/);
   const profileLink = page.locator('a[href="./profile-demo.html"]');
