@@ -92,6 +92,26 @@ class BackendTests(unittest.TestCase):
             status, _ = self.request("POST", "/api/tickets", {"name": "Guest", "minutes": minutes}, server.TOKEN)
             self.assertEqual(status, 400)
 
+    def test_player_session_scoped_to_ticket_owner(self):
+        name = "SessionPlayer"
+        status, _ = self.request("POST", "/api/sessions", {"name": name}, server.TOKEN)
+        self.assertEqual(status, 403)
+        status, _ = self.request("POST", "/api/tickets", {"name": name, "minutes": 10}, server.TOKEN)
+        self.assertEqual(status, 200)
+        status, _ = self.request("POST", "/api/sessions", {"name": name})
+        self.assertEqual(status, 401)
+        status, session = self.request("POST", "/api/sessions", {"name": name}, server.TOKEN)
+        self.assertEqual(status, 200)
+        token = session["token"]
+        self.assertGreaterEqual(len(token), 40)
+        status, _ = self.request("POST", "/api/player/cast", {"name": "Imposter"}, token)
+        self.assertEqual(status, 200)
+        with server.connection() as db:
+            row = db.execute("SELECT player_name FROM casts WHERE player_name=?", (name,)).fetchone()
+        self.assertEqual(row[0], name)
+        status, _ = self.request("POST", "/api/player/reel", {"name": "Imposter"}, "invalid-token")
+        self.assertEqual(status, 401)
+
     def test_catch_and_leaderboard(self):
         status, result = self.request("POST", "/api/events", {"name":"Cun","kind":"catch","points":9}, server.TOKEN)
         self.assertEqual(status, 200)
