@@ -53,12 +53,20 @@ for(let i=0;i<9;i++){
 const lakeGeometry=new THREE.PlaneGeometry(54,90,42,54);
 const lakePositions=lakeGeometry.attributes.position;
 const lakeBase=new Float32Array(lakePositions.array);
-const water=mesh(lakeGeometry,new THREE.MeshPhongMaterial({color:0x268fa7,specular:0xc7eff5,transparent:true,opacity:.94,shininess:145,side:THREE.DoubleSide}),0,.02,-25);
+// Fresnel water with moving caustic highlights, deep-water color and soft sky reflection.
+const waterMaterial=new THREE.ShaderMaterial({
+ transparent:true,side:THREE.DoubleSide,depthWrite:true,
+ uniforms:{uTime:{value:0},uDeep:{value:new THREE.Color(0x07586d)},uShallow:{value:new THREE.Color(0x32a6a4)},uSky:{value:new THREE.Color(0xc7e8f2)}},
+ vertexShader:`varying vec3 vWorld;varying vec3 vNormalW;varying vec2 vUv;void main(){vUv=uv;vec4 w=modelMatrix*vec4(position,1.);vWorld=w.xyz;vNormalW=normalize(mat3(modelMatrix)*normal);gl_Position=projectionMatrix*viewMatrix*w;}`,
+ fragmentShader:`uniform float uTime;uniform vec3 uDeep,uShallow,uSky;varying vec3 vWorld,vNormalW,vUv;void main(){vec3 V=normalize(cameraPosition-vWorld);float fresnel=pow(1.-abs(dot(normalize(vNormalW),V)),2.4);float ripple=sin(vWorld.x*1.8+uTime*1.3+sin(vWorld.z*.7))*sin(vWorld.z*2.2-uTime*.9);float fine=sin(vWorld.x*8.+uTime*2.1)*sin(vWorld.z*6.-uTime*1.6);float glitter=pow(max(0.,ripple*.5+fine*.22+.18),9.)*.65;vec3 col=mix(uDeep,uShallow,clamp(.3+ripple*.11+vUv.y*.22,0.,1.));col=mix(col,uSky,clamp(fresnel*.67,0.,.75));col+=vec3(.65,.76,.72)*glitter;gl_FragColor=vec4(col,.96);}`
+});
+const water=mesh(lakeGeometry,waterMaterial,0,.02,-25);
 water.rotation.x=-Math.PI/2;
 renderer.outputColorSpace=THREE.SRGBColorSpace;
 renderer.toneMapping=THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure=1.15;
 function animateLake(t){
+ waterMaterial.uniforms.uTime.value=t;
  const a=lakePositions.array;
  for(let i=0;i<a.length;i+=3){
   const x=lakeBase[i],z=lakeBase[i+1];
@@ -67,7 +75,24 @@ function animateLake(t){
  lakePositions.needsUpdate=true;
  lakeGeometry.computeVertexNormals();
 }
-for(const side of [-1,1]){const bank=mesh(new THREE.BoxGeometry(2,.3,90),mat(0xb3a17a),side*28,-.02,-25);for(let i=0;i<22;i++){const z=12-i*3.7,x=side*(31+(i%3)*1.8);const trunk=mesh(new THREE.CylinderGeometry(.15,.2,2,6),mat(0x765238),x,.8,z);mesh(new THREE.ConeGeometry(1.2,3,7),mat(0x347b49),x,3,z)}}
+// Layered foliage silhouettes instead of single triangular placeholder trees.
+const foliage=[mat(0x245e3d),mat(0x36764a),mat(0x4b8851),mat(0x28563b)];
+const bark=mat(0x68503b);
+for(const side of [-1,1]){
+ mesh(new THREE.BoxGeometry(3,.3,90),mat(0x9a9870),side*28,-.02,-25);
+ for(let i=0;i<22;i++){
+  const z=12-i*3.7,x=side*(30.5+(i%3)*1.7),h=3.6+(i%5)*.5;
+  mesh(new THREE.CylinderGeometry(.13,.24,h*.65,8),bark,x,h*.32,z);
+  for(let tier=0;tier<4;tier++){
+   const yy=h*.35+tier*h*.18,rad=(1.55-tier*.29)*(1+(i%3)*.07);
+   for(let j=0;j<5;j++){
+    const angle=j*Math.PI*2/5+tier*.35+i*.7;
+    const crown=mesh(new THREE.IcosahedronGeometry(1,1),foliage[(i+j+tier)%foliage.length],x+Math.cos(angle)*rad*.44,yy,z+Math.sin(angle)*rad*.44);
+    crown.scale.set(rad*.65,h*.18,rad*.68);
+   }
+  }
+ }
+}
 const pier=mesh(new THREE.BoxGeometry(5,.28,9),mat(0x966b43),-8,.18,8);
 for(let i=0;i<5;i++)mesh(new THREE.BoxGeometry(4.9,.05,.07),mat(0xb98b58),-8,.35,4.4+i*1.8);
 // Fishing station rebuilt around a seated angler facing negative Z (the lake).
