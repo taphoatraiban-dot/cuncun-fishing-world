@@ -58,6 +58,23 @@ for(let i=0;i<9;i++){
   const fish=mesh(new THREE.SphereGeometry(.33,7,6),mat(i%2?0xe0bc57:0x7db4a4),x,-.18,z);
   fish.scale.set(1.8,.45,.7);
 }
+// Lightweight animated neighboring anglers; decorative only, no fake online players.
+const visitorAnglers=[];
+for(let i=0;i<5;i++){
+  const x=-21+i*8,z=-7-(i%2)*10;
+  const group=new THREE.Group();group.position.set(x,0,z);scene.add(group);
+  const colors=[0xd85f64,0x3978bb,0xe9b94f,0x8a67b8,0x3c9e82];
+  const shirt=new THREE.Mesh(new THREE.BoxGeometry(.95,1.15,.62),mat(colors[i]));shirt.position.y=1.7;group.add(shirt);
+  const face=new THREE.Mesh(new THREE.BoxGeometry(.64,.68,.64),skin);face.position.y=2.65;group.add(face);
+  const hairMesh=new THREE.Mesh(new THREE.BoxGeometry(.7,.2,.7),mat(i%2?0x3a302b:0x293344));hairMesh.position.y=3.06;group.add(hairMesh);
+  for(const side of [-1,1]){
+    const arm=new THREE.Mesh(new THREE.BoxGeometry(.25,.8,.3),mat(colors[i]));arm.position.set(side*.62,1.75,-.18);arm.rotation.x=-.45;group.add(arm);
+    const leg=new THREE.Mesh(new THREE.BoxGeometry(.3,.85,.35),mat(0x253b56));leg.position.set(side*.23,.65,0);group.add(leg);
+  }
+  const rodGeo=new THREE.CylinderGeometry(.018,.055,4,6);
+  const rodMesh=new THREE.Mesh(rodGeo,mat(0x2a343b));rodMesh.position.set(.4,2.75,-1.4);rodMesh.rotation.x=-.75;group.add(rodMesh);
+  visitorAnglers.push({group,shirt,offset:i*1.7});
+}
 const rodPoints=[new THREE.Vector3(-8.4,2.1,7.8),new THREE.Vector3(-6.2,3.8,4),new THREE.Vector3(-3.4,4.4,-1)];
 const rodCurve=new THREE.CatmullRomCurve3(rodPoints),rod=mesh(new THREE.TubeGeometry(rodCurve,20,.065,7,false),mat(0x303b41));
 const lineMaterial=new THREE.LineBasicMaterial({color:0xf6f5d9});let line=new THREE.Line(new THREE.BufferGeometry().setFromPoints([rodPoints[2],new THREE.Vector3(-2.7,.1,-8)]),lineMaterial);scene.add(line);
@@ -89,6 +106,7 @@ if(phase==='bite'&&now>biteUntil){phase='idle';tell('Cá đã nhả mồi. Thả
 if(phase==='fight'){fishBurst+=dt;const surge=Math.sin(now*.0032+fishKg)*Math.sin(now*.0017)*fishKg*.7;tension=Math.max(0,Math.min(100,tension+(reeling?(31+fishKg*2.4+Math.max(0,surge)*3):-(30+fishKg))*dt));if(reeling)progress+=dt*Math.max(4,15-fishKg*.9);
 if(tension>=100){phase='done';reeling=false;tell('💥 Đứt dây! Cá chạy mất rồi.');beep(220,.32);buttons()}
 else if(progress>=100){phase='done';reeling=false;const result=awardCatch(practiceProgress,fishKg);practiceProgress=result.profile;showPracticeProgress();tell('🎉 Tập thành công: '+fishName+' '+fishKg+' kg · +'+result.xpGained+' EXP luyện tập (không lưu).');beep(940,.3);buttons()}}
+visitorAnglers.forEach(({group,shirt,offset})=>{shirt.rotation.z=Math.sin(now*.0013+offset)*.035;group.rotation.y=Math.sin(now*.0005+offset)*.07});
 const active=phase==='waiting'||phase==='bite'||phase==='fight';
 const closeUp=cameraMode==='float'||(cameraMode==='auto'&&(phase==='bite'||phase==='fight'));
 const targetPos=closeUp?new THREE.Vector3(-.6,3.2,2.5):cameraMode==='wide'?new THREE.Vector3(3.7,8.5,18):new THREE.Vector3(-6.8,5.2,16.8);
