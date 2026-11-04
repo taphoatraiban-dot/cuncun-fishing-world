@@ -19,7 +19,11 @@
       const statsResponse = await fetch('https://fishing.cuncun.icu/api/stats', { cache: 'no-store' });
       if (!statsResponse.ok) throw new Error('Stats HTTP ' + statsResponse.status);
       const stats = await statsResponse.json();
-      status.textContent = '🌐 VPS: ' + Number(stats.players || 0) + ' người chơi · ' + Number(stats.catches || 0) + ' cá · ' + Number(stats.points || 0) + ' điểm';
+      const ticketsResponse = await fetch('https://fishing.cuncun.icu/api/tickets/active', { cache: 'no-store' });
+      if (!ticketsResponse.ok) throw new Error('Tickets HTTP ' + ticketsResponse.status);
+      const tickets = await ticketsResponse.json();
+      const active = Array.isArray(tickets.players) ? tickets.players.length : 0;
+      status.textContent = '🌐 VPS: ' + Number(stats.players || 0) + ' người chơi · ' + Number(stats.catches || 0) + ' cá · ' + Number(stats.points || 0) + ' điểm · 🎟️ ' + active + '/200 vé đang hoạt động';
     } catch {
       status.textContent = 'Chưa đọc được bảng xếp hạng VPS (kiểm tra CORS/kết nối).';
     }
