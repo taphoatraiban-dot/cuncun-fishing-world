@@ -35,17 +35,21 @@
     if (useMain) useMain.checked = false;
     status.textContent = 'Đã đăng xuất trên thiết bị. Mã trên VPS chưa bị thu hồi.';
   });
-  input.addEventListener('change', () => {
+  function rememberEnteredToken() {
     const token = input.value.trim();
     try {
       if (validToken(token)) localStorage.setItem(sessionKey, token);
       else localStorage.removeItem(sessionKey);
     } catch {}
-  });
+  }
+  input.addEventListener('input', rememberEnteredToken);
+  input.addEventListener('change', rememberEnteredToken);
+  input.addEventListener('blur', rememberEnteredToken);
   let busy = false;
   async function action(kind) {
     if (busy) return;
     const token = input.value.trim();
+    rememberEnteredToken();
     if (!validToken(token)) {
       status.textContent = 'Cần mã phiên người chơi hợp lệ (không phải mã quản trị).';
       return;
