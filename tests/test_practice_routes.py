@@ -9,13 +9,14 @@ from backend.server import Handler, SITE_ROOT
 
 class PracticeRouteTests(unittest.TestCase):
     def test_practice_assets_exist(self):
-        for filename in ("practice.html", "practice-3d.js"):
+        for filename in ("practice.html", "practice-3d.js", "profile-demo.html"):
             with self.subTest(filename=filename):
                 self.assertTrue((SITE_ROOT / filename).is_file())
 
     def test_practice_routes_serve_expected_types(self):
         for path, filename, mime in (
             ("/practice.html", "practice.html", "text/html; charset=utf-8"),
+            ("/profile-demo.html", "profile-demo.html", "text/html; charset=utf-8"),
             ("/practice-3d.js", "practice-3d.js", "text/javascript; charset=utf-8"),
         ):
             with self.subTest(path=path):
