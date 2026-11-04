@@ -2,7 +2,8 @@ import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.m
 const $=id=>document.getElementById(id),canvas=$('lake'),cast=$('cast'),hook=$('hook'),reel=$('reel'),reset=$('reset'),status=$('status'),meter=$('tension');
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x9bd5f0);scene.fog=new THREE.Fog(0x9bd5f0,70,210);
 const camera=new THREE.PerspectiveCamera(52,720/620,.1,250);camera.position.set(3.7,8.5,18);camera.lookAt(0,0,-12);
-const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:false,powerPreference:'low-power'});
+let renderer;
+try{renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:false,powerPreference:'low-power'})}catch(error){document.getElementById('render-error').hidden=false;document.getElementById('status').textContent='Không thể khởi tạo hồ 3D trên thiết bị này.';throw error}
 const pixelRatio=Math.min(window.devicePixelRatio||1,1.5);renderer.setPixelRatio(pixelRatio);
 function resize(){const width=Math.max(240,Math.round(canvas.getBoundingClientRect().width||720));const height=Math.round(width*620/720);renderer.setSize(width,height,false);camera.aspect=width/height;camera.updateProjectionMatrix()}
 window.addEventListener('resize',resize,{passive:true});resize();
@@ -38,7 +39,7 @@ function strike(){if(phase!=='bite')return;phase='fight';progress=0;tension=15;f
 cast.addEventListener('click',start);reset.addEventListener('click',clear);hook.addEventListener('click',strike);
 reel.addEventListener('pointerdown',e=>{if(phase!=='fight')return;e.preventDefault();reeling=true;reel.setPointerCapture(e.pointerId)});
 for(const ev of ['pointerup','pointercancel','lostpointercapture'])reel.addEventListener(ev,()=>reeling=false);
-window.addEventListener('blur',()=>reeling=false);document.addEventListener('visibilitychange',()=>{if(document.hidden)reeling=false});
+window.addEventListener('blur',()=>reeling=false);canvas.addEventListener('webglcontextlost',event=>{event.preventDefault();reeling=false;tell('Đồ họa 3D bị gián đoạn. Hãy tải lại trang để tiếp tục.');document.getElementById('render-error').hidden=false},{passive:false});document.addEventListener('visibilitychange',()=>{if(document.hidden)reeling=false});
 const fishModel=new THREE.Group();const body=new THREE.Mesh(new THREE.SphereGeometry(.65,14,10),mat(0xe1b85a));body.scale.set(1.7,.8,.65);fishModel.add(body);const tail=new THREE.Mesh(new THREE.ConeGeometry(.45,.9,3),mat(0xbd8439));tail.rotation.z=Math.PI/2;tail.position.x=-1.1;fishModel.add(tail);const fin=new THREE.Mesh(new THREE.ConeGeometry(.32,.65,3),mat(0xc38c3d));fin.position.set(0,.55,0);fishModel.add(fin);fishModel.position.set(-2.7,-.45,-8);scene.add(fishModel);
 function frame(now){const dt=Math.min((now-last)/1000,.05);last=now;
 if(phase==='waiting'&&now>=biteAt){phase='bite';biteUntil=now+1600;tell('⚡ PHAO CHÌM! Bấm Giật cần!');beep(820,.2);buttons()}
