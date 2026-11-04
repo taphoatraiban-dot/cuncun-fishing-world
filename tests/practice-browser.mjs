@@ -14,6 +14,8 @@ try {
   assert.equal(await page.locator('#render-error').isVisible(),false,'WebGL initialization failed');
   await page.waitForFunction(() => document.querySelector('#cast')?.disabled === false, null, {timeout:10000});
   assert.equal(await page.locator('#cast').isEnabled(),true);
+  assert.equal(await page.locator('.game-hud').isVisible(),true);
+  assert.match(await page.locator('.game-hud').innerText(),/CUNCUN FISHING WORLD/);
   assert.match(await page.locator('#practice-level').innerText(),/Cấp 1/);
   const xpResponse = await page.request.get('http://127.0.0.1:8791/fishing-progression.js');
   assert.equal(xpResponse.status(),200);
