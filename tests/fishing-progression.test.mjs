@@ -25,6 +25,22 @@ test('progression levels up and tracks biggest fish',()=>{
   assert.equal(p.biggestKg,5);
   assert.equal(p.catches,5);
 });
+test('XP stays capped at level 99 and never changes input profile',()=>{
+  const previous={...initialProgress(),level:99,xp:0,catches:12,totalKg:18,biggestKg:4};
+  const {profile}=awardCatch(previous,3);
+  assert.equal(profile.level,99);
+  assert.equal(profile.xp,0);
+  assert.equal(profile.catches,13);
+  assert.equal(profile.totalKg,21);
+  assert.equal(previous.catches,12);
+});
+test('fractional fish weights remain accurate to two decimal places',()=>{
+  let p=initialProgress();
+  p=awardCatch(p,0.1).profile;
+  p=awardCatch(p,0.2).profile;
+  assert.equal(p.totalKg,0.3);
+  assert.equal(p.biggestKg,0.2);
+});
 test('reject invalid catches and levels',()=>{
   for(const weight of [0,-1,Infinity,NaN,501]) assert.throws(()=>awardCatch(initialProgress(),weight),RangeError);
   assert.equal(xpNeeded(MAX_LEVEL),0);
