@@ -14,6 +14,7 @@ import random
 import hashlib
 import sqlite3
 import time
+from . import seats
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlparse
@@ -59,6 +60,7 @@ def connection():
         player_name TEXT NOT NULL,
         expires_at INTEGER NOT NULL
     )""")
+    seats.initialize(db)
     return db
 
 class Handler(BaseHTTPRequestHandler):
@@ -118,6 +120,13 @@ class Handler(BaseHTTPRequestHandler):
                 now = int(time.time())
                 rows = db.execute("SELECT player_name,MAX(expires_at) FROM tickets WHERE expires_at>? GROUP BY player_name ORDER BY player_name LIMIT 200", (now,)).fetchall()
             return self.respond(200, {"players": [{"name": n, "expires_at": e} for n,e in rows]})
+        if path == "/api/ticket-prices":
+            return self.respond(200, {"currency": "VND", "tickets": [{"minutes": m, "price": p} for m,p in seats.PRICES_VND.items()], "visitor_access": "free", "payment": "admin_verified_only"})
+        if path == "/api/seats":
+            now = int(time.time())
+            with connection() as db:
+                rows = db.execute("SELECT seat,player_name,expires_at FROM fishing_seats WHERE expires_at>? ORDER BY seat", (now,)).fetchall()
+            return self.respond(200, {"capacity": seats.CAPACITY, "occupied": [{"seat": n, "name": p, "expires_at": e} for n,p,e in rows]})
         if path == "/api/stats":
             with connection() as db:
                 players = db.execute("SELECT COUNT(*) FROM players").fetchone()[0]
@@ -131,10 +140,10 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         path = urlparse(self.path).path
-        if path not in ("/api/events", "/api/tickets", "/api/cast", "/api/reel", "/api/sessions", "/api/player/cast", "/api/player/reel"):
+        if path not in ("/api/events", "/api/tickets", "/api/cast", "/api/reel", "/api/sessions", "/api/player/cast", "/api/player/reel", "/api/player/seat"):
             return self.respond(404, {"error": "not_found"})
         player_name = None
-        if path in ("/api/player/cast", "/api/player/reel"):
+        if path in ("/api/player/cast", "/api/player/reel", "/api/player/seat"):
             player_name = self.player_session()
             if player_name is None:
                 return self.respond(401, {"error": "unauthorized"})
@@ -161,6 +170,16 @@ class Handler(BaseHTTPRequestHandler):
         except (ValueError, TypeError, json.JSONDecodeError):
             return self.respond(400, {"error": "invalid_payload"})
         now = int(time.time())
+        if path == "/api/player/seat":
+            with connection() as db:
+                db.execute("BEGIN IMMEDIATE")
+                expiry = db.execute("SELECT MAX(expires_at) FROM tickets WHERE player_name=? COLLATE NOCASE", (name,)).fetchone()[0]
+                if not expiry or expiry <= now:
+                    return self.respond(403, {"error": "ticket_required"})
+                seat = seats.draw(db, name, expiry, now)
+                if seat is None:
+                    return self.respond(409, {"error": "seats_full"})
+            return self.respond(200, {"ok": True, "seat": seat, "expires_at": expiry})
         if path == "/api/sessions":
             with connection() as db:
                 expiry = db.execute("SELECT MAX(expires_at) FROM tickets WHERE player_name=? COLLATE NOCASE", (name,)).fetchone()[0]
@@ -179,7 +198,7 @@ class Handler(BaseHTTPRequestHandler):
                 expires = max(now, existing or now) + minutes * 60
                 db.execute("INSERT INTO tickets(player_name,expires_at,created_at) VALUES(?,?,?)", (name,expires,now))
             return self.respond(200, {"ok": True, "name": name, "expires_at": expires})
-        if path in ("/api/cast", "/api/reel", "/api/player/cast", "/api/player/reel"):
+        if path in ("/api/cast", "/api/reel", "/api/player/cast", "/api/player/reel", "/api/player/seat"):
             with connection() as db:
                 db.execute("BEGIN IMMEDIATE")
                 valid = db.execute("SELECT MAX(expires_at) FROM tickets WHERE player_name=? COLLATE NOCASE", (name,)).fetchone()[0]
