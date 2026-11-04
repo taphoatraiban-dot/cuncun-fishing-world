@@ -4,15 +4,21 @@ const $=id=>document.getElementById(id),canvas=$('lake'),cast=$('cast'),hook=$('
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x9bd5f0);scene.fog=new THREE.Fog(0x9bd5f0,70,210);
 const camera=new THREE.PerspectiveCamera(52,720/620,.1,250);camera.position.set(3.7,8.5,18);camera.lookAt(0,0,-12);
 let renderer;
-try{renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:false,powerPreference:'low-power'})}catch(error){
+try{
+  // Mobile Safari can refuse a high-memory antialiased context; request a lean
+  // context first, then let Three.js initialize against that exact context.
+  const mobile=/iPhone|iPad|iPod/i.test(navigator.userAgent);
+  const options={canvas,antialias:!mobile,alpha:false,powerPreference:'low-power',preserveDrawingBuffer:false};
+  renderer=new THREE.WebGLRenderer(options);
+}catch(error){
   const panel=document.getElementById('render-error');
   const reason=String(error?.message||error||'Lỗi WebGL không xác định').slice(0,240);
   panel.hidden=false;
-  panel.textContent='Không khởi tạo được WebGL: '+reason+' — Trên Safari Mac, kiểm tra Safari > Cài đặt > Nâng cao và cập nhật trình duyệt.';
+  panel.textContent='Không khởi tạo được WebGL: '+reason+' — Hãy đóng các tab 3D khác, tải lại trang hoặc mở trong Safari.';
   status.textContent='Hồ 3D không khởi động được. Chi tiết lỗi hiển thị trong khung đỏ.';
   throw error;
 }
-const pixelRatio=Math.min(window.devicePixelRatio||1,1.5);renderer.setPixelRatio(pixelRatio);
+const pixelRatio=Math.min(window.devicePixelRatio||1,/iPhone|iPad|iPod/i.test(navigator.userAgent)?1:1.5);renderer.setPixelRatio(pixelRatio);
 function resize(){const width=Math.max(240,Math.round(canvas.getBoundingClientRect().width||720));const height=Math.max(300,Math.round(canvas.getBoundingClientRect().height||width*620/720));renderer.setSize(width,height,false);camera.aspect=width/height;camera.updateProjectionMatrix()}
 window.addEventListener('resize',resize,{passive:true});resize();
 scene.add(new THREE.HemisphereLight(0xe9f7ff,0x345638,2.1));const sun=new THREE.DirectionalLight(0xffffff,2.1);sun.position.set(-20,32,12);scene.add(sun);
