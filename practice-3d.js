@@ -375,6 +375,7 @@ for(let i=0;i<3;i++){
   lakeRipples.push({ring,offset:i/3});
 }
 
+const proceduralAnglerStart=scene.children.length;
 // Human-proportioned fishing character (procedural preview; no third-party assets).
 // The angler is seated on the dock. Anatomy and clothing use layered, tapered forms.
 const skin=mat(0xc99572,{roughness:.93}),hair=mat(0x24201d),cap=mat(0x334b43),
@@ -432,6 +433,42 @@ for(const side of [-1,1]){
 // Belt pouch behind the right hip, deliberately small to keep silhouette realistic.
 const bag=mesh(new THREE.BoxGeometry(.33,.28,.21),vestPocket,avatarX+.4,1.34,avatarZ+.23);
 bag.rotation.z=-.1;
+// Optional Blender-exported character. The procedural avatar remains fully playable
+// until the local GLB loads successfully. No external service or paid asset required.
+const proceduralAnglerMeshes=scene.children.slice(proceduralAnglerStart);
+let riggedAngler=null,riggedMixer=null,riggedAction=null;
+const riggedClips=new Map();
+let riggedClipName='';
+const riggedLoader=new GLTFLoader();
+riggedLoader.load('./assets/characters/CUNCUN_Angler_Rig.glb',gltf=>{
+  if(!gltf.scene||!gltf.scene.children.length) return;
+  const bounds=new THREE.Box3().setFromObject(gltf.scene);
+  const height=bounds.getSize(new THREE.Vector3()).y;
+  if(!Number.isFinite(height)||height<.1) return;
+  riggedAngler=gltf.scene;
+  riggedAngler.scale.setScalar(2.85/height);
+  riggedAngler.position.set(avatarX,.12,avatarZ);
+  riggedAngler.rotation.y=0;
+  riggedAngler.traverse(obj=>{if(obj.isMesh){obj.frustumCulled=false;obj.castShadow=false;}});
+  scene.add(riggedAngler);
+  riggedMixer=new THREE.AnimationMixer(riggedAngler);
+  for(const clip of gltf.animations||[])riggedClips.set(clip.name.toLowerCase(),riggedMixer.clipAction(clip));
+  proceduralAnglerMeshes.forEach(obj=>obj.visible=false);
+  console.info('CUNCUN rigged angler loaded with clips:',[...riggedClips.keys()]);
+},undefined,()=>{
+  // Expected on early staging builds: the optional GLB is not exported yet.
+  console.info('CUNCUN rigged GLB not installed; using procedural angler.');
+});
+function playRiggedClip(name){
+  if(!riggedMixer)return;
+  const key=name.toLowerCase();
+  if(riggedClipName===key)return;
+  const next=riggedClips.get(key)||riggedClips.get('idle');
+  if(!next)return;
+  next.reset().fadeIn(.18).play();
+  if(riggedAction&&riggedAction!==next)riggedAction.fadeOut(.18);
+  riggedAction=next;riggedClipName=key;
+}
 const lanternMat=new THREE.MeshStandardMaterial({color:0xffc875,emissive:0xf5a33c,emissiveIntensity:.55});
 for(const x of [-10.3,-5.8]){
   mesh(new THREE.CylinderGeometry(.09,.11,2.5,7),mat(0x68452d),x,1.45,4.1);
@@ -628,6 +665,13 @@ window.addEventListener('blur',()=>reeling=false);canvas.addEventListener('webgl
 const fishModel=new THREE.Group();const body=new THREE.Mesh(new THREE.SphereGeometry(.65,14,10),mat(0xe1b85a));body.scale.set(1.7,.8,.65);fishModel.add(body);const tail=new THREE.Mesh(new THREE.ConeGeometry(.45,.9,3),mat(0xbd8439));tail.rotation.z=Math.PI/2;tail.position.x=-1.1;fishModel.add(tail);const fin=new THREE.Mesh(new THREE.ConeGeometry(.32,.65,3),mat(0xc38c3d));fin.position.set(0,.55,0);fishModel.add(fin);fishModel.position.set(-2.7,-.45,-8);scene.add(fishModel);
 function frame(now){const dt=Math.min((now-last)/1000,.05);last=now;
 if(!document.hidden)animateLake(now*.001);
+if(riggedMixer){
+  const clip=phase==='fight'?'Reel':phase==='bite'?'Cast':'Sit';
+  playRiggedClip(clip);
+  riggedMixer.update(dt);
+  if(riggedAngler)riggedAngler.visible=cameraMode!=='eyes';
+}
+
 if(document.hidden&&(phase==='waiting'||phase==='bite'||phase==='fight')){clear();tell('Đã tạm dừng vì rời màn hình. Bấm Thả câu để chơi lại.')}
 if(phase==='waiting'&&now>=biteAt){phase='bite';biteUntil=now+1600;tell('⚡ PHAO CHÌM! Bấm Giật cần!');beep(820,.2);buttons()}
 if(phase==='bite'&&now>biteUntil){phase='idle';reeling=false;tell('Cá đã nhả mồi. Thả lại nhé!');buttons()}
