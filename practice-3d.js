@@ -19,6 +19,45 @@ for(let i=0;i<5;i++)mesh(new THREE.BoxGeometry(4.9,.05,.07),mat(0xb98b58),-8,.35
 const chair=mesh(new THREE.BoxGeometry(1.1,.7,1.2),mat(0x775235),-9,1,8);
 const avatarBody=mesh(new THREE.CylinderGeometry(.55,.5,1.5,10),mat(0x168fa6),-8.9,1.8,8);
 mesh(new THREE.SphereGeometry(.48,12,10),mat(0xe3b68e),-8.9,2.85,8);
+// Stylized angler and lakeside scenery, built only from local Three.js primitives.
+const outfit=mat(0x172b42),skin=mat(0xf0bb8c),hair=mat(0xe9edf5),cap=mat(0x111a27);
+avatarBody.material=outfit;
+const head=scene.children.find(o=>o.isMesh&&o.geometry.type==='SphereGeometry'&&Math.abs(o.position.x+8.9)<.01&&Math.abs(o.position.y-2.85)<.01);
+if(head)head.material=skin;
+mesh(new THREE.SphereGeometry(.5,12,10),hair,-8.9,3.2,8.05);
+mesh(new THREE.CylinderGeometry(.52,.52,.19,12),cap,-8.9,3.48,8.06);
+mesh(new THREE.BoxGeometry(.72,.08,.3),cap,-8.9,3.43,7.7);
+for(const side of [-1,1]){
+  const arm=mesh(new THREE.CapsuleGeometry(.16,.75,4,8),outfit,-8.9+side*.66,2.04,7.8);
+  arm.rotation.x=-.48;arm.rotation.z=side*.3;
+  mesh(new THREE.SphereGeometry(.16,8,8),skin,-8.9+side*.8,1.6,7.52);
+  const leg=mesh(new THREE.CapsuleGeometry(.22,.78,4,8),mat(0x233447),-8.9+side*.32,.83,7.45);
+  leg.rotation.x=-.85;
+  mesh(new THREE.BoxGeometry(.48,.22,.7),mat(0xf2f5fa),-8.9+side*.32,.48,7.0);
+}
+const lanternMat=new THREE.MeshStandardMaterial({color:0xffc875,emissive:0xf5a33c,emissiveIntensity:.55});
+for(const x of [-10.3,-5.8]){
+  mesh(new THREE.CylinderGeometry(.09,.11,2.5,7),mat(0x68452d),x,1.45,4.1);
+  mesh(new THREE.BoxGeometry(.55,.72,.55),lanternMat,x,2.7,4.1);
+}
+const foliage=[0xf1a6d0,0xf5bfdc,0xe98fbe,0x4b9e66];
+for(const side of [-1,1]){
+  for(let i=0;i<9;i++){
+    const z=-2-i*7.4,x=side*(29+i%3*2.2);
+    const trunk=mesh(new THREE.CylinderGeometry(.24,.38,4.4,7),mat(0x694b35),x,2,z);
+    for(let j=0;j<3;j++)mesh(new THREE.IcosahedronGeometry(2.2+(j%2)*.4,1),mat(foliage[(i+j)%foliage.length]),x+(j-1)*1.15,4.6+j*.45,z+(j%2)*.8);
+  }
+}
+for(let i=0;i<7;i++){
+  const x=-22+i*7.2,z=-62-(i%3)*4;
+  const cliff=mesh(new THREE.ConeGeometry(6+i%3*2,16+i%2*6,5),mat(0x648e89),x,7,z);
+  cliff.rotation.y=i*.8;
+}
+for(let i=0;i<9;i++){
+  const x=-23+i*5.5,z=-20-(i%4)*9;
+  const fish=mesh(new THREE.SphereGeometry(.33,7,6),mat(i%2?0xe0bc57:0x7db4a4),x,-.18,z);
+  fish.scale.set(1.8,.45,.7);
+}
 const rodPoints=[new THREE.Vector3(-8.4,2.1,7.8),new THREE.Vector3(-6.2,3.8,4),new THREE.Vector3(-3.4,4.4,-1)];
 const rodCurve=new THREE.CatmullRomCurve3(rodPoints),rod=mesh(new THREE.TubeGeometry(rodCurve,20,.065,7,false),mat(0x303b41));
 const lineMaterial=new THREE.LineBasicMaterial({color:0xf6f5d9});let line=new THREE.Line(new THREE.BufferGeometry().setFromPoints([rodPoints[2],new THREE.Vector3(-2.7,.1,-8)]),lineMaterial);scene.add(line);
