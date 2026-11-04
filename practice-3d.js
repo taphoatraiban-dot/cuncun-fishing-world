@@ -227,9 +227,9 @@ const markerCore=new THREE.Mesh(new THREE.SphereGeometry(.12,8,8),new THREE.Mesh
 biteMarker.visible=false;
 const ripples=[];for(let i=0;i<3;i++){const r=mesh(new THREE.RingGeometry(.4,.46,40),rippleMat.clone(),-2.7,.06,-8);r.rotation.x=-Math.PI/2;ripples.push(r)}
 let phase='idle',biteAt=0,biteUntil=0,progress=0,tension=0,last=performance.now(),fishKg=0,fishName='',reeling=false,fishBurst=0,fishDirection=1;
-const cameraButton=$('camera'),soundButton=$('sound');let cameraMode='auto',audioContext=null,soundOn=false,lastAlert=0;
+const cameraButton=$('camera'),soundButton=$('sound');let cameraMode='behind',audioContext=null,soundOn=false,lastAlert=0;
 function beep(freq=540,duration=.13){if(!soundOn||!audioContext)return;try{const osc=audioContext.createOscillator(),gain=audioContext.createGain();osc.type='sine';osc.frequency.value=freq;gain.gain.setValueAtTime(.0001,audioContext.currentTime);gain.gain.exponentialRampToValueAtTime(.065,audioContext.currentTime+.012);gain.gain.exponentialRampToValueAtTime(.0001,audioContext.currentTime+duration);osc.connect(gain);gain.connect(audioContext.destination);osc.start();osc.stop(audioContext.currentTime+duration+.02)}catch{}}
-cameraButton.addEventListener('click',()=>{cameraMode=cameraMode==='auto'?'float':cameraMode==='float'?'wide':'auto';cameraButton.textContent='📷 Camera: '+({auto:'Tự động',float:'Cận phao',wide:'Toàn cảnh'})[cameraMode]});
+const cameraModes=['behind','float','eyes','aerial'];const cameraLabels={behind:'Sau lưng',float:'Nhìn phao',eyes:'Từ mắt',aerial:'Trên cao'};cameraButton.textContent='📷 '+cameraLabels[cameraMode];cameraButton.addEventListener('click',()=>{cameraMode=cameraModes[(cameraModes.indexOf(cameraMode)+1)%cameraModes.length];cameraButton.textContent='📷 '+cameraLabels[cameraMode]});
 soundButton.addEventListener('click',async()=>{if(!soundOn){const AudioCtor=window.AudioContext||window.webkitAudioContext;if(!AudioCtor){tell('Thiết bị chưa hỗ trợ âm thanh.');return}audioContext ||=new AudioCtor();try{await audioContext.resume()}catch{return}soundOn=true;beep(650)}else soundOn=false;soundButton.textContent=soundOn?'🔊 Âm thanh: Bật':'🔇 Âm thanh: Tắt'});
 let practiceProgress=initialProgress();
 function showPracticeProgress(){const p=practiceProgress;document.getElementById('practice-level').textContent='Cấp '+p.level+' · '+p.xp+'/'+xpNeeded(p.level)+' EXP · '+p.catches+' cá';document.getElementById('practice-xp').style.width=(xpNeeded(p.level)?100*p.xp/xpNeeded(p.level):100)+'%'}
@@ -295,9 +295,8 @@ if(catchBanner&&!catchBanner.hidden&&now>=catchBannerUntil)catchBanner.hidden=tr
 catchGlow.visible=now<catchGlowUntil;
 if(catchGlow.visible){const t=1-(catchGlowUntil-now)/1600;catchGlow.scale.setScalar(.7+t*2);catchGlow.material.opacity=Math.max(0,1-t)}
 const active=phase==='waiting'||phase==='bite'||phase==='fight';
-const closeUp=cameraMode==='float'||(cameraMode==='auto'&&(phase==='bite'||phase==='fight'));
-const targetPos=closeUp?new THREE.Vector3(-.6,3.2,2.5):cameraMode==='wide'?new THREE.Vector3(3.7,8.5,18):new THREE.Vector3(-6.8,5.2,16.8);
-const lookAt=closeUp?new THREE.Vector3(-2.7,.15,-8):cameraMode==='wide'?new THREE.Vector3(0,0,-12):new THREE.Vector3(-5,1.1,-3);
+const targetPos=cameraMode==='float'?new THREE.Vector3(-1.4,2.4,-3):cameraMode==='eyes'?new THREE.Vector3(-8.9,3.15,7.3):cameraMode==='aerial'?new THREE.Vector3(-5,28,15):new THREE.Vector3(-6.8,5.2,16.8);
+const lookAt=cameraMode==='float'||cameraMode==='eyes'?new THREE.Vector3(-2.7,.22,-8):cameraMode==='aerial'?new THREE.Vector3(-4,0,-8):new THREE.Vector3(-5,1.1,-3);
 camera.position.lerp(targetPos,Math.min(1,dt*2.4));camera.lookAt(lookAt);
 bob.visible=bobTop.visible=active;line.visible=active;fishModel.visible=phase==='fight';
 const dip=phase==='bite'?.35:0;const wave=Math.sin(now*.005)*.06;bob.position.y=.24+wave-dip;bobTop.position.y=.55+wave-dip;
