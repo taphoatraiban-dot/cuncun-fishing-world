@@ -102,6 +102,16 @@ const bow=new THREE.Mesh(new THREE.ConeGeometry(.95,1.4,4),mat(0xede7d7));bow.ro
 const cabin=new THREE.Mesh(new THREE.BoxGeometry(1.65,1.2,1.5),mat(0x65c6dc));cabin.position.set(-.5,1.08,0);boat.add(cabin);
 const roof=new THREE.Mesh(new THREE.BoxGeometry(2,.2,1.85),mat(0xf9d77b));roof.position.set(-.5,1.77,0);boat.add(roof);
 // Animated shoal: lightweight local fish models, purely visual.
+// Decorative distant waterfalls, with no physics or network dependencies.
+const waterfalls=[];
+for(let i=0;i<3;i++){
+  const x=-17+i*17,z=-66-i%2*4;
+  const fall=mesh(new THREE.PlaneGeometry(2.5+i*.5,10+i%2*3),new THREE.MeshBasicMaterial({color:0x9de6f2,transparent:true,opacity:.68,side:THREE.DoubleSide}),x,5,z);
+  fall.rotation.y=.14+i*.2;
+  const foam=mesh(new THREE.CircleGeometry(2+i*.25,16),new THREE.MeshBasicMaterial({color:0xe3faff,transparent:true,opacity:.65,side:THREE.DoubleSide}),x,.13,z+1);
+  foam.rotation.x=-Math.PI/2;
+  waterfalls.push({fall,foam,phase:i*1.9});
+}
 const shoal=[];
 for(let i=0;i<14;i++){
   const swimmer=new THREE.Group();
@@ -187,6 +197,7 @@ visitorAnglers.forEach(({group,shirt,offset})=>{shirt.rotation.z=Math.sin(now*.0
 dancers.forEach(({dancer,offset})=>{dancer.position.y=1+Math.abs(Math.sin(now*.002+offset))*.18;dancer.rotation.y=Math.sin(now*.0014+offset)*.3});
 stageScreen.material.emissiveIntensity=.3+Math.sin(now*.002)*.16;
 boat.position.y=.15+Math.sin(now*.0018)*.07;boat.rotation.z=Math.sin(now*.0013)*.018;
+waterfalls.forEach(({fall,foam,phase})=>{fall.material.opacity=.55+Math.sin(now*.003+phase)*.12;foam.scale.setScalar(1+Math.sin(now*.002+phase)*.08)});
 shoal.forEach(({swimmer,tail,baseX,baseZ,phase})=>{const t=now*.00055+phase;swimmer.position.x=baseX+Math.sin(t)*2.4;swimmer.position.z=baseZ+Math.cos(t*.8)*1.8;swimmer.rotation.y=Math.cos(t)*.8;tail.rotation.y=Math.sin(now*.009+phase)*.65});
 biteMarker.visible=phase==='bite';
 if(biteMarker.visible){biteMarker.position.y=1.3+Math.sin(now*.014)*.22;biteMarker.scale.setScalar(1+Math.sin(now*.02)*.18)}
