@@ -55,12 +55,12 @@ for(let i=0;i<3;i++){
   lakeRipples.push({ring,offset:i/3});
 }
 
-const avatarBody=mesh(new THREE.CylinderGeometry(.55,.5,1.5,10),mat(0x168fa6),-8.9,1.8,8);
-mesh(new THREE.SphereGeometry(.48,12,10),mat(0xe3b68e),-8.9,2.85,8);
+const avatarBody=mesh(new THREE.BoxGeometry(1.22,1.48,.73),mat(0x168fa6),-8.9,1.8,8);
+mesh(new THREE.BoxGeometry(.96,.92,.82),mat(0xe3b68e),-8.9,2.85,8);
 // Stylized angler and lakeside scenery, built only from local Three.js primitives.
 const outfit=mat(0x172b42),skin=mat(0xf0bb8c),hair=mat(0xe9edf5),cap=mat(0x111a27);
 avatarBody.material=outfit;
-const head=scene.children.find(o=>o.isMesh&&o.geometry.type==='SphereGeometry'&&Math.abs(o.position.x+8.9)<.01&&Math.abs(o.position.y-2.85)<.01);
+const head=scene.children.find(o=>o.isMesh&&o.geometry.type==='BoxGeometry'&&Math.abs(o.position.x+8.9)<.01&&Math.abs(o.position.y-2.85)<.01);
 if(head)head.material=skin;
 mesh(new THREE.SphereGeometry(.5,12,10),hair,-8.9,3.2,8.05);
 mesh(new THREE.CylinderGeometry(.52,.52,.19,12),cap,-8.9,3.48,8.06);
@@ -79,6 +79,16 @@ for(const side of [-1,1]){
 }
 mesh(new THREE.BoxGeometry(.34,.09,.11),mat(0x8c4f45),-8.9,2.72,7.57);
 mesh(new THREE.BoxGeometry(.42,.09,.13),gold,-8.9,1.4,7.44);
+const vest=mat(0x1e5267),seam=mat(0x5cd2c4);
+mesh(new THREE.BoxGeometry(.18,1.18,.09),vest,-8.9,1.88,8.42);
+mesh(new THREE.BoxGeometry(.9,.1,.09),seam,-8.9,2.35,8.42);
+mesh(new THREE.BoxGeometry(.65,.35,.17),vest,-8.9,1.65,8.48);
+mesh(new THREE.BoxGeometry(.43,.1,.12),gold,-8.9,1.83,8.59);
+for(const side of [-1,1]){
+  mesh(new THREE.BoxGeometry(.17,.7,.16),vest,-8.9+side*.5,1.9,8.39);
+  mesh(new THREE.BoxGeometry(.14,.15,.1),gold,-8.9+side*.45,2.37,8.42);
+}
+
 
 for(const side of [-1,1]){
   const arm=mesh(new THREE.CapsuleGeometry(.16,.75,4,8),outfit,-8.9+side*.66,2.04,7.8);
