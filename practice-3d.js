@@ -117,6 +117,62 @@ for(const side of [-1,1])for(let i=0;i<110;i++){
 }
 const pier=mesh(new THREE.BoxGeometry(5,.28,9),mat(0x966b43),-8,.18,8);
 for(let i=0;i<5;i++)mesh(new THREE.BoxGeometry(4.9,.05,.07),mat(0xb98b58),-8,.35,4.4+i*1.8);
+// Shoreline environment pass: natural paths, boulders, bushes and a lakeside shelter.
+// Deterministic, low-poly geometry with shared materials; no downloads or gameplay changes.
+const shoreSand=mat(0xc5b28b),shoreSoil=mat(0x82694e),rockMats=[mat(0x7b8580),mat(0x9ba39b),mat(0x626f69)];
+const bushMats=[mat(0x315d36),mat(0x497c3e),mat(0x6c9246)];
+const shorePatches=[];
+for(const side of [-1,1]){
+  for(let i=0;i<20;i++){
+    const z=11-i*4.1;
+    const bank=mesh(new THREE.SphereGeometry(1,10,6),i%3?shoreSand:shoreSoil,side*(27.1+(i%3)*.22),-.14,z);
+    bank.scale.set(.85,.12,2.8);shorePatches.push(bank);
+  }
+  // Curved walking path behind the fishing spots.
+  for(let i=0;i<21;i++){
+    const z=13-i*4.0;
+    const path=mesh(new THREE.BoxGeometry(2.1,.035,3.8),shoreSand,side*(33.7+Math.sin(i*.48)*.9),-.174,z);
+    path.rotation.y=side*Math.sin(i*.48)*.11;
+  }
+  // Irregular clusters of stones, shrubs and small flowering plants.
+  for(let i=0;i<42;i++){
+    const z=12-i*1.93;
+    const x=side*(28.8+(i%5)*1.18);
+    if(i%3===0){
+      const stone=mesh(new THREE.DodecahedronGeometry(.48+(i%4)*.12,0),rockMats[i%3],x,.16,z);
+      stone.scale.set(1.4,.55,.9);stone.rotation.y=i*1.71;
+    }else{
+      for(let j=0;j<3;j++){
+        const shrub=mesh(new THREE.IcosahedronGeometry(.42+(j%2)*.12,1),bushMats[(i+j)%3],x+(j-1)*.38,.22+(j%2)*.13,z+(j-1)*.22);
+        shrub.scale.set(1.25,.75,1);
+      }
+    }
+    if(i%8===2){
+      const flowerMat=mat(i%2?0xe6b4c0:0xe7d67a,{emissive:i%2?0x2b1115:0x25200b});
+      for(let j=0;j<4;j++)mesh(new THREE.SphereGeometry(.055,6,5),flowerMat,x+(j-1.5)*.14,.51,z+.25);
+    }
+  }
+}
+// Timber lakeside pavilion on the right bank, far from the player's dock.
+const shelterWood=mat(0x795538),shelterRoof=mat(0x4c5553),shelterAccent=mat(0xc3a47a);
+const shelterX=37,shelterZ=-19;
+mesh(new THREE.BoxGeometry(7,.22,6),shelterWood,shelterX,.03,shelterZ);
+for(const dx of [-3,3])for(const dz of [-2.5,2.5]){
+  mesh(new THREE.CylinderGeometry(.13,.16,3.5,8),shelterWood,shelterX+dx,1.8,shelterZ+dz);
+}
+for(const sign of [-1,1]){
+  const roof=mesh(new THREE.BoxGeometry(4.8,.18,7.2),shelterRoof,shelterX+sign*1.75,3.7,shelterZ);
+  roof.rotation.z=sign*.32;
+}
+mesh(new THREE.BoxGeometry(2.8,.14,.8),shelterAccent,shelterX,.75,shelterZ);
+for(const dx of [-1.2,1.2])mesh(new THREE.BoxGeometry(.14,.75,.7),shelterWood,shelterX+dx,.36,shelterZ);
+// A few distant warm lamps help distinguish the developed shore from the forest.
+const lampPost=mat(0x514c3d),lampGlass=new THREE.MeshBasicMaterial({color:0xffd99a});
+for(const side of [-1,1])for(const z of [-6,-38,-68]){
+  const x=side*34.4;
+  mesh(new THREE.CylinderGeometry(.065,.09,2.6,8),lampPost,x,1.13,z);
+  mesh(new THREE.SphereGeometry(.22,10,8),lampGlass,x,2.53,z);
+}
 // External CC0 PBR glTF asset pilot (Khronos Lantern, CC0).
 // This loads asynchronously and is entirely optional: failures never stop fishing.
 // Attribution/license: https://github.com/KhronosGroup/glTF-Sample-Assets/tree/main/Models/Lantern
@@ -605,7 +661,7 @@ const tip=new THREE.Vector3(-2.7-bent,.09+lift*2.4+bent*.3,-8);
 lineCoords.set([tip.x,tip.y,tip.z,bob.position.x,bob.position.y,bob.position.z]);line.geometry.attributes.position.needsUpdate=true;
 ripples.forEach((r,i)=>{r.visible=active;r.position.x=phase==='fight'?fishModel.position.x:bob.position.x;r.position.z=phase==='fight'?fishModel.position.z:bob.position.z;const scale=.8+((now*(splash?.0014:.0006)+i/3)%1.7);r.scale.setScalar(scale);r.material.opacity=(splash?.6:.25)*(1-(scale-.8)/1.7)});
 lakeRipples.forEach(({ring,offset})=>{const cycle=(now*.00032+offset)%1;ring.visible=active;ring.position.x=bob.position.x;ring.position.z=bob.position.z;ring.scale.setScalar(.65+cycle*3.1);ring.material.opacity=(1-cycle)*(phase==='bite'?.48:phase==='fight'?.34:.2);});
-water.material.color.setHSL(.52,.6,.4+Math.sin(now*.001)*.012);
+// Water is a ShaderMaterial; its animated color is driven by shader uniforms.
 meter.style.width=tension+'%';meter.style.background=tension>75?'#ef6258':'#eab65c';
 document.getElementById('tension-value').textContent=Math.round(tension)+'%';
 document.getElementById('catch-progress').style.width=Math.min(100,progress)+'%';
