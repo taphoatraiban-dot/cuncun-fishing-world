@@ -173,9 +173,10 @@ let practiceProgress=initialProgress();
 function showPracticeProgress(){const p=practiceProgress;document.getElementById('practice-level').textContent='Cấp '+p.level+' · '+p.xp+'/'+xpNeeded(p.level)+' EXP · '+p.catches+' cá';document.getElementById('practice-xp').style.width=(xpNeeded(p.level)?100*p.xp/xpNeeded(p.level):100)+'%'}
 const fishes=['cá rô phi','cá chép','cá trắm','cá trôi','cá lóc'];
 function tell(s){status.textContent=s}
+function hideCatchCelebration(){catchGlowUntil=0;catchBannerUntil=0;catchGlow.visible=false;if(catchBanner)catchBanner.hidden=true}
 function buttons(){cast.disabled=phase!=='idle'&&phase!=='done';hook.disabled=phase!=='bite';reel.disabled=phase!=='fight'}
-function start(){phase='waiting';const now=performance.now();biteAt=now+2200+Math.random()*4000;progress=0;tension=0;fishBurst=0;fishDirection=1;reeling=false;fishKg=+(0.4+Math.random()*5.6).toFixed(1);fishName=fishes[Math.floor(Math.random()*fishes.length)];tell('Đã thả câu. Nhìn phao giữa hồ nhé!');buttons()}
-function clear(){phase='idle';progress=0;tension=0;reeling=false;tell('Sẵn sàng tập câu.');buttons()}
+function start(){hideCatchCelebration();phase='waiting';const now=performance.now();biteAt=now+2200+Math.random()*4000;progress=0;tension=0;fishBurst=0;fishDirection=1;reeling=false;fishKg=+(0.4+Math.random()*5.6).toFixed(1);fishName=fishes[Math.floor(Math.random()*fishes.length)];tell('Đã thả câu. Nhìn phao giữa hồ nhé!');buttons()}
+function clear(){hideCatchCelebration();phase='idle';progress=0;tension=0;reeling=false;tell('Sẵn sàng tập câu.');buttons()}
 function strike(){if(phase!=='bite')return;phase='fight';progress=0;tension=15;fishBurst=0;tell('Dính cá! Giữ Kéo cá, thả nút nếu dây quá căng.');beep(620,.16);buttons()}
 cast.addEventListener('click',start);reset.addEventListener('click',clear);hook.addEventListener('click',strike);
 reel.addEventListener('pointerdown',e=>{if(phase!=='fight')return;e.preventDefault();reeling=true;reel.setPointerCapture(e.pointerId)});
