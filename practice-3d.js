@@ -43,10 +43,10 @@ mesh(new THREE.BoxGeometry(.7,.1,.65),seatShell,-7.95,1.13,8.13);
 mesh(new THREE.BoxGeometry(.13,.85,.12),seatEdge,-7.95,.7,8.13);
 // V-shaped fishing rod rest and two-section support, aligned to the real rod.
 const rodRest=mat(0x202b36);
-mesh(new THREE.CylinderGeometry(.055,.075,1.35,8),seatEdge,-7.22,1.05,6.6);
-mesh(new THREE.BoxGeometry(.58,.12,.14),rodRest,-7.22,1.77,6.6);
+mesh(new THREE.CylinderGeometry(.055,.075,2.45,8),seatEdge,-7.48,1.6,6.6);
+mesh(new THREE.BoxGeometry(.58,.12,.14),rodRest,-7.48,2.88,6.6);
 for(const side of [-1,1]){
- const prong=mesh(new THREE.CylinderGeometry(.045,.055,.38,8),rodRest,-7.22+side*.26,1.96,6.6);
+ const prong=mesh(new THREE.CylinderGeometry(.045,.055,.38,8),rodRest,-7.48+side*.26,3.07,6.6);
  prong.rotation.z=side*.48;
 }
 
@@ -307,9 +307,17 @@ droplets.forEach(({drop,phase:offset})=>{
   drop.material.opacity=.8*(1-t);
 });
 if(splash&&now-lastAlert>1200){lastAlert=now;if(tension>82)tell('⚠️ Dây quá căng! Thả nút kéo cá một chút.')} 
-const bent=phase==='fight'?(tension/100)*1.2:0;
-if(rod.userData.lastBend===undefined||Math.abs(rod.userData.lastBend-bent)>.035){rod.geometry.dispose();const tipShape=new THREE.Vector3(-3.4-bent,4.4-bent*1.3,-1);rod.geometry=new THREE.TubeGeometry(new THREE.CatmullRomCurve3([rodPoints[0],rodPoints[1],tipShape]),20,.065,7,false);rod.userData.lastBend=bent}
-const tip=new THREE.Vector3(-3.4-bent,4.4-bent*1.3,-1);
+const fighting=phase==='fight';
+const lift=fighting?Math.min(1,(15+tension)/55):0;
+const bent=fighting?(tension/100)*1.2:0;
+if(rod.userData.lastBend===undefined||Math.abs(rod.userData.lastBend-bent)>.035||Math.abs((rod.userData.lastLift||0)-lift)>.035){
+ rod.geometry.dispose();
+ const middle=new THREE.Vector3(-6.2,3.8+lift*.45,4);
+ const tipShape=new THREE.Vector3(-3.4-bent,4.4+lift*1.1-bent*1.3,-1);
+ rod.geometry=new THREE.TubeGeometry(new THREE.CatmullRomCurve3([rodPoints[0],middle,tipShape]),20,.065,7,false);
+ rod.userData.lastBend=bent;rod.userData.lastLift=lift;
+}
+const tip=new THREE.Vector3(-3.4-bent,4.4+lift*1.1-bent*1.3,-1);
 lineCoords.set([tip.x,tip.y,tip.z,bob.position.x,bob.position.y,bob.position.z]);line.geometry.attributes.position.needsUpdate=true;
 ripples.forEach((r,i)=>{r.visible=active;r.position.x=phase==='fight'?fishModel.position.x:bob.position.x;r.position.z=phase==='fight'?fishModel.position.z:bob.position.z;const scale=.8+((now*(splash?.0014:.0006)+i/3)%1.7);r.scale.setScalar(scale);r.material.opacity=(splash?.6:.25)*(1-(scale-.8)/1.7)});
 lakeRipples.forEach(({ring,offset})=>{const cycle=(now*.00032+offset)%1;ring.visible=active;ring.position.x=bob.position.x;ring.position.z=bob.position.z;ring.scale.setScalar(.65+cycle*3.1);ring.material.opacity=(1-cycle)*(phase==='bite'?.48:phase==='fight'?.34:.2);});
