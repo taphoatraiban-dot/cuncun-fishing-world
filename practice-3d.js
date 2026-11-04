@@ -178,7 +178,14 @@ const rodPoints=[new THREE.Vector3(-8.4,2.1,7.8),new THREE.Vector3(-6.2,3.8,4),n
 const rodCurve=new THREE.CatmullRomCurve3(rodPoints),rod=mesh(new THREE.TubeGeometry(rodCurve,20,.065,7,false),mat(0x303b41));
 const lineMaterial=new THREE.LineBasicMaterial({color:0xf6f5d9});let line=new THREE.Line(new THREE.BufferGeometry().setFromPoints([rodPoints[2],new THREE.Vector3(-2.7,.1,-8)]),lineMaterial);scene.add(line);
 const lineCoords=new Float32Array(6);line.geometry.dispose();line.geometry=new THREE.BufferGeometry();line.geometry.setAttribute('position',new THREE.BufferAttribute(lineCoords,3));
-const bob=mesh(new THREE.SphereGeometry(.23,12,10),mat(0xf2f5ec),-2.7,.24,-8);const bobTop=mesh(new THREE.ConeGeometry(.12,.45,10),mat(0xf04c38),-2.7,.55,-8);
+// Segmented fishing float: slim buoyant body and seven high-visibility antenna bands.
+const floatGroup=new THREE.Group();floatGroup.position.set(-2.7,.12,-8);scene.add(floatGroup);
+const addFloatPart=(geometry,color,y)=>{const part=new THREE.Mesh(geometry,mat(color));part.position.y=y;floatGroup.add(part);return part};
+addFloatPart(new THREE.CylinderGeometry(.025,.025,.42,8),0x283746,-.22);
+addFloatPart(new THREE.SphereGeometry(.12,10,8),0xf3efe1,.12).scale.set(1,1.8,1);
+addFloatPart(new THREE.CylinderGeometry(.055,.085,.22,10),0xf34c38,.31);
+for(let i=0;i<7;i++)addFloatPart(new THREE.CylinderGeometry(.038,.038,.105,8),[0xf44336,0xf6df46,0x1b2730][i%3],.48+i*.105);
+const bob=floatGroup;const bobTop=floatGroup;
 const droplets=[];
 const dropletMaterial=new THREE.MeshBasicMaterial({color:0xd5f5ff,transparent:true,opacity:.8});
 for(let i=0;i<12;i++){
@@ -271,8 +278,8 @@ const closeUp=cameraMode==='float'||(cameraMode==='auto'&&(phase==='bite'||phase
 const targetPos=closeUp?new THREE.Vector3(-.6,3.2,2.5):cameraMode==='wide'?new THREE.Vector3(3.7,8.5,18):new THREE.Vector3(-6.8,5.2,16.8);
 const lookAt=closeUp?new THREE.Vector3(-2.7,.15,-8):cameraMode==='wide'?new THREE.Vector3(0,0,-12):new THREE.Vector3(-5,1.1,-3);
 camera.position.lerp(targetPos,Math.min(1,dt*2.4));camera.lookAt(lookAt);
-bob.visible=bobTop.visible=active;line.visible=active;fishModel.visible=phase==='fight';
-const dip=phase==='bite'?.35:0;const wave=Math.sin(now*.005)*.06;bob.position.y=.24+wave-dip;bobTop.position.y=.55+wave-dip;
+floatGroup.visible=active;line.visible=active;fishModel.visible=phase==='fight';
+const dip=phase==='bite'?.35:0;const wave=Math.sin(now*.005)*.06;floatGroup.position.y=.12+wave-dip;
 const fishFight=phase==='fight'?Math.sin(now*.008+fishKg)*(.6+fishKg*.15):0;
 const approach=phase==='fight'?Math.min(1,progress/100):0;
 fishModel.position.set(-2.7+fishFight,-.45+approach*.9,-8+Math.sin(now*.006)*.6+approach*2);fishModel.rotation.y=Math.sin(now*.008)*.7;fishModel.rotation.z=Math.sin(now*.018)*.18;tail.rotation.y=Math.sin(now*.025)*.7;
@@ -290,7 +297,7 @@ if(splash&&now-lastAlert>1200){lastAlert=now;if(tension>82)tell('⚠️ Dây qu�
 const bent=phase==='fight'?(tension/100)*1.2:0;
 if(rod.userData.lastBend===undefined||Math.abs(rod.userData.lastBend-bent)>.035){rod.geometry.dispose();const tipShape=new THREE.Vector3(-3.4-bent,4.4-bent*1.3,-1);rod.geometry=new THREE.TubeGeometry(new THREE.CatmullRomCurve3([rodPoints[0],rodPoints[1],tipShape]),20,.065,7,false);rod.userData.lastBend=bent}
 const tip=new THREE.Vector3(-3.4-bent,4.4-bent*1.3,-1);
-lineCoords.set([tip.x,tip.y,tip.z,bob.position.x,bob.position.y,bob.position.z]);line.geometry.attributes.position.needsUpdate=true;
+lineCoords.set([tip.x,tip.y,tip.z,bob.position.x,bob.position.y+.22,bob.position.z]);line.geometry.attributes.position.needsUpdate=true;
 ripples.forEach((r,i)=>{r.visible=active;r.position.x=phase==='fight'?fishModel.position.x:bob.position.x;r.position.z=phase==='fight'?fishModel.position.z:bob.position.z;const scale=.8+((now*(splash?.0014:.0006)+i/3)%1.7);r.scale.setScalar(scale);r.material.opacity=(splash?.6:.25)*(1-(scale-.8)/1.7)});
 lakeRipples.forEach(({ring,offset})=>{const cycle=(now*.00032+offset)%1;ring.visible=active;ring.position.x=bob.position.x;ring.position.z=bob.position.z;ring.scale.setScalar(.65+cycle*3.1);ring.material.opacity=(1-cycle)*(phase==='bite'?.48:phase==='fight'?.34:.2);});
 water.material.color.setHSL(.52,.6,.4+Math.sin(now*.001)*.012);
