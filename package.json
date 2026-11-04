@@ -1,0 +1,1 @@
+{"private":true,"type":"module","scripts":{"test:progression":"node --test tests/fishing-progression.test.mjs"}}
