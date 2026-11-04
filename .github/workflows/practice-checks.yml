@@ -59,8 +59,11 @@ jobs:
           python - <<'PY'
           from pathlib import Path
           html=Path('practice.html').read_text()
-          for element in ('lake','cast','hook','reel','reset','camera','sound','status','tension'):
+          for element in ('lake','cast','hook','reel','reset','camera','sound','status','tension','practice-level','practice-xp'):
               assert f'id="{element}"' in html, element
           assert 'type="module" src="./practice-3d.js"' in html
+          assert 'href="./profile-demo.html"' in html
+          assert Path('profile-demo.html').is_file()
+          assert Path('fishing-progression.js').is_file()
           print('Practice controls present')
           PY
