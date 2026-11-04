@@ -39,7 +39,8 @@ for(const side of [-1,1]){
   for(let i=0;i<seatPerBank;i++){
     const id=(side===-1?0:500)+i;
     const z=9-i*seatSpacing;
-    const x=side*(12.5+Math.sin(i*.13)*.35);
+    const t=Math.min(.985,Math.max(.015,(12-z)/1060));
+    const x=lakeEdge(side,t)+side*1.15;
     dummy.position.set(x,.25,z);dummy.rotation.set(0,0,0);dummy.scale.set(1,1,1);dummy.updateMatrix();bays.setMatrixAt(id,dummy.matrix);
     dummy.position.set(x+side*.5,.66,z+.35);dummy.updateMatrix();chairs.setMatrixAt(id,dummy.matrix);
     dummy.position.set(x-side*.65,.72,z-.4);dummy.rotation.set(0,side*.25,0);dummy.updateMatrix();rods.setMatrixAt(id,dummy.matrix);
@@ -62,6 +63,32 @@ for(const side of [-1,1])for(let i=0;i<65;i++){
  const t=(i+.5)/66,z=12-t*1060,x=lakeEdge(side,t)+side*.3;
  const reed=new THREE.Mesh(new THREE.ConeGeometry(.15,.75,5),mat(i%2?0x6e9442:0x8a9c46));
  reed.position.set(x,.48,z);scene.add(reed);
+}
+// Rustic thatched rest huts on both shores; decorative, no gameplay changes.
+const hutRoofMat=mat(0x9c7945),hutWoodMat=mat(0x765039);
+for(const side of [-1,1]){
+ for(const z of [-13,-88,-190,-350,-520,-700,-900]){
+  const t=Math.min(.98,Math.max(.02,(12-z)/1060));
+  const x=lakeEdge(side,t)+side*6.5;
+  block(5,.25,5,0x9b7650,x,.25,z);
+  for(const dx of [-2,2])for(const dz of [-2,2]){
+   const post=new THREE.Mesh(new THREE.CylinderGeometry(.13,.17,2.7,6),hutWoodMat);
+   post.position.set(x+dx,1.65,z+dz);scene.add(post);
+  }
+  const roof=new THREE.Mesh(new THREE.ConeGeometry(4.4,2.1,4),hutRoofMat);
+  roof.rotation.y=Math.PI/4;roof.position.set(x,4.05,z);scene.add(roof);
+ }
+}
+// Rocks and lily pads around the near shore give the lake an organic character.
+const stoneMat=mat(0x87877b),lilyMat=mat(0x488d45);
+for(let i=0;i<90;i++){
+ const side=i%2?-1:1,t=.02+(i/90)*.96,z=12-t*1060,x=lakeEdge(side,t);
+ const rock=new THREE.Mesh(new THREE.DodecahedronGeometry(.24+(i%4)*.11,0),stoneMat);
+ rock.position.set(x+side*(.25+(i%3)*.3),.16,z);rock.scale.set(1.4,.65,1);scene.add(rock);
+ if(i%3===0){
+  const lily=new THREE.Mesh(new THREE.CircleGeometry(.34,9),lilyMat);
+  lily.rotation.x=-Math.PI/2;lily.position.set(x-side*.85,.06,z+1);scene.add(lily);
+ }
 }
 // A wooden footbridge spanning both banks in the distance, with posts and railings.
 const bridgeZ=-28;
