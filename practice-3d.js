@@ -145,6 +145,26 @@ eyeTube(new THREE.Vector3(1.18,-.45,-3.7),new THREE.Vector3(.15,.12,-12),.045,ey
 for(let i=0;i<3;i++)eyeTube(
  new THREE.Vector3(1.34-i*.065,-1.13+i*.25,-1.45-i*.78),
  new THREE.Vector3(1.34-i*.065,-1.13+i*.25,-1.32-i*.78),.115,eyeRed);
+// Detailed first-person tackle: food pellets, molded tray edges and gripping hands.
+const eyeSkin=mat(0xf5bb94),eyeBaitDark=mat(0x8b663c),eyeGold=mat(0xf0c76b);
+for(let i=0;i<12;i++){
+ const a=i*2.399,rr=.1+(i%4)*.065;
+ const pellet=eyeMesh(new THREE.SphereGeometry(.048+(i%3)*.012,8,6),i%3?baitMix:eyeBaitDark,-1.45+Math.cos(a)*rr,-.59,-2.18+Math.sin(a)*rr);
+ pellet.scale.y=.72;
+}
+for(const x of [-1.45,-.82]){
+ const z=x===-1.45?-2.18:-2.43,r=x===-1.45?.51:.28;
+ eyeMesh(new THREE.TorusGeometry(r,.035,8,24),eyeMetal,x,-.66,z).rotation.x=Math.PI/2;
+}
+const firstPersonHands=[];
+for(const side of [-1,1]){
+ const sleeve=eyeMesh(new THREE.CapsuleGeometry(.18,.4,5,10),eyeFabric,side*.66,-1.02,-1.65);
+ sleeve.rotation.x=-.7;
+ const hand=eyeMesh(new THREE.SphereGeometry(.17,12,10),eyeSkin,side*.59,-.78,-2.02);
+ hand.scale.set(.85,1.05,1.2);
+ firstPersonHands.push({sleeve,hand,side});
+}
+eyeMesh(new THREE.BoxGeometry(.65,.08,.08),eyeGold,-1.44,-.9,-1.73);
 eyeRig.visible=false;
 // Wooden dock supports, side rails and fishing-station details.
 const dockWood=mat(0x62422d),dockTrim=mat(0xc99b61),metal=mat(0x33434b);
@@ -414,6 +434,13 @@ eyeRig.visible=cameraMode==='eyes';
 const eyeFight=phase==='fight'?Math.min(1,(20+tension)/65):0;
 eyeRig.rotation.x=-eyeFight*.11;
 eyeRig.rotation.z=Math.sin(now*.009)*eyeFight*.025;
+firstPersonHands.forEach(({sleeve,hand,side})=>{
+ const grabbing=phase==='fight'||phase==='bite';
+ hand.position.x=side*(grabbing?.38:.59);
+ hand.position.y=grabbing?-.55:-.78;
+ hand.position.z=grabbing?-2.42:-2.02;
+ sleeve.rotation.x=grabbing?-1.05:-.7;
+});
 head.visible=cameraMode!=='eyes';
 const desiredFov=cameraMode==='eyes'?70:52;
 if(Math.abs(camera.fov-desiredFov)>.01){camera.fov=desiredFov;camera.updateProjectionMatrix()}
