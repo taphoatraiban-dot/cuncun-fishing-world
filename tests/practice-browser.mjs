@@ -27,7 +27,7 @@ try {
   assert.equal(await rod.locator('option').count(),2);
   await rod.selectOption({index:1});
   assert.match(await page.locator('#equipment-status').innerText(),/Đã thay rod/);
-  await page.locator('#cast').click();
+  await page.keyboard.press('c');
   assert.equal(await page.locator('#cast').isDisabled(),true);
   assert.match(await page.locator('#status').innerText(),/Đã thả câu/);
   await page.locator('#reset').click();
