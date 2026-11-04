@@ -27,6 +27,8 @@ try {
   assert.equal(await rod.locator('option').count(),2);
   await rod.selectOption({index:1});
   assert.match(await page.locator('#equipment-status').innerText(),/Đã thay rod/);
+  // A native select retains focus after changing equipment; return focus to the game before using shortcuts.
+  await page.locator('#lake').click({position:{x:12,y:12}});
   await page.keyboard.press('c');
   assert.equal(await page.locator('#cast').isDisabled(),true);
   assert.match(await page.locator('#status').innerText(),/Đã thả câu/);
