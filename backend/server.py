@@ -50,7 +50,7 @@ class Handler(BaseHTTPRequestHandler):
         self.send_response(status)
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Cache-Control", "no-store")
-        if self.path.split("?", 1)[0] == "/api/leaderboard":
+        if self.path.split("?", 1)[0] in ("/api/leaderboard", "/api/stats"):
             self.send_header("Access-Control-Allow-Origin", "https://taphoatraiban-dot.github.io")
         self.send_header("X-Content-Type-Options", "nosniff")
         self.send_header("Content-Length", str(len(body)))
@@ -82,6 +82,11 @@ class Handler(BaseHTTPRequestHandler):
             return self.serve_static("server-leaderboard.js", "text/javascript; charset=utf-8")
         if path == "/health":
             return self.respond(200, {"ok": True, "service": "cuncun-fishing-backend"})
+        if path == "/api/stats":
+            with connection() as db:
+                players = db.execute("SELECT COUNT(*) FROM players").fetchone()[0]
+                catches, points = db.execute("SELECT COUNT(*), COALESCE(SUM(points),0) FROM events").fetchone()
+            return self.respond(200, {"players": players, "catches": catches, "points": points})
         if path == "/api/leaderboard":
             with connection() as db:
                 rows = db.execute("SELECT name,points,catches FROM players ORDER BY points DESC,id ASC LIMIT 30").fetchall()
