@@ -15,9 +15,10 @@ import hashlib
 import sqlite3
 import time
 try:
-    from . import seats
+    from . import seats, catalog
 except ImportError:
     import seats
+    import catalog
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlparse
@@ -123,6 +124,8 @@ class Handler(BaseHTTPRequestHandler):
                 now = int(time.time())
                 rows = db.execute("SELECT player_name,MAX(expires_at) FROM tickets WHERE expires_at>? GROUP BY player_name ORDER BY player_name LIMIT 200", (now,)).fetchall()
             return self.respond(200, {"players": [{"name": n, "expires_at": e} for n,e in rows]})
+        if path == "/api/catalog":
+            return self.respond(200, catalog.public_catalog())
         if path == "/api/ticket-prices":
             return self.respond(200, {"currency": "VND", "tickets": [{"minutes": m, "price": p} for m,p in seats.PRICES_VND.items()], "visitor_access": "free", "payment": "admin_verified_only"})
         if path == "/api/seats":
