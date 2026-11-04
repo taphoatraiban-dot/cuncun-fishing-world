@@ -69,6 +69,42 @@ for(let i=0;i<7;i++){
  mesh(new THREE.SphereGeometry(.065,8,6),baitMix,-10.05+Math.cos(a)*.18,1.8,7.33+Math.sin(a)*.18);
 }
 mesh(new THREE.BoxGeometry(.38,.08,.45),mat(0x253c42),-9.58,1.57,7.05);
+// First-person foreground: visible seat, knees, bait and rod rest in the player's view.
+// These are camera-local visual proxies for the same world-space fishing station.
+const eyeRig=new THREE.Group();camera.add(eyeRig);scene.add(camera);
+function eyeMesh(geometry,material,x,y,z){
+ const o=new THREE.Mesh(geometry,material);o.position.set(x,y,z);eyeRig.add(o);return o;
+}
+function eyeTube(a,b,r,material){
+ const direction=new THREE.Vector3().subVectors(b,a);
+ const o=eyeMesh(new THREE.CylinderGeometry(r,r,direction.length(),10),material,0,0,0);
+ o.position.copy(a).add(b).multiplyScalar(.5);
+ o.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),direction.normalize());
+ return o;
+}
+const eyeFabric=mat(0x273447),eyeMetal=mat(0x9eb8c2,{metalness:.55,roughness:.35}),eyeRod=mat(0x1d2834),eyeRed=mat(0xe33c42),eyeBlue=mat(0x1963a3);
+for(const x of [-.72,.72]){
+ const knee=eyeMesh(new THREE.SphereGeometry(.49,16,12),eyeFabric,x,-1.22,-1.65);
+ knee.scale.set(.95,1.28,1.6);
+}
+eyeMesh(new THREE.BoxGeometry(1.25,.18,.8),seatShell,0,-1.62,-1.7);
+eyeMesh(new THREE.BoxGeometry(.9,.09,.65),eyeBlue,-1.45,-.91,-2.15);
+eyeMesh(new THREE.CylinderGeometry(.49,.43,.25,20),eyeBlue,-1.45,-.76,-2.18);
+eyeMesh(new THREE.CylinderGeometry(.41,.41,.035,20),baitMix,-1.45,-.615,-2.18);
+eyeMesh(new THREE.CylinderGeometry(.26,.24,.17,16),baitRim,-.82,-.75,-2.43);
+eyeMesh(new THREE.CylinderGeometry(.2,.2,.03,16),mat(0xe6b842),-.82,-.65,-2.43);
+// Metal arm and red V rest project forward from the right side of the seat.
+eyeTube(new THREE.Vector3(.78,-1.22,-1.5),new THREE.Vector3(1.18,-.7,-2.9),.085,eyeMetal);
+eyeTube(new THREE.Vector3(1.18,-.7,-2.9),new THREE.Vector3(1.18,-.52,-3.65),.07,eyeMetal);
+eyeTube(new THREE.Vector3(1.18,-.52,-3.65),new THREE.Vector3(.99,-.32,-3.72),.06,eyeRed);
+eyeTube(new THREE.Vector3(1.18,-.52,-3.65),new THREE.Vector3(1.37,-.32,-3.72),.06,eyeRed);
+// Foreground rod rests on V and points towards the float.
+eyeTube(new THREE.Vector3(1.35,-1.2,-1.25),new THREE.Vector3(1.18,-.45,-3.7),.105,eyeRod);
+eyeTube(new THREE.Vector3(1.18,-.45,-3.7),new THREE.Vector3(.15,.12,-12),.045,eyeRod);
+for(let i=0;i<3;i++)eyeTube(
+ new THREE.Vector3(1.34-i*.065,-1.13+i*.25,-1.45-i*.78),
+ new THREE.Vector3(1.34-i*.065,-1.13+i*.25,-1.32-i*.78),.115,eyeRed);
+eyeRig.visible=false;
 // Wooden dock supports, side rails and fishing-station details.
 const dockWood=mat(0x62422d),dockTrim=mat(0xc99b61),metal=mat(0x33434b);
 for(const z of [4.3,8.1,12.1]){
@@ -325,6 +361,10 @@ const active=phase==='waiting'||phase==='bite'||phase==='fight';
 const targetPos=cameraMode==='float'?new THREE.Vector3(-1.4,2.4,-3):cameraMode==='eyes'?new THREE.Vector3(-8.9,2.94,7.15):cameraMode==='aerial'?new THREE.Vector3(-5,28,15):new THREE.Vector3(-6.8,5.2,16.8);
 const lookAt=cameraMode==='float'?new THREE.Vector3(-2.7,.22,-8):cameraMode==='eyes'?new THREE.Vector3(-5.0,1.2,-10):cameraMode==='aerial'?new THREE.Vector3(-4,0,-8):new THREE.Vector3(-5,1.1,-3);
 camera.position.lerp(targetPos,Math.min(1,dt*2.4));camera.lookAt(lookAt);
+eyeRig.visible=cameraMode==='eyes';
+head.visible=cameraMode!=='eyes';
+const desiredFov=cameraMode==='eyes'?70:52;
+if(Math.abs(camera.fov-desiredFov)>.01){camera.fov=desiredFov;camera.updateProjectionMatrix()}
 bob.visible=bobTop.visible=active;line.visible=active;fishModel.visible=phase==='fight';
 const dip=phase==='bite'?.35:0;const wave=Math.sin(now*.005)*.06;bob.position.y=.24+wave-dip;bobTop.position.y=.55+wave-dip;
 const fishFight=phase==='fight'?Math.sin(now*.008+fishKg)*(.6+fishKg*.15):0;
