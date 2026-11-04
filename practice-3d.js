@@ -62,7 +62,10 @@ const outfit=mat(0x172b42),skin=mat(0xf0bb8c),hair=mat(0xe9edf5),cap=mat(0x111a2
 avatarBody.material=outfit;
 const head=scene.children.find(o=>o.isMesh&&o.geometry.type==='BoxGeometry'&&Math.abs(o.position.x+8.9)<.01&&Math.abs(o.position.y-2.85)<.01);
 if(head)head.material=skin;
-mesh(new THREE.SphereGeometry(.5,12,10),hair,-8.9,3.2,8.05);
+// Angular layered hair fits the blocky head without the oversized sphere silhouette.
+mesh(new THREE.BoxGeometry(1.04,.22,.9),hair,-8.9,3.36,8.05);
+for(const side of [-1,1])mesh(new THREE.BoxGeometry(.16,.28,.72),hair,-8.9+side*.5,3.17,8.05);
+mesh(new THREE.BoxGeometry(.42,.16,.17),hair,-8.9,3.22,7.58);
 mesh(new THREE.CylinderGeometry(.52,.52,.19,12),cap,-8.9,3.48,8.06);
 mesh(new THREE.BoxGeometry(.72,.08,.3),cap,-8.9,3.43,7.7);
 // Extra low-poly Roblox-inspired outfit details, built from geometry (no downloads).
@@ -91,10 +94,10 @@ for(const side of [-1,1]){
 
 
 for(const side of [-1,1]){
-  const arm=mesh(new THREE.CapsuleGeometry(.16,.75,4,8),outfit,-8.9+side*.66,2.04,7.8);
+  const arm=mesh(new THREE.BoxGeometry(.36,.9,.42),outfit,-8.9+side*.78,2.02,7.8);
   arm.rotation.x=-.48;arm.rotation.z=side*.3;
-  mesh(new THREE.SphereGeometry(.16,8,8),skin,-8.9+side*.8,1.6,7.52);
-  const leg=mesh(new THREE.CapsuleGeometry(.22,.78,4,8),mat(0x233447),-8.9+side*.32,.83,7.45);
+  mesh(new THREE.BoxGeometry(.3,.25,.32),skin,-8.9+side*.8,1.52,7.52);
+  const leg=mesh(new THREE.BoxGeometry(.47,.82,.48),mat(0x233447),-8.9+side*.32,.83,7.45);
   leg.rotation.x=-.85;
   mesh(new THREE.BoxGeometry(.48,.22,.7),mat(0xf2f5fa),-8.9+side*.32,.48,7.0);
 }
