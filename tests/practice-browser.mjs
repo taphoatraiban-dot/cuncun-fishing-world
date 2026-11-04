@@ -21,6 +21,16 @@ try {
   const xpResponse = await page.request.get('http://127.0.0.1:8791/fishing-progression.js');
   assert.equal(xpResponse.status(),200);
   assert.equal(await page.locator('#equipment-panel').isHidden(),true);
+  // Mobile fishing actions must remain reachable after scrolling past the scene.
+  const mobileLayout=await page.evaluate(()=>{
+    const controls=document.querySelector('.controls');
+    const buttons=[...controls.querySelectorAll('button')];
+    return {position:getComputedStyle(controls).position,columns:getComputedStyle(controls).gridTemplateColumns.split(' ').length,buttons:buttons.length};
+  });
+  assert.equal(mobileLayout.position,'sticky');
+  assert.equal(mobileLayout.columns,3);
+  assert.equal(mobileLayout.buttons,6);
+
   await page.locator('#inventory-toggle').click();
   assert.equal(await page.locator('#equipment-panel').isVisible(),true);
   const rod=page.locator('#equip-rod');
