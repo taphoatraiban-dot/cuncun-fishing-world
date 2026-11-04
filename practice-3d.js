@@ -34,6 +34,21 @@ if(head)head.material=skin;
 mesh(new THREE.SphereGeometry(.5,12,10),hair,-8.9,3.2,8.05);
 mesh(new THREE.CylinderGeometry(.52,.52,.19,12),cap,-8.9,3.48,8.06);
 mesh(new THREE.BoxGeometry(.72,.08,.3),cap,-8.9,3.43,7.7);
+// Extra low-poly Roblox-inspired outfit details, built from geometry (no downloads).
+const trim=mat(0x2dd4bf),gold=mat(0xf9cf76),denim=mat(0x263a59),boot=mat(0x101a2b);
+mesh(new THREE.BoxGeometry(.86,.13,.18),trim,-8.9,2.39,7.49);
+mesh(new THREE.BoxGeometry(.55,.54,.12),mat(0x264c60),-8.9,1.88,7.45);
+mesh(new THREE.BoxGeometry(.32,.18,.14),gold,-8.9,2.07,7.37);
+mesh(new THREE.BoxGeometry(.23,.18,.12),trim,-8.9,3.48,7.49);
+for(const side of [-1,1]){
+  mesh(new THREE.BoxGeometry(.19,.11,.13),mat(0x243047),-8.9+side*.18,2.86,7.55);
+  mesh(new THREE.BoxGeometry(.2,.08,.1),hair,-8.9+side*.38,3.12,7.59);
+  mesh(new THREE.BoxGeometry(.44,.15,.17),denim,-8.9+side*.32,.9,7.03);
+  mesh(new THREE.BoxGeometry(.49,.12,.16),boot,-8.9+side*.32,.42,6.66);
+}
+mesh(new THREE.BoxGeometry(.34,.09,.11),mat(0x8c4f45),-8.9,2.72,7.57);
+mesh(new THREE.BoxGeometry(.42,.09,.13),gold,-8.9,1.4,7.44);
+
 for(const side of [-1,1]){
   const arm=mesh(new THREE.CapsuleGeometry(.16,.75,4,8),outfit,-8.9+side*.66,2.04,7.8);
   arm.rotation.x=-.48;arm.rotation.z=side*.3;
