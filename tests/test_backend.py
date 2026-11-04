@@ -42,6 +42,29 @@ class BackendTests(unittest.TestCase):
         conn.close()
         return result
 
+    def test_ticket_prices_and_free_visitors(self):
+        status, result = self.request("GET", "/api/ticket-prices")
+        self.assertEqual(status, 200)
+        self.assertEqual({x["minutes"]: x["price"] for x in result["tickets"]}, {10: 5000, 30: 10000, 60: 20000})
+        status, seats = self.request("GET", "/api/seats")
+        self.assertEqual(status, 200)
+        self.assertEqual(seats["capacity"], 1000)
+
+    def test_random_seat_requires_valid_ticket_and_is_stable(self):
+        status, _ = self.request("POST", "/api/player/seat", {}, "invalid")
+        self.assertEqual(status, 401)
+        token, _ = issue("SeatTester", 10)
+        status, first = self.request("POST", "/api/player/seat", {}, token)
+        self.assertEqual(status, 200)
+        self.assertTrue(1 <= first["seat"] <= 1000)
+        status, again = self.request("POST", "/api/player/seat", {}, token)
+        self.assertEqual(status, 200)
+        self.assertEqual(first["seat"], again["seat"])
+        second_token, _ = issue("SeatTesterTwo", 10)
+        status, second = self.request("POST", "/api/player/seat", {}, second_token)
+        self.assertEqual(status, 200)
+        self.assertNotEqual(first["seat"], second["seat"])
+
     def test_health(self):
         status, result = self.request("GET", "/health")
         self.assertEqual(status, 200)
