@@ -90,6 +90,12 @@ try {
   assert.equal(await page.locator('#cast').isEnabled(),true);
   assert.equal(await page.locator('#reel').isDisabled(),true);
   assert.match(await page.locator('#practice-level').innerText(),/0 cá/);
+  // A new attempt must be possible immediately after a broken line.
+  await page.locator('#cast').click();
+  assert.equal(await page.locator('#cast').isDisabled(),true);
+  assert.match(await page.locator('#status').innerText(),/Đã thả câu/);
+  await page.locator('#reset').click();
+  assert.equal(await page.locator('#cast').isEnabled(),true);
   await page.locator('#camera').click();
   assert.match(await page.locator('#camera').innerText(),/Cận phao/);
   const profileLink = page.locator('a[href="./profile-demo.html"]');
