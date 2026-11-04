@@ -21,24 +21,32 @@ const bob=mesh(new THREE.SphereGeometry(.23,12,10),mat(0xf2f5ec),-2.7,.24,-8);co
 const rippleMat=new THREE.MeshBasicMaterial({color:0xd5f6ff,transparent:true,opacity:.35,side:THREE.DoubleSide});
 const ripples=[];for(let i=0;i<3;i++){const r=mesh(new THREE.RingGeometry(.4,.46,40),rippleMat.clone(),-2.7,.06,-8);r.rotation.x=-Math.PI/2;ripples.push(r)}
 let phase='idle',biteAt=0,biteUntil=0,progress=0,tension=0,last=performance.now(),fishKg=0,fishName='',reeling=false;
+const cameraButton=$('camera'),soundButton=$('sound');let cameraMode='auto',audioContext=null,soundOn=false,lastAlert=0;
+function beep(freq=540,duration=.13){if(!soundOn||!audioContext)return;try{const osc=audioContext.createOscillator(),gain=audioContext.createGain();osc.type='sine';osc.frequency.value=freq;gain.gain.setValueAtTime(.0001,audioContext.currentTime);gain.gain.exponentialRampToValueAtTime(.065,audioContext.currentTime+.012);gain.gain.exponentialRampToValueAtTime(.0001,audioContext.currentTime+duration);osc.connect(gain);gain.connect(audioContext.destination);osc.start();osc.stop(audioContext.currentTime+duration+.02)}catch{}}
+cameraButton.addEventListener('click',()=>{cameraMode=cameraMode==='auto'?'float':cameraMode==='float'?'wide':'auto';cameraButton.textContent='📷 Camera: '+({auto:'Tự động',float:'Cận phao',wide:'Toàn cảnh'})[cameraMode]});
+soundButton.addEventListener('click',async()=>{if(!soundOn){const AudioCtor=window.AudioContext||window.webkitAudioContext;if(!AudioCtor){tell('Thiết bị chưa hỗ trợ âm thanh.');return}audioContext ||=new AudioCtor();try{await audioContext.resume()}catch{return}soundOn=true;beep(650)}else soundOn=false;soundButton.textContent=soundOn?'🔊 Âm thanh: Bật':'🔇 Âm thanh: Tắt'});
 const fishes=['cá rô phi','cá chép','cá trắm','cá trôi','cá lóc'];
 function tell(s){status.textContent=s}
 function buttons(){cast.disabled=phase!=='idle'&&phase!=='done';hook.disabled=phase!=='bite';reel.disabled=phase!=='fight'}
 function start(){phase='waiting';const now=performance.now();biteAt=now+2200+Math.random()*4000;progress=0;tension=0;reeling=false;fishKg=+(0.4+Math.random()*5.6).toFixed(1);fishName=fishes[Math.floor(Math.random()*fishes.length)];tell('Đã thả câu. Nhìn phao giữa hồ nhé!');buttons()}
 function clear(){phase='idle';progress=0;tension=0;reeling=false;tell('Sẵn sàng tập câu.');buttons()}
-function strike(){if(phase!=='bite')return;phase='fight';progress=0;tension=15;tell('Dính cá! Giữ Kéo cá, thả nút nếu dây quá căng.');buttons()}
+function strike(){if(phase!=='bite')return;phase='fight';progress=0;tension=15;tell('Dính cá! Giữ Kéo cá, thả nút nếu dây quá căng.');beep(620,.16);buttons()}
 cast.addEventListener('click',start);reset.addEventListener('click',clear);hook.addEventListener('click',strike);
 reel.addEventListener('pointerdown',e=>{if(phase!=='fight')return;e.preventDefault();reeling=true;reel.setPointerCapture(e.pointerId)});
 for(const ev of ['pointerup','pointercancel','lostpointercapture'])reel.addEventListener(ev,()=>reeling=false);
 window.addEventListener('blur',()=>reeling=false);
 const fishModel=new THREE.Group();const body=new THREE.Mesh(new THREE.SphereGeometry(.65,14,10),mat(0xe1b85a));body.scale.set(1.7,.8,.65);fishModel.add(body);const tail=new THREE.Mesh(new THREE.ConeGeometry(.45,.9,3),mat(0xbd8439));tail.rotation.z=Math.PI/2;tail.position.x=-1.1;fishModel.add(tail);fishModel.position.set(-2.7,-.45,-8);scene.add(fishModel);
 function frame(now){const dt=Math.min((now-last)/1000,.05);last=now;
-if(phase==='waiting'&&now>=biteAt){phase='bite';biteUntil=now+1600;tell('⚡ PHAO CHÌM! Bấm Giật cần!');buttons()}
+if(phase==='waiting'&&now>=biteAt){phase='bite';biteUntil=now+1600;tell('⚡ PHAO CHÌM! Bấm Giật cần!');beep(820,.2);buttons()}
 if(phase==='bite'&&now>biteUntil){phase='idle';tell('Cá đã nhả mồi. Thả lại nhé!');buttons()}
 if(phase==='fight'){tension=Math.max(0,Math.min(100,tension+(reeling?(31+fishKg*2.4):-(30+fishKg))*dt));if(reeling)progress+=dt*(15-fishKg*.9);
-if(tension>=100){phase='done';reeling=false;tell('💥 Đứt dây! Cá chạy mất rồi.');buttons()}
-else if(progress>=100){phase='done';reeling=false;tell('🎉 Tập thành công: '+fishName+' '+fishKg+' kg (mô phỏng, không tính điểm).');buttons()}}
+if(tension>=100){phase='done';reeling=false;tell('💥 Đứt dây! Cá chạy mất rồi.');beep(220,.32);buttons()}
+else if(progress>=100){phase='done';reeling=false;tell('🎉 Tập thành công: '+fishName+' '+fishKg+' kg (mô phỏng, không tính điểm).');beep(940,.3);buttons()}}
 const active=phase==='waiting'||phase==='bite'||phase==='fight';
+const closeUp=cameraMode==='float'||(cameraMode==='auto'&&(phase==='bite'||phase==='fight'));
+const targetPos=closeUp?new THREE.Vector3(-.6,3.2,2.5):new THREE.Vector3(3.7,8.5,18);
+const lookAt=closeUp?new THREE.Vector3(-2.7,.15,-8):new THREE.Vector3(0,0,-12);
+camera.position.lerp(targetPos,Math.min(1,dt*2.4));camera.lookAt(lookAt);
 bob.visible=bobTop.visible=active;line.visible=active;fishModel.visible=phase==='fight';
 const dip=phase==='bite'?.35:0;const wave=Math.sin(now*.005)*.06;bob.position.y=.24+wave-dip;bobTop.position.y=.55+wave-dip;
 const fishFight=phase==='fight'?Math.sin(now*.008)*.8:0;
