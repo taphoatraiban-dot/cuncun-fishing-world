@@ -152,7 +152,8 @@ function mountedRodTube(a,b,r,material){
  return part;
 }
 mountedRodTube(new THREE.Vector3(1.04,-1.13,-1.34),new THREE.Vector3(.91,-.59,-3.5),.069,eyeRod);
-mountedRodTube(new THREE.Vector3(.91,-.59,-3.5),new THREE.Vector3(.52,-1.55,-12),.026,eyeRod);
+// Resting tip follows the lake surface at the cast point; lift occurs only during strike.
+mountedRodTube(new THREE.Vector3(.91,-.59,-3.5),new THREE.Vector3(.52,-1.83,-12),.026,eyeRod);
 for(let i=0;i<3;i++)mountedRodTube(
  new THREE.Vector3(1.04-i*.025,-1.12+i*.16,-1.5-i*.5),
  new THREE.Vector3(1.04-i*.025,-1.12+i*.16,-1.39-i*.5),.074,eyeRed);
