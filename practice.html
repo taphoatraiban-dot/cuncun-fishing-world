@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Tập câu miễn phí · CUNCUN FISHING WORLD</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#071d2a;color:#f0f9ff;font:16px system-ui,-apple-system,sans-serif}
+header{padding:14px 18px;background:#0c3041;display:flex;justify-content:space-between;align-items:center;gap:10px}a{color:#9fe7db;text-decoration:none}
+main{max-width:900px;margin:auto;padding:14px}.note{background:#163d49;border:1px solid #33717b;padding:12px;border-radius:12px;margin:12px 0}
+.scene{position:relative;overflow:hidden;border-radius:18px;border:2px solid #347a86;background:#7fc6e5}
+canvas{width:100%;height:auto;display:block;touch-action:none}.status{font-weight:750;font-size:18px;min-height:54px;padding:13px 4px}
+.controls{display:grid;grid-template-columns:1fr 1fr;gap:10px}button{border:0;border-radius:13px;padding:16px 10px;font-size:17px;font-weight:800;background:#22a6a1;color:#05272c;cursor:pointer}button:disabled{opacity:.4;cursor:not-allowed}button.secondary{background:#d1e5e9}
+.hint{color:#b7d2d8;font-size:14px;line-height:1.5}.meter{height:14px;border-radius:12px;background:#244854;overflow:hidden;margin:10px 0}.fill{height:100%;width:0;background:#eab65c;transition:width .12s}
+@media(min-width:700px){main{max-width:680px}}
+</style></head><body>
+<header><strong>🎣 CUNCUN · TẬP CÂU</strong><a href="/">← Về hồ chính</a></header>
+<main>
+<div class="note">🟢 <b>Chế độ luyện tập miễn phí.</b> Cá, điểm, mồi và vật phẩm trong màn này chỉ là mô phỏng; không lưu thành tích, không dùng vé và không gọi API giao dịch.</div>
+<div class="scene"><canvas id="lake" width="720" height="620" aria-label="Hồ câu mô phỏng, phao câu và cần câu"></canvas></div>
+<div class="status" id="status" role="status" aria-live="polite">Bấm “Thả câu” để bắt đầu tập.</div>
+<div class="meter" aria-label="Độ căng dây"><div class="fill" id="tension"></div></div>
+<div class="controls"><button id="cast">🎣 Thả câu</button><button id="hook" disabled>⚡ Giật cần</button><button id="reel" disabled>🐟 Giữ để kéo</button><button class="secondary" id="reset">↻ Tập lại</button></div>
+<p class="hint">Cách chơi: Thả câu → chờ phao chìm → bấm Giật cần đúng lúc → giữ nút Kéo cá nhưng thả ra khi dây quá căng. Có thể dùng chuột hoặc chạm trên iPhone. Đây là nguyên mẫu cơ chế tập câu, chưa phải đồ họa 3D cuối cùng.</p>
+</main>
+<script>
+(()=>{
+'use strict';
+const canvas=document.getElementById('lake'),ctx=canvas.getContext('2d');
+const $=id=>document.getElementById(id),cast=$('cast'),hook=$('hook'),reel=$('reel'),reset=$('reset'),status=$('status'),meter=$('tension');
+let phase='idle',biteAt=0,biteUntil=0,progress=0,tension=0,last=performance.now(),castAt=0,fishKg=0,fishName='',reeling=false;
+const fish=['cá rô phi','cá chép','cá trắm','cá trôi','cá lóc'];
+function tell(s){status.textContent=s}
+function buttons(){cast.disabled=phase!=='idle'&&phase!=='done';hook.disabled=phase!=='bite';reel.disabled=phase!=='fight'}
+function start(){phase='waiting';castAt=performance.now();biteAt=castAt+2300+Math.random()*4300;biteUntil=0;progress=0;tension=0;reeling=false;fishKg=+(0.4+Math.random()*5.6).toFixed(1);fishName=fish[Math.floor(Math.random()*fish.length)];tell('Phao đã xuống nước. Quan sát thật kỹ nhé!');buttons()}
+function clear(){phase='idle';progress=0;tension=0;reeling=false;tell('Sẵn sàng tập câu.');buttons()}
+function strike(){if(phase!=='bite')return;phase='fight';progress=0;tension=18;tell('Dính cá rồi! Giữ nút Kéo cá, tránh để dây quá căng.');buttons()}
+cast.addEventListener('click',start);reset.addEventListener('click',clear);hook.addEventListener('click',strike);
+function down(e){if(phase!=='fight')return;e.preventDefault();reeling=true;try{reel.setPointerCapture(e.pointerId)}catch{}}
+function up(){reeling=false}
+reel.addEventListener('pointerdown',down);for(const ev of ['pointerup','pointercancel','lostpointercapture','pointerleave'])reel.addEventListener(ev,up);
+function render(now){
+const dt=Math.min((now-last)/1000,.05);last=now;
+if(phase==='waiting'&&now>=biteAt){phase='bite';biteUntil=now+1600;tell('⚡ PHAO CHÌM! Giật cần ngay!');buttons()}
+if(phase==='bite'&&now>biteUntil){phase='idle';tell('Cá đã nhả mồi! Thả câu lại nhé.');buttons()}
+if(phase==='fight'){
+tension=Math.max(0,Math.min(100,tension+(reeling?(31+fishKg*2.4):-(30+fishKg))*dt));
+if(reeling)progress+=dt*(15-fishKg*.9);
+if(tension>=100){phase='done';reeling=false;tell('💥 Đứt dây! Cá chạy mất rồi. Thử lại nhé.');buttons()}
+else if(progress>=100){phase='done';reeling=false;tell('🎉 Tập thành công! Kéo được '+fishName+' '+fishKg+'kg (cá mô phỏng, không tính thành tích).');buttons()}
+}
+meter.style.width=Math.max(0,tension)+'%';meter.style.background=tension>75?'#f05c56':'#eab65c';
+const w=canvas.width,h=canvas.height;
+const sky=ctx.createLinearGradient(0,0,0,h);sky.addColorStop(0,'#8bd3f2');sky.addColorStop(.38,'#d2eff0');sky.addColorStop(.381,'#2a9eb1');sky.addColorStop(1,'#075d79');ctx.fillStyle=sky;ctx.fillRect(0,0,w,h);
+ctx.fillStyle='#4b8b60';ctx.beginPath();ctx.moveTo(0,235);ctx.quadraticCurveTo(170,195,340,236);ctx.quadraticCurveTo(540,185,720,238);ctx.lineTo(720,266);ctx.lineTo(0,266);ctx.fill();
+ctx.fillStyle='#275d3c';for(let i=0;i<14;i++){let x=i*61-12;ctx.fillRect(x,199+(i%3)*7,8,49);ctx.beginPath();ctx.arc(x+4,197+(i%3)*7,20,0,Math.PI*2);ctx.fill()}
+for(let i=0;i<13;i++){ctx.strokeStyle='rgba(255,255,255,.12)';ctx.beginPath();ctx.ellipse(50+i*57,345+i%3*60,25+Math.sin(now/700+i)*5,4,0,0,Math.PI*2);ctx.stroke()}
+ctx.fillStyle='#8e6944';ctx.fillRect(0,540,270,80);ctx.fillStyle='#b88a58';for(let i=0;i<6;i++)ctx.fillRect(0,548+i*13,270,3);
+const active=phase!=='idle'&&phase!=='done',bobX=470+Math.sin(now/450)*3,bobY=410+Math.sin(now/340)*3+(phase==='bite'?35:0);
+ctx.strokeStyle='#272f39';ctx.lineWidth=9;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(100,565);ctx.quadraticCurveTo(225,360,active?335:350,active?275:290);ctx.stroke();
+ctx.strokeStyle='#e0d3b4';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(active?335:350,active?275:290);ctx.lineTo(active?bobX:390,active?bobY:440);ctx.stroke();
+if(active){ctx.strokeStyle='rgba(225,246,255,.6)';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(bobX,bobY+4,24+Math.sin(now/170)*4,6,0,0,Math.PI*2);ctx.stroke();ctx.fillStyle='#f4f3e9';ctx.fillRect(bobX-5,bobY-15,10,17);ctx.fillStyle='#ff5b3f';ctx.fillRect(bobX-5,bobY-26,10,12)}
+if(phase==='fight'){ctx.fillStyle='#f0f5f5';ctx.font='bold 24px system-ui';ctx.fillText('Kéo cá: '+Math.min(100,Math.floor(progress))+'%',24,50);ctx.font='17px system-ui';ctx.fillText('Độ căng dây: '+Math.round(tension)+'%',24,80)}
+if(phase==='bite'){ctx.fillStyle='#ffdf75';ctx.font='bold 34px system-ui';ctx.fillText('CÁ CẮN CÂU!',245,120)}
+requestAnimationFrame(render)
+}
+buttons();requestAnimationFrame(render);
+})();
+</script></body></html>
