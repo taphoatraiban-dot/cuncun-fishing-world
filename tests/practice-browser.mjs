@@ -70,6 +70,14 @@ try {
   assert.equal(await page.locator('#cast').isEnabled(),true);
   assert.equal(await page.locator('#reel').isDisabled(),true);
   assert.match(await page.locator('#practice-level').innerText(),/0 cá/);
+  // Missing the 1.6-second hook window must return to idle without EXP.
+  await page.locator('#cast').click();
+  await page.waitForFunction(()=>document.querySelector('#hook')?.disabled===false,null,{timeout:9000});
+  await page.waitForFunction(()=>document.querySelector('#hook')?.disabled===true,null,{timeout:5000});
+  assert.equal(await page.locator('#cast').isEnabled(),true);
+  assert.equal(await page.locator('#reel').isDisabled(),true);
+  assert.match(await page.locator('#status').innerText(),/Cá đã nhả mồi/);
+  assert.match(await page.locator('#practice-level').innerText(),/0 cá/);
   await page.locator('#camera').click();
   assert.match(await page.locator('#camera').innerText(),/Cận phao/);
   const profileLink = page.locator('a[href="./profile-demo.html"]');
