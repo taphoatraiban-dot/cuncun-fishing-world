@@ -1,0 +1,36 @@
+name: Fishing practice checks
+on:
+  push:
+    branches:
+      - feature/practice-fishing-mvp-20261104
+  pull_request:
+    paths:
+      - 'practice.html'
+      - 'practice-3d.js'
+      - 'backend/server.py'
+      - 'tests/test_practice_routes.py'
+      - '.github/workflows/practice-checks.yml'
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Python route regression tests
+        run: python -m unittest discover -s tests -p 'test_practice_routes.py' -v
+      - name: JavaScript syntax check
+        run: node --check practice-3d.js
+      - name: Verify required UI controls
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          html=Path('practice.html').read_text()
+          for element in ('lake','cast','hook','reel','reset','camera','sound','status','tension'):
+              assert f'id="{element}"' in html, element
+          assert 'type="module" src="./practice-3d.js"' in html
+          print('Practice controls present')
+          PY
