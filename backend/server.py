@@ -14,7 +14,10 @@ import random
 import hashlib
 import sqlite3
 import time
-from . import seats
+try:
+    from . import seats
+except ImportError:
+    import seats
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlparse
