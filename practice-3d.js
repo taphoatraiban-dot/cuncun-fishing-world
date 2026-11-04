@@ -2,7 +2,10 @@ import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.m
 const $=id=>document.getElementById(id),canvas=$('lake'),cast=$('cast'),hook=$('hook'),reel=$('reel'),reset=$('reset'),status=$('status'),meter=$('tension');
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x9bd5f0);scene.fog=new THREE.Fog(0x9bd5f0,70,210);
 const camera=new THREE.PerspectiveCamera(52,720/620,.1,250);camera.position.set(3.7,8.5,18);camera.lookAt(0,0,-12);
-const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:false});renderer.setPixelRatio(Math.min(devicePixelRatio,1.7));renderer.setSize(720,620,false);
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:false,powerPreference:'low-power'});
+const pixelRatio=Math.min(window.devicePixelRatio||1,1.5);renderer.setPixelRatio(pixelRatio);
+function resize(){const width=Math.max(240,Math.round(canvas.getBoundingClientRect().width||720));const height=Math.round(width*620/720);renderer.setSize(width,height,false);camera.aspect=width/height;camera.updateProjectionMatrix()}
+window.addEventListener('resize',resize,{passive:true});resize();
 scene.add(new THREE.HemisphereLight(0xe9f7ff,0x345638,2.1));const sun=new THREE.DirectionalLight(0xffffff,2.1);sun.position.set(-20,32,12);scene.add(sun);
 const mat=(c,extra={})=>new THREE.MeshStandardMaterial({color:c,roughness:.8,...extra});
 function mesh(geometry,material,x=0,y=0,z=0){const o=new THREE.Mesh(geometry,material);o.position.set(x,y,z);scene.add(o);return o}
@@ -17,6 +20,7 @@ mesh(new THREE.SphereGeometry(.48,12,10),mat(0xe3b68e),-8.9,2.85,8);
 const rodPoints=[new THREE.Vector3(-8.4,2.1,7.8),new THREE.Vector3(-6.2,3.8,4),new THREE.Vector3(-3.4,4.4,-1)];
 const rodCurve=new THREE.CatmullRomCurve3(rodPoints),rod=mesh(new THREE.TubeGeometry(rodCurve,20,.065,7,false),mat(0x303b41));
 const lineMaterial=new THREE.LineBasicMaterial({color:0xf6f5d9});let line=new THREE.Line(new THREE.BufferGeometry().setFromPoints([rodPoints[2],new THREE.Vector3(-2.7,.1,-8)]),lineMaterial);scene.add(line);
+const lineCoords=new Float32Array(6);line.geometry.dispose();line.geometry=new THREE.BufferGeometry();line.geometry.setAttribute('position',new THREE.BufferAttribute(lineCoords,3));
 const bob=mesh(new THREE.SphereGeometry(.23,12,10),mat(0xf2f5ec),-2.7,.24,-8);const bobTop=mesh(new THREE.ConeGeometry(.12,.45,10),mat(0xf04c38),-2.7,.55,-8);
 const rippleMat=new THREE.MeshBasicMaterial({color:0xd5f6ff,transparent:true,opacity:.35,side:THREE.DoubleSide});
 const ripples=[];for(let i=0;i<3;i++){const r=mesh(new THREE.RingGeometry(.4,.46,40),rippleMat.clone(),-2.7,.06,-8);r.rotation.x=-Math.PI/2;ripples.push(r)}
@@ -55,8 +59,9 @@ fishModel.position.set(-2.7+fishFight,-.45+approach*.9,-8+Math.sin(now*.006)*.6+
 const splash=phase==='fight'&&tension>55;
 if(splash&&now-lastAlert>1200){lastAlert=now;if(tension>82)tell('⚠️ Dây quá căng! Thả nút kéo cá một chút.')} 
 const bent=phase==='fight'?(tension/100)*1.2:0;
-rod.geometry.dispose();const tip=new THREE.Vector3(-3.4-bent,4.4-bent*1.3,-1);rod.geometry=new THREE.TubeGeometry(new THREE.CatmullRomCurve3([rodPoints[0],rodPoints[1],tip]),20,.065,7,false);
-line.geometry.dispose();line.geometry=new THREE.BufferGeometry().setFromPoints([tip,new THREE.Vector3(bob.position.x,bob.position.y,bob.position.z)]);
+if(rod.userData.lastBend===undefined||Math.abs(rod.userData.lastBend-bent)>.035){rod.geometry.dispose();const tipShape=new THREE.Vector3(-3.4-bent,4.4-bent*1.3,-1);rod.geometry=new THREE.TubeGeometry(new THREE.CatmullRomCurve3([rodPoints[0],rodPoints[1],tipShape]),20,.065,7,false);rod.userData.lastBend=bent}
+const tip=new THREE.Vector3(-3.4-bent,4.4-bent*1.3,-1);
+lineCoords.set([tip.x,tip.y,tip.z,bob.position.x,bob.position.y,bob.position.z]);line.geometry.attributes.position.needsUpdate=true;
 ripples.forEach((r,i)=>{r.visible=active;r.position.x=phase==='fight'?fishModel.position.x:bob.position.x;r.position.z=phase==='fight'?fishModel.position.z:bob.position.z;const scale=.8+((now*(splash?.0014:.0006)+i/3)%1.7);r.scale.setScalar(scale);r.material.opacity=(splash?.6:.25)*(1-(scale-.8)/1.7)});
 water.material.color.setHSL(.52,.6,.4+Math.sin(now*.001)*.012);
 meter.style.width=tension+'%';meter.style.background=tension>75?'#ef6258':'#eab65c';
