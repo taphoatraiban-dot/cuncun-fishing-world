@@ -41,6 +41,20 @@ for(const x of [-9.58,-8.42])for(const z of [7.49,8.51]){
 mesh(new THREE.BoxGeometry(.76,.055,.72),seatEdge,-7.95,1.05,8.13);
 mesh(new THREE.BoxGeometry(.7,.1,.65),seatShell,-7.95,1.13,8.13);
 mesh(new THREE.BoxGeometry(.13,.85,.12),seatEdge,-7.95,.7,8.13);
+// Bait tray is clamped to the seat box within reach of the seated angler.
+const baitTray=mat(0x3b5964),baitMix=mat(0xb88b56),baitRim=mat(0xb9d8d3);
+mesh(new THREE.BoxGeometry(.16,.15,.22),seatEdge,-8.36,1.08,7.65);
+mesh(new THREE.BoxGeometry(.9,.075,.65),baitTray,-7.95,1.33,7.58);
+const baitBowl=mesh(new THREE.CylinderGeometry(.27,.22,.18,12),baitRim,-7.95,1.46,7.58);
+mesh(new THREE.CylinderGeometry(.215,.215,.025,12),baitMix,-7.95,1.565,7.58);
+for(let i=0;i<5;i++){
+ const a=i*Math.PI*2/5;
+ mesh(new THREE.SphereGeometry(.045,6,5),baitMix,-7.95+Math.cos(a)*.12,1.59,7.58+Math.sin(a)*.12);
+}
+// Telescoping support extends from the seat clamp towards the lake.
+const restArm=mesh(new THREE.CylinderGeometry(.045,.055,2.1,8),seatEdge,-7.66,1.46,6.9);
+restArm.rotation.x=-Math.PI/2.65;
+
 // V-shaped fishing rod rest and two-section support, aligned to the real rod.
 const rodRest=mat(0x202b36);
 mesh(new THREE.CylinderGeometry(.055,.075,2.45,8),seatEdge,-7.48,1.6,6.6);
@@ -295,7 +309,7 @@ if(catchBanner&&!catchBanner.hidden&&now>=catchBannerUntil)catchBanner.hidden=tr
 catchGlow.visible=now<catchGlowUntil;
 if(catchGlow.visible){const t=1-(catchGlowUntil-now)/1600;catchGlow.scale.setScalar(.7+t*2);catchGlow.material.opacity=Math.max(0,1-t)}
 const active=phase==='waiting'||phase==='bite'||phase==='fight';
-const targetPos=cameraMode==='float'?new THREE.Vector3(-1.4,2.4,-3):cameraMode==='eyes'?new THREE.Vector3(-8.9,3.15,7.3):cameraMode==='aerial'?new THREE.Vector3(-5,28,15):new THREE.Vector3(-6.8,5.2,16.8);
+const targetPos=cameraMode==='float'?new THREE.Vector3(-1.4,2.4,-3):cameraMode==='eyes'?new THREE.Vector3(-8.9,2.86,7.42):cameraMode==='aerial'?new THREE.Vector3(-5,28,15):new THREE.Vector3(-6.8,5.2,16.8);
 const lookAt=cameraMode==='float'||cameraMode==='eyes'?new THREE.Vector3(-2.7,.22,-8):cameraMode==='aerial'?new THREE.Vector3(-4,0,-8):new THREE.Vector3(-5,1.1,-3);
 camera.position.lerp(targetPos,Math.min(1,dt*2.4));camera.lookAt(lookAt);
 bob.visible=bobTop.visible=active;line.visible=active;fishModel.visible=phase==='fight';
