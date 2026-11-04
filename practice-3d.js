@@ -407,6 +407,30 @@ for(const side of [-1,1]){
 }
 mesh(new THREE.BoxGeometry(.65,.7,.25),hood,-8.9,1.68,8.53);
 mesh(new THREE.BoxGeometry(.48,.12,.08),trim,-8.9,1.95,8.7);
+// Character detail pass: layered fishing clothes, expressive face and tackle accessories.
+const avatarX=-8.9;
+const vest=mat(0x22546b),vestPocket=mat(0x173a4b),zipper=mat(0xe2d8bd,{metalness:.3}),strap=mat(0xe6a849),earSkin=skin;
+for(const side of [-1,1]){
+  const ear=mesh(new THREE.SphereGeometry(.15,12,10),earSkin,avatarX+side*.69,2.82,7.98);
+  ear.scale.set(.65,1,.7);
+  const eyebrow=mesh(new THREE.BoxGeometry(.23,.045,.055),hair,avatarX+side*.29,3.09,7.29);
+  eyebrow.rotation.z=side*.12;
+  mesh(new THREE.BoxGeometry(.31,.28,.065),vestPocket,avatarX+side*.31,1.68,7.48);
+  mesh(new THREE.BoxGeometry(.28,.035,.07),zipper,avatarX+side*.31,1.78,7.43);
+  const glove=mesh(new THREE.SphereGeometry(.19,12,8),mat(0x303e46),avatarX+side*.82,1.38,7.48);
+  glove.scale.set(1,.72,.8);
+  mesh(new THREE.BoxGeometry(.38,.12,.12),strap,avatarX+side*.3,.58,6.65);
+}
+mesh(new THREE.BoxGeometry(.065,.68,.07),zipper,avatarX,1.79,7.41);
+mesh(new THREE.BoxGeometry(.18,.15,.07),strap,avatarX,1.96,7.42);
+mesh(new THREE.BoxGeometry(.38,.22,.12),vest,avatarX,2.05,7.49);
+mesh(new THREE.SphereGeometry(.1,12,8),mat(0xffe7cf),avatarX-.21,2.91,7.21).scale.set(.35,.3,.3);
+mesh(new THREE.SphereGeometry(.1,12,8),mat(0xffe7cf),avatarX+.37,2.91,7.21).scale.set(.35,.3,.3);
+// Small belt bag and shoulder strap, anchored to the seated avatar.
+const bag=mesh(new THREE.BoxGeometry(.48,.35,.26),vestPocket,avatarX+.52,1.25,8.33);
+bag.rotation.z=-.1;
+const shoulder=mesh(new THREE.BoxGeometry(.11,.72,.08),strap,avatarX+.36,1.92,7.54);
+shoulder.rotation.z=-.38;
 const lanternMat=new THREE.MeshStandardMaterial({color:0xffc875,emissive:0xf5a33c,emissiveIntensity:.55});
 for(const x of [-10.3,-5.8]){
   mesh(new THREE.CylinderGeometry(.09,.11,2.5,7),mat(0x68452d),x,1.45,4.1);
@@ -430,21 +454,35 @@ for(let i=0;i<9;i++){
   const fish=mesh(new THREE.SphereGeometry(.33,7,6),mat(i%2?0xe0bc57:0x7db4a4),x,-.18,z);
   fish.scale.set(1.8,.45,.7);
 }
-// Lightweight animated neighboring anglers; decorative only, no fake online players.
+// Lightweight animated neighboring anglers with rounded bodies, caps and fishing gear.
 const visitorAnglers=[];
+const visitorColors=[0xd85f64,0x3978bb,0xe9b94f,0x8a67b8,0x3c9e82];
+const visitorSkin=mat(0xe8b48e),visitorPants=mat(0x344254),visitorHair=mat(0x293344);
 for(let i=0;i<5;i++){
   const x=-21+i*8,z=-7-(i%2)*10;
   const group=new THREE.Group();group.position.set(x,0,z);scene.add(group);
-  const colors=[0xd85f64,0x3978bb,0xe9b94f,0x8a67b8,0x3c9e82];
-  const shirt=new THREE.Mesh(new THREE.BoxGeometry(.95,1.15,.62),mat(colors[i]));shirt.position.y=1.7;group.add(shirt);
-  const face=new THREE.Mesh(new THREE.BoxGeometry(.64,.68,.64),skin);face.position.y=2.65;group.add(face);
-  const hairMesh=new THREE.Mesh(new THREE.BoxGeometry(.7,.2,.7),mat(i%2?0x3a302b:0x293344));hairMesh.position.y=3.06;group.add(hairMesh);
+  const shirtMat=mat(visitorColors[i]),hatMat=mat([0x394d63,0x334b79,0x6a4c3c,0x4b395c,0x2c5d53][i]);
+  const shirt=new THREE.Mesh(new THREE.CapsuleGeometry(.43,.54,5,10),shirtMat);shirt.position.y=1.6;group.add(shirt);
+  const neck=new THREE.Mesh(new THREE.CylinderGeometry(.15,.16,.25,10),visitorSkin);neck.position.y=2.13;group.add(neck);
+  const face=new THREE.Mesh(new THREE.SphereGeometry(.38,14,10),visitorSkin);face.position.set(0,2.49,-.045);face.scale.set(.95,1.08,.88);group.add(face);
+  const hairMesh=new THREE.Mesh(new THREE.SphereGeometry(.39,12,8),visitorHair);hairMesh.position.set(0,2.72,.01);hairMesh.scale.set(1,.45,.92);group.add(hairMesh);
+  const capMesh=new THREE.Mesh(new THREE.CylinderGeometry(.4,.4,.15,14),hatMat);capMesh.position.set(0,2.86,-.04);group.add(capMesh);
+  const brim=new THREE.Mesh(new THREE.BoxGeometry(.6,.055,.26),hatMat);brim.position.set(0,2.79,-.42);group.add(brim);
   for(const side of [-1,1]){
-    const arm=new THREE.Mesh(new THREE.BoxGeometry(.25,.8,.3),mat(colors[i]));arm.position.set(side*.62,1.75,-.18);arm.rotation.x=-.45;group.add(arm);
-    const leg=new THREE.Mesh(new THREE.BoxGeometry(.3,.85,.35),mat(0x253b56));leg.position.set(side*.23,.65,0);group.add(leg);
+    const eye=new THREE.Mesh(new THREE.SphereGeometry(.046,8,6),visitorHair);
+    eye.position.set(side*.15,2.5,-.385);group.add(eye);
+    const arm=new THREE.Mesh(new THREE.CapsuleGeometry(.14,.4,4,8),shirtMat);
+    arm.position.set(side*.52,1.55,-.23);arm.rotation.x=-.55;arm.rotation.z=side*.2;group.add(arm);
+    const glove=new THREE.Mesh(new THREE.SphereGeometry(.15,8,6),visitorSkin);
+    glove.position.set(side*.57,1.14,-.52);group.add(glove);
+    const leg=new THREE.Mesh(new THREE.CapsuleGeometry(.19,.36,4,8),visitorPants);
+    leg.position.set(side*.25,.67,-.2);leg.rotation.x=-.65;group.add(leg);
+    const boot=new THREE.Mesh(new THREE.BoxGeometry(.42,.2,.65),hatMat);
+    boot.position.set(side*.25,.22,-.56);group.add(boot);
   }
-  const rodGeo=new THREE.CylinderGeometry(.018,.055,4,6);
-  const rodMesh=new THREE.Mesh(rodGeo,mat(0x2a343b));rodMesh.position.set(.4,2.75,-1.4);rodMesh.rotation.x=-.75;group.add(rodMesh);
+  const vest=new THREE.Mesh(new THREE.BoxGeometry(.42,.25,.08),hatMat);vest.position.set(0,1.65,-.44);group.add(vest);
+  const rodGeo=new THREE.CylinderGeometry(.013,.045,4.2,7);
+  const rodMesh=new THREE.Mesh(rodGeo,mat(0x26323b));rodMesh.position.set(.45,2.4,-1.5);rodMesh.rotation.x=-.85;group.add(rodMesh);
   visitorAnglers.push({group,shirt,offset:i*1.7});
 }
 // Decorative festival area: local 3D scenery, not a LIVE or gift integration.
