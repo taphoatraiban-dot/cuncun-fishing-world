@@ -124,36 +124,39 @@ function eyeTube(a,b,r,material){
  return o;
 }
 const eyeFabric=mat(0x273447),eyeMetal=mat(0x9eb8c2,{metalness:.55,roughness:.35}),eyeRod=mat(0x1d2834),eyeRed=mat(0xe33c42),eyeBlue=mat(0x1963a3);
-for(const x of [-.72,.72]){
- const knee=eyeMesh(new THREE.SphereGeometry(.49,16,12),eyeFabric,x,-1.22,-1.65);
- knee.scale.set(.95,1.28,1.6);
+// Keep knees low in the viewport so the lake and fishing float remain visible.
+for(const x of [-.65,.65]){
+ const knee=eyeMesh(new THREE.SphereGeometry(.38,16,12),eyeFabric,x,-1.38,-1.72);
+ knee.scale.set(.9,.82,1.25);
 }
-eyeMesh(new THREE.BoxGeometry(1.25,.18,.8),seatShell,0,-1.62,-1.7);
-eyeMesh(new THREE.BoxGeometry(.9,.09,.65),eyeBlue,-1.45,-.91,-2.15);
-eyeMesh(new THREE.CylinderGeometry(.49,.43,.25,20),eyeBlue,-1.45,-.76,-2.18);
-eyeMesh(new THREE.CylinderGeometry(.41,.41,.035,20),baitMix,-1.45,-.615,-2.18);
-eyeMesh(new THREE.CylinderGeometry(.26,.24,.17,16),baitRim,-.82,-.75,-2.43);
-eyeMesh(new THREE.CylinderGeometry(.2,.2,.03,16),mat(0xe6b842),-.82,-.65,-2.43);
-// Metal arm and red V rest project forward from the right side of the seat.
-eyeTube(new THREE.Vector3(.78,-1.22,-1.5),new THREE.Vector3(1.18,-.7,-2.9),.085,eyeMetal);
-eyeTube(new THREE.Vector3(1.18,-.7,-2.9),new THREE.Vector3(1.18,-.52,-3.65),.07,eyeMetal);
-eyeTube(new THREE.Vector3(1.18,-.52,-3.65),new THREE.Vector3(.99,-.32,-3.72),.06,eyeRed);
-eyeTube(new THREE.Vector3(1.18,-.52,-3.65),new THREE.Vector3(1.37,-.32,-3.72),.06,eyeRed);
-// Foreground rod rests on V and points towards the float.
-eyeTube(new THREE.Vector3(1.35,-1.2,-1.25),new THREE.Vector3(1.18,-.45,-3.7),.105,eyeRod);
-eyeTube(new THREE.Vector3(1.18,-.45,-3.7),new THREE.Vector3(.15,.12,-12),.045,eyeRod);
+eyeMesh(new THREE.BoxGeometry(1.12,.15,.7),seatShell,0,-1.68,-1.7);
+// Bait bowl is fully within a portrait iPhone field of view.
+eyeMesh(new THREE.BoxGeometry(.78,.09,.63),eyeBlue,-.92,-.95,-2.18);
+eyeMesh(new THREE.CylinderGeometry(.38,.33,.2,20),eyeBlue,-.92,-.8,-2.18);
+eyeMesh(new THREE.CylinderGeometry(.31,.31,.035,20),baitMix,-.92,-.68,-2.18);
+eyeMesh(new THREE.CylinderGeometry(.21,.19,.15,16),baitRim,-.49,-.78,-2.39);
+eyeMesh(new THREE.CylinderGeometry(.16,.16,.03,16),mat(0xe6b842),-.49,-.69,-2.39);
+// Seat clamp, forward support and V cradle share one right-hand axis.
+// The previous diagonal brace across the screen has been removed.
+eyeTube(new THREE.Vector3(.75,-1.48,-1.6),new THREE.Vector3(.91,-1.18,-2.1),.055,eyeMetal);
+eyeTube(new THREE.Vector3(.91,-1.18,-2.1),new THREE.Vector3(.91,-.65,-3.45),.047,eyeMetal);
+eyeTube(new THREE.Vector3(.91,-.65,-3.45),new THREE.Vector3(.74,-.43,-3.5),.045,eyeRed);
+eyeTube(new THREE.Vector3(.91,-.65,-3.45),new THREE.Vector3(1.08,-.43,-3.5),.045,eyeRed);
+// Rod sits in the V and recedes towards the water, rather than crossing the view.
+eyeTube(new THREE.Vector3(1.04,-1.13,-1.34),new THREE.Vector3(.91,-.59,-3.5),.069,eyeRod);
+eyeTube(new THREE.Vector3(.91,-.59,-3.5),new THREE.Vector3(.12,-.15,-12),.026,eyeRod);
 for(let i=0;i<3;i++)eyeTube(
- new THREE.Vector3(1.34-i*.065,-1.13+i*.25,-1.45-i*.78),
- new THREE.Vector3(1.34-i*.065,-1.13+i*.25,-1.32-i*.78),.115,eyeRed);
+ new THREE.Vector3(1.04-i*.025,-1.12+i*.16,-1.5-i*.5),
+ new THREE.Vector3(1.04-i*.025,-1.12+i*.16,-1.39-i*.5),.074,eyeRed);
 // Detailed first-person tackle: food pellets, molded tray edges and gripping hands.
 const eyeSkin=mat(0xf5bb94),eyeBaitDark=mat(0x8b663c),eyeGold=mat(0xf0c76b);
 for(let i=0;i<12;i++){
  const a=i*2.399,rr=.1+(i%4)*.065;
- const pellet=eyeMesh(new THREE.SphereGeometry(.048+(i%3)*.012,8,6),i%3?baitMix:eyeBaitDark,-1.45+Math.cos(a)*rr,-.59,-2.18+Math.sin(a)*rr);
+ const pellet=eyeMesh(new THREE.SphereGeometry(.048+(i%3)*.012,8,6),i%3?baitMix:eyeBaitDark,-.92+Math.cos(a)*rr,-.59,-2.18+Math.sin(a)*rr);
  pellet.scale.y=.72;
 }
-for(const x of [-1.45,-.82]){
- const z=x===-1.45?-2.18:-2.43,r=x===-1.45?.51:.28;
+for(const x of [-.92,-.49]){
+ const z=x===-.92?-2.18:-2.39,r=x===-.92?.4:.22;
  eyeMesh(new THREE.TorusGeometry(r,.035,8,24),eyeMetal,x,-.66,z).rotation.x=Math.PI/2;
 }
 const firstPersonHands=[];
@@ -164,7 +167,7 @@ for(const side of [-1,1]){
  hand.scale.set(.85,1.05,1.2);
  firstPersonHands.push({sleeve,hand,side});
 }
-eyeMesh(new THREE.BoxGeometry(.65,.08,.08),eyeGold,-1.44,-.9,-1.73);
+eyeMesh(new THREE.BoxGeometry(.5,.06,.08),eyeGold,-.94,-1.02,-1.74);
 eyeRig.visible=false;
 // Wooden dock supports, side rails and fishing-station details.
 const dockWood=mat(0x62422d),dockTrim=mat(0xc99b61),metal=mat(0x33434b);
@@ -427,7 +430,7 @@ catchGlow.visible=now<catchGlowUntil;
 if(catchGlow.visible){const t=1-(catchGlowUntil-now)/1600;catchGlow.scale.setScalar(.7+t*2);catchGlow.material.opacity=Math.max(0,1-t)}
 const active=phase==='waiting'||phase==='bite'||phase==='fight';
 const targetPos=cameraMode==='float'?new THREE.Vector3(-1.4,2.4,-3):cameraMode==='eyes'?new THREE.Vector3(-8.9,2.94,7.15):cameraMode==='aerial'?new THREE.Vector3(-5,28,15):new THREE.Vector3(-6.8,5.2,16.8);
-const lookAt=cameraMode==='float'?new THREE.Vector3(-2.7,.22,-8):cameraMode==='eyes'?new THREE.Vector3(-5.0,1.2,-10):cameraMode==='aerial'?new THREE.Vector3(-4,0,-8):new THREE.Vector3(-5,1.1,-3);
+const lookAt=cameraMode==='float'?new THREE.Vector3(-2.7,.22,-8):cameraMode==='eyes'?new THREE.Vector3(-8.9,1.65,-12):cameraMode==='aerial'?new THREE.Vector3(-4,0,-8):new THREE.Vector3(-5,1.1,-3);
 camera.position.lerp(targetPos,Math.min(1,dt*2.4));camera.lookAt(lookAt);
 eyeRig.visible=cameraMode==='eyes';
 // When a fish is hooked, lift the foreground rod off its V support.
