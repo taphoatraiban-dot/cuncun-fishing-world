@@ -375,62 +375,63 @@ for(let i=0;i<3;i++){
   lakeRipples.push({ring,offset:i/3});
 }
 
-// Chibi angler with a larger round head, compact body and blue fishing outfit.
-const skin=mat(0xffc69d),hair=mat(0x252334),cap=mat(0x123c67),jacket=mat(0x1769a5),hood=mat(0x0a456f),trim=mat(0x57c5ef),pants=mat(0x303746),shoes=mat(0xe9f7ff);
-const avatarBody=mesh(new THREE.CapsuleGeometry(.56,.48,6,12),jacket,-8.9,1.7,8);
-const head=mesh(new THREE.SphereGeometry(.72,16,12),skin,-8.9,2.85,7.98);head.scale.set(1,1.05,.88);
-mesh(new THREE.SphereGeometry(.73,12,8),hair,-8.9,3.16,8.12).scale.set(1,.53,.8);
-mesh(new THREE.CylinderGeometry(.65,.65,.22,16),cap,-8.9,3.47,8.02);
-mesh(new THREE.BoxGeometry(.92,.1,.34),cap,-8.9,3.4,7.55);
-mesh(new THREE.BoxGeometry(.34,.11,.1),trim,-8.9,3.49,7.32);
-// Face looks forward towards the float (negative Z).
-const eyeWhite=mat(0xffffff),iris=mat(0x283a4d),cheek=mat(0xf1a6a3);
-for(const dx of [-.29,.29]){
- mesh(new THREE.SphereGeometry(.145,12,10),eyeWhite,-8.9+dx,2.87,7.36);
- mesh(new THREE.SphereGeometry(.085,10,8),iris,-8.9+dx,2.865,7.23);
- mesh(new THREE.SphereGeometry(.115,10,8),cheek,-8.9+dx*1.7,2.62,7.52).scale.set(1,.55,.35);
-}
-mesh(new THREE.SphereGeometry(.085,10,8),mat(0xc67b75),-8.9,2.61,7.31).scale.set(1,.3,.4);
-mesh(new THREE.BoxGeometry(1.16,.16,.83),hood,-8.9,2.19,8.04);
-mesh(new THREE.BoxGeometry(.9,.15,.12),trim,-8.9,1.98,8.43);
-mesh(new THREE.BoxGeometry(.5,.44,.13),hood,-8.9,1.62,8.44);
-mesh(new THREE.BoxGeometry(.4,.11,.15),trim,-8.9,1.7,8.52);
+// Human-proportioned fishing character (procedural preview; no third-party assets).
+// The angler is seated on the dock. Anatomy and clothing use layered, tapered forms.
+const skin=mat(0xc99572,{roughness:.93}),hair=mat(0x24201d),cap=mat(0x334b43),
+ jacket=mat(0x4c695e),hood=mat(0x344e48),trim=mat(0xb9a67d),
+ pants=mat(0x343e42),shoes=mat(0x282e30);
+const avatarX=-8.9, avatarZ=8.0;
 const anglerArms=[],anglerLegs=[];
+const avatarBody=mesh(new THREE.CylinderGeometry(.39,.34,.88,14),jacket,avatarX,1.75,avatarZ);
+avatarBody.scale.z=.7;
+mesh(new THREE.CylinderGeometry(.13,.15,.19,12),skin,avatarX,2.30,avatarZ-.025);
+const head=mesh(new THREE.SphereGeometry(.32,24,18),skin,avatarX,2.64,avatarZ-.055);
+head.scale.set(.85,1.15,.85);
 for(const side of [-1,1]){
- const arm=mesh(new THREE.CapsuleGeometry(.22,.38,5,10),jacket,-8.9+side*.72,1.82,7.78);
- arm.rotation.x=-.48;arm.rotation.z=side*.2;anglerArms.push(arm);
- mesh(new THREE.BoxGeometry(.34,.18,.34),skin,-8.9+side*.82,1.43,7.5);
- const leg=mesh(new THREE.CapsuleGeometry(.27,.35,5,10),pants,-8.9+side*.3,.91,7.43);
- leg.rotation.x=-.8;anglerLegs.push(leg);
- mesh(new THREE.BoxGeometry(.53,.25,.78),shoes,-8.9+side*.3,.49,6.99);
- mesh(new THREE.BoxGeometry(.5,.07,.16),trim,-8.9+side*.3,.48,6.56);
+  const ear=mesh(new THREE.SphereGeometry(.073,12,10),skin,avatarX+side*.28,2.62,avatarZ-.035);
+  ear.scale.set(.6,1,.6);
 }
-mesh(new THREE.BoxGeometry(.65,.7,.25),hood,-8.9,1.68,8.53);
-mesh(new THREE.BoxGeometry(.48,.12,.08),trim,-8.9,1.95,8.7);
-// Character detail pass: layered fishing clothes, expressive face and tackle accessories.
-const avatarX=-8.9;
-const vest=mat(0x22546b),vestPocket=mat(0x173a4b),zipper=mat(0xe2d8bd,{metalness:.3}),strap=mat(0xe6a849),earSkin=skin;
+mesh(new THREE.SphereGeometry(.317,20,12),hair,avatarX,2.83,avatarZ-.02).scale.set(.86,.49,.85);
+mesh(new THREE.CylinderGeometry(.295,.31,.13,20),cap,avatarX,2.95,avatarZ-.055);
+mesh(new THREE.BoxGeometry(.43,.04,.25),cap,avatarX,2.89,avatarZ-.32);
+const eyeWhite=mat(0xe9e0d2),iris=mat(0x242b2a),cheek=mat(0x9e6a58);
 for(const side of [-1,1]){
-  const ear=mesh(new THREE.SphereGeometry(.15,12,10),earSkin,avatarX+side*.69,2.82,7.98);
-  ear.scale.set(.65,1,.7);
-  const eyebrow=mesh(new THREE.BoxGeometry(.23,.045,.055),hair,avatarX+side*.29,3.09,7.29);
-  eyebrow.rotation.z=side*.12;
-  mesh(new THREE.BoxGeometry(.31,.28,.065),vestPocket,avatarX+side*.31,1.68,7.48);
-  mesh(new THREE.BoxGeometry(.28,.035,.07),zipper,avatarX+side*.31,1.78,7.43);
-  const glove=mesh(new THREE.SphereGeometry(.19,12,8),mat(0x303e46),avatarX+side*.82,1.38,7.48);
-  glove.scale.set(1,.72,.8);
-  mesh(new THREE.BoxGeometry(.38,.12,.12),strap,avatarX+side*.3,.58,6.65);
+ const dx=side*.125;
+ mesh(new THREE.SphereGeometry(.043,12,8),eyeWhite,avatarX+dx,2.66,avatarZ-.31).scale.set(1,.55,.35);
+ mesh(new THREE.SphereGeometry(.024,10,8),iris,avatarX+dx,2.66,avatarZ-.327);
+ mesh(new THREE.BoxGeometry(.12,.025,.025),hair,avatarX+dx,2.75,avatarZ-.309);
 }
-mesh(new THREE.BoxGeometry(.065,.68,.07),zipper,avatarX,1.79,7.41);
-mesh(new THREE.BoxGeometry(.18,.15,.07),strap,avatarX,1.96,7.42);
-mesh(new THREE.BoxGeometry(.38,.22,.12),vest,avatarX,2.05,7.49);
-mesh(new THREE.SphereGeometry(.1,12,8),mat(0xffe7cf),avatarX-.21,2.91,7.21).scale.set(.35,.3,.3);
-mesh(new THREE.SphereGeometry(.1,12,8),mat(0xffe7cf),avatarX+.37,2.91,7.21).scale.set(.35,.3,.3);
-// Small belt bag and shoulder strap, anchored to the seated avatar.
-const bag=mesh(new THREE.BoxGeometry(.48,.35,.26),vestPocket,avatarX+.52,1.25,8.33);
+mesh(new THREE.SphereGeometry(.055,12,8),skin,avatarX,2.55,avatarZ-.325).scale.set(.7,1,.8);
+mesh(new THREE.BoxGeometry(.105,.014,.02),cheek,avatarX,2.43,avatarZ-.312);
+// Fishing vest, center zipper, shoulder straps and utility pockets.
+const vest=mat(0x3e574f),vestPocket=mat(0x293f39),zipper=mat(0xc4c4ad,{metalness:.35}),strap=mat(0x9a8664);
+mesh(new THREE.CylinderGeometry(.405,.35,.68,14),vest,avatarX,1.78,avatarZ-.005).scale.z=.74;
+mesh(new THREE.BoxGeometry(.025,.61,.025),zipper,avatarX,1.78,avatarZ-.307);
+for(const side of [-1,1]){
+ const pocket=mesh(new THREE.BoxGeometry(.22,.20,.07),vestPocket,avatarX+side*.19,1.58,avatarZ-.305);
+ pocket.rotation.z=side*.08;
+ mesh(new THREE.BoxGeometry(.2,.025,.075),strap,avatarX+side*.19,1.67,avatarZ-.31);
+ const shoulder=mesh(new THREE.BoxGeometry(.12,.51,.045),strap,avatarX+side*.29,2.02,avatarZ-.265);
+ shoulder.rotation.z=side*.18;
+ // Bent sleeves, forearms and hands are independently animatable.
+ const arm=mesh(new THREE.CapsuleGeometry(.135,.37,6,10),jacket,avatarX+side*.48,1.79,avatarZ-.12);
+ arm.rotation.x=-.58;arm.rotation.z=side*.3;anglerArms.push(arm);
+ const forearm=mesh(new THREE.CapsuleGeometry(.105,.28,5,10),jacket,avatarX+side*.52,1.43,avatarZ-.39);
+ forearm.rotation.x=-.85;
+ const glove=mesh(new THREE.SphereGeometry(.115,12,10),skin,avatarX+side*.5,1.30,avatarZ-.58);
+ glove.scale.set(.8,.72,1.25);
+ // Seated thigh and shin are visibly separated instead of one chibi capsule.
+ const thigh=mesh(new THREE.CapsuleGeometry(.19,.55,6,12),pants,avatarX+side*.23,1.05,avatarZ-.36);
+ thigh.rotation.x=-1.25;anglerLegs.push(thigh);
+ const shin=mesh(new THREE.CapsuleGeometry(.155,.48,6,12),pants,avatarX+side*.23,.63,avatarZ-.85);
+ shin.rotation.x=-.15;
+ const boot=mesh(new THREE.BoxGeometry(.36,.23,.67),shoes,avatarX+side*.23,.23,avatarZ-1.19);
+ boot.rotation.y=side*.09;
+ mesh(new THREE.BoxGeometry(.37,.055,.7),mat(0x1c2021),avatarX+side*.23,.105,avatarZ-1.19);
+}
+// Belt pouch behind the right hip, deliberately small to keep silhouette realistic.
+const bag=mesh(new THREE.BoxGeometry(.33,.28,.21),vestPocket,avatarX+.4,1.34,avatarZ+.23);
 bag.rotation.z=-.1;
-const shoulder=mesh(new THREE.BoxGeometry(.11,.72,.08),strap,avatarX+.36,1.92,7.54);
-shoulder.rotation.z=-.38;
 const lanternMat=new THREE.MeshStandardMaterial({color:0xffc875,emissive:0xf5a33c,emissiveIntensity:.55});
 for(const x of [-10.3,-5.8]){
   mesh(new THREE.CylinderGeometry(.09,.11,2.5,7),mat(0x68452d),x,1.45,4.1);
