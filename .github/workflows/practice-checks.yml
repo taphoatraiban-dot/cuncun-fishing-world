@@ -6,6 +6,7 @@ on:
   pull_request:
     paths:
       - 'practice.html'
+      - 'profile-demo.html'
       - 'practice-3d.js'
       - 'backend/server.py'
       - 'tests/test_practice_routes.py'
