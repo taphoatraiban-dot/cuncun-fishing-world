@@ -46,6 +46,10 @@ try {
   });
   assert.equal(await page.locator('#cast').isEnabled(),true);
   assert.match(await page.locator('#status').innerText(),/Đã tạm dừng/);
+  // The cancelled attempt must not produce a late bite event.
+  await page.waitForTimeout(1900);
+  assert.equal(await page.locator('#hook').isDisabled(),true);
+  assert.match(await page.locator('#status').innerText(),/Đã tạm dừng/);
   await page.keyboard.press('c');
   assert.equal(await page.locator('#cast').isDisabled(),true);
   await page.keyboard.press('r');
