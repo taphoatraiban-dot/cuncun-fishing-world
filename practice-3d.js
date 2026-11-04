@@ -4,7 +4,14 @@ const $=id=>document.getElementById(id),canvas=$('lake'),cast=$('cast'),hook=$('
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x9bd5f0);scene.fog=new THREE.Fog(0x9bd5f0,70,210);
 const camera=new THREE.PerspectiveCamera(52,720/620,.1,250);camera.position.set(3.7,8.5,18);camera.lookAt(0,0,-12);
 let renderer;
-try{renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:false,powerPreference:'low-power'})}catch(error){document.getElementById('render-error').hidden=false;document.getElementById('status').textContent='Không thể khởi tạo hồ 3D trên thiết bị này.';throw error}
+try{renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:false,powerPreference:'low-power'})}catch(error){
+  const panel=document.getElementById('render-error');
+  const reason=String(error?.message||error||'Lỗi WebGL không xác định').slice(0,240);
+  panel.hidden=false;
+  panel.textContent='Không khởi tạo được WebGL: '+reason+' — Trên Safari Mac, kiểm tra Safari > Cài đặt > Nâng cao và cập nhật trình duyệt.';
+  status.textContent='Hồ 3D không khởi động được. Chi tiết lỗi hiển thị trong khung đỏ.';
+  throw error;
+}
 const pixelRatio=Math.min(window.devicePixelRatio||1,1.5);renderer.setPixelRatio(pixelRatio);
 function resize(){const width=Math.max(240,Math.round(canvas.getBoundingClientRect().width||720));const height=Math.round(width*620/720);renderer.setSize(width,height,false);camera.aspect=width/height;camera.updateProjectionMatrix()}
 window.addEventListener('resize',resize,{passive:true});resize();
