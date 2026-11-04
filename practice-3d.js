@@ -112,6 +112,12 @@ for(let i=0;i<3;i++){
   foam.rotation.x=-Math.PI/2;
   waterfalls.push({fall,foam,phase:i*1.9});
 }
+// Gentle moving light reflections on the lake surface.
+const waterGlints=[];
+for(let i=0;i<18;i++){
+  const glint=mesh(new THREE.PlaneGeometry(.5+(i%4)*.25,.045),new THREE.MeshBasicMaterial({color:0xdafaff,transparent:true,opacity:.25,depthWrite:false,side:THREE.DoubleSide}),-21+(i%6)*8,.045,-9-Math.floor(i/6)*19);
+  glint.rotation.x=-Math.PI/2;waterGlints.push({glint,phase:i*1.4});
+}
 const shoal=[];
 for(let i=0;i<14;i++){
   const swimmer=new THREE.Group();
@@ -197,6 +203,7 @@ visitorAnglers.forEach(({group,shirt,offset})=>{shirt.rotation.z=Math.sin(now*.0
 dancers.forEach(({dancer,offset})=>{dancer.position.y=1+Math.abs(Math.sin(now*.002+offset))*.18;dancer.rotation.y=Math.sin(now*.0014+offset)*.3});
 stageScreen.material.emissiveIntensity=.3+Math.sin(now*.002)*.16;
 boat.position.y=.15+Math.sin(now*.0018)*.07;boat.rotation.z=Math.sin(now*.0013)*.018;
+waterGlints.forEach(({glint,phase})=>{glint.material.opacity=.12+Math.max(0,Math.sin(now*.0017+phase))*.3;glint.position.x+=Math.sin(now*.0008+phase)*.0006});
 waterfalls.forEach(({fall,foam,phase})=>{fall.material.opacity=.55+Math.sin(now*.003+phase)*.12;foam.scale.setScalar(1+Math.sin(now*.002+phase)*.08)});
 shoal.forEach(({swimmer,tail,baseX,baseZ,phase})=>{const t=now*.00055+phase;swimmer.position.x=baseX+Math.sin(t)*2.4;swimmer.position.z=baseZ+Math.cos(t*.8)*1.8;swimmer.rotation.y=Math.cos(t)*.8;tail.rotation.y=Math.sin(now*.009+phase)*.65});
 biteMarker.visible=phase==='bite';
