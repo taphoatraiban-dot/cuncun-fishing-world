@@ -11,6 +11,7 @@ import json
 import os
 import secrets
 import random
+import hashlib
 import sqlite3
 import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -53,6 +54,11 @@ def connection():
         player_name TEXT PRIMARY KEY COLLATE NOCASE,
         cast_at INTEGER NOT NULL
     )""")
+    db.execute("""CREATE TABLE IF NOT EXISTS player_sessions (
+        token_hash TEXT PRIMARY KEY,
+        player_name TEXT NOT NULL,
+        expires_at INTEGER NOT NULL
+    )""")
     return db
 
 class Handler(BaseHTTPRequestHandler):
@@ -71,6 +77,18 @@ class Handler(BaseHTTPRequestHandler):
     def authorized(self):
         candidate = self.headers.get("Authorization", "")
         return bool(TOKEN) and secrets.compare_digest(candidate, "Bearer " + TOKEN)
+
+    def player_session(self):
+        auth = self.headers.get("Authorization", "")
+        if not auth.startswith("Bearer "):
+            return None
+        candidate = auth[7:]
+        if len(candidate) != 43:
+            return None
+        digest = hashlib.sha256(candidate.encode("utf-8")).hexdigest()
+        with connection() as db:
+            row = db.execute("SELECT player_name FROM player_sessions WHERE token_hash=? AND expires_at>?", (digest, int(time.time()))).fetchone()
+        return row[0] if row else None
 
     def serve_static(self, filename, content_type):
         try:
@@ -111,16 +129,21 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         path = urlparse(self.path).path
-        if path not in ("/api/events", "/api/tickets", "/api/cast", "/api/reel"):
+        if path not in ("/api/events", "/api/tickets", "/api/cast", "/api/reel", "/api/sessions", "/api/player/cast", "/api/player/reel"):
             return self.respond(404, {"error": "not_found"})
-        if not self.authorized():
+        player_name = None
+        if path in ("/api/player/cast", "/api/player/reel"):
+            player_name = self.player_session()
+            if player_name is None:
+                return self.respond(401, {"error": "unauthorized"})
+        elif not self.authorized():
             return self.respond(401, {"error": "unauthorized"})
         try:
             size = int(self.headers.get("Content-Length", "0"))
             if size <= 0 or size > 2048:
                 return self.respond(413, {"error": "invalid_size"})
             payload = json.loads(self.rfile.read(size))
-            name = payload.get("name")
+            name = player_name if player_name is not None else payload.get("name")
             kind = payload.get("kind")
             if not isinstance(name, str) or not 1 <= len(name.strip()) <= 32:
                 raise ValueError("invalid name")
@@ -136,6 +159,15 @@ class Handler(BaseHTTPRequestHandler):
         except (ValueError, TypeError, json.JSONDecodeError):
             return self.respond(400, {"error": "invalid_payload"})
         now = int(time.time())
+        if path == "/api/sessions":
+            with connection() as db:
+                expiry = db.execute("SELECT MAX(expires_at) FROM tickets WHERE player_name=? COLLATE NOCASE", (name,)).fetchone()[0]
+                if not expiry or expiry <= now:
+                    return self.respond(403, {"error": "ticket_required"})
+                session_token = secrets.token_urlsafe(32)
+                digest = hashlib.sha256(session_token.encode("utf-8")).hexdigest()
+                db.execute("INSERT INTO player_sessions(token_hash,player_name,expires_at) VALUES(?,?,?)", (digest,name,expiry))
+            return self.respond(200, {"ok": True, "token": session_token, "expires_at": expiry})
         if path == "/api/tickets":
             with connection() as db:
                 active = db.execute("SELECT COUNT(DISTINCT player_name) FROM tickets WHERE expires_at>?", (now,)).fetchone()[0]
@@ -145,13 +177,13 @@ class Handler(BaseHTTPRequestHandler):
                 expires = max(now, existing or now) + minutes * 60
                 db.execute("INSERT INTO tickets(player_name,expires_at,created_at) VALUES(?,?,?)", (name,expires,now))
             return self.respond(200, {"ok": True, "name": name, "expires_at": expires})
-        if path in ("/api/cast", "/api/reel"):
+        if path in ("/api/cast", "/api/reel", "/api/player/cast", "/api/player/reel"):
             with connection() as db:
                 db.execute("BEGIN IMMEDIATE")
                 valid = db.execute("SELECT MAX(expires_at) FROM tickets WHERE player_name=? COLLATE NOCASE", (name,)).fetchone()[0]
                 if not valid or valid <= now:
                     return self.respond(403, {"error": "ticket_required"})
-                if path == "/api/cast":
+                if path in ("/api/cast", "/api/player/cast"):
                     previous = db.execute("SELECT cast_at FROM casts WHERE player_name=? COLLATE NOCASE", (name,)).fetchone()
                     if previous:
                         return self.respond(409, {"error": "already_cast"})
