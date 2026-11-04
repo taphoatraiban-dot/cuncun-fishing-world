@@ -261,7 +261,13 @@ const rodPoints=[new THREE.Vector3(-8.75,2.04,7.5),new THREE.Vector3(-8.2,2.39,4
 const rodCurve=new THREE.CatmullRomCurve3(rodPoints),rod=mesh(new THREE.TubeGeometry(rodCurve,20,.065,7,false),mat(0x303b41));
 const lineMaterial=new THREE.LineBasicMaterial({color:0xf6f5d9});let line=new THREE.Line(new THREE.BufferGeometry().setFromPoints([rodPoints[2],new THREE.Vector3(-2.7,.1,-8)]),lineMaterial);scene.add(line);
 const lineCoords=new Float32Array(6);line.geometry.dispose();line.geometry=new THREE.BufferGeometry();line.geometry.setAttribute('position',new THREE.BufferAttribute(lineCoords,3));
-const bob=mesh(new THREE.SphereGeometry(.23,12,10),mat(0xf2f5ec),-2.7,.24,-8);const bobTop=mesh(new THREE.ConeGeometry(.12,.45,10),mat(0xf04c38),-2.7,.55,-8);
+const bob=mesh(new THREE.SphereGeometry(.18,14,12),mat(0xf2f5ec),-2.7,.24,-8);
+const bobTop=mesh(new THREE.CylinderGeometry(.035,.06,.52,10),mat(0xe9413c),-2.7,.55,-8);
+const floatBands=[];
+for(let i=0;i<7;i++){
+ const band=mesh(new THREE.CylinderGeometry(.037,.037,.075,10),mat(i%2===0?0xf34b35:0xf4e54e),-2.7,.39+i*.075,-8);
+ floatBands.push(band);
+}
 const droplets=[];
 const dropletMaterial=new THREE.MeshBasicMaterial({color:0xd5f5ff,transparent:true,opacity:.8});
 for(let i=0;i<12;i++){
@@ -362,11 +368,20 @@ const targetPos=cameraMode==='float'?new THREE.Vector3(-1.4,2.4,-3):cameraMode==
 const lookAt=cameraMode==='float'?new THREE.Vector3(-2.7,.22,-8):cameraMode==='eyes'?new THREE.Vector3(-5.0,1.2,-10):cameraMode==='aerial'?new THREE.Vector3(-4,0,-8):new THREE.Vector3(-5,1.1,-3);
 camera.position.lerp(targetPos,Math.min(1,dt*2.4));camera.lookAt(lookAt);
 eyeRig.visible=cameraMode==='eyes';
+// When a fish is hooked, lift the foreground rod off its V support.
+const eyeFight=phase==='fight'?Math.min(1,(20+tension)/65):0;
+eyeRig.rotation.x=-eyeFight*.11;
+eyeRig.rotation.z=Math.sin(now*.009)*eyeFight*.025;
 head.visible=cameraMode!=='eyes';
 const desiredFov=cameraMode==='eyes'?70:52;
 if(Math.abs(camera.fov-desiredFov)>.01){camera.fov=desiredFov;camera.updateProjectionMatrix()}
 bob.visible=bobTop.visible=active;line.visible=active;fishModel.visible=phase==='fight';
-const dip=phase==='bite'?.35:0;const wave=Math.sin(now*.005)*.06;bob.position.y=.24+wave-dip;bobTop.position.y=.55+wave-dip;
+// Seven-band float: distinct nibble, sinking bite and fight motions.
+const bitePulse=phase==='bite'?Math.max(0,Math.sin(now*.018))*.18:0;
+const dip=phase==='bite'?.26+bitePulse:phase==='fight'?.12:0;
+const wave=Math.sin(now*.005)*.055;
+bob.position.y=.24+wave-dip;bobTop.position.y=.55+wave-dip;
+floatBands.forEach((band,i)=>{band.position.y=.39+i*.075+wave-dip;band.visible=active});
 const fishFight=phase==='fight'?Math.sin(now*.008+fishKg)*(.6+fishKg*.15):0;
 const approach=phase==='fight'?Math.min(1,progress/100):0;
 fishModel.position.set(-2.7+fishFight,-.45+approach*.9,-8+Math.sin(now*.006)*.6+approach*2);fishModel.rotation.y=Math.sin(now*.008)*.7;fishModel.rotation.z=Math.sin(now*.018)*.18;tail.rotation.y=Math.sin(now*.025)*.7;
