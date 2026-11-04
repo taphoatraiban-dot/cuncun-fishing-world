@@ -9,6 +9,7 @@ on:
       - 'practice-3d.js'
       - 'backend/server.py'
       - 'tests/test_practice_routes.py'
+      - 'tests/practice-browser.mjs'
       - '.github/workflows/practice-checks.yml'
 jobs:
   test:
@@ -37,8 +38,15 @@ jobs:
           FISHING_DB_PATH: /tmp/cuncun-practice-test.sqlite3
         run: |
           python backend/server.py > /tmp/fishing-practice-server.log 2>&1 &
-          for i in $(seq 1 30); do curl -fsS http://127.0.0.1:8791/health >/dev/null && break; sleep 1; done
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8791/health >/dev/null 2>&1; then break; fi
+            sleep 1
+          done
+          curl -fsS http://127.0.0.1:8791/health
           node tests/practice-browser.mjs
+      - name: Show server logs on failure
+        if: failure()
+        run: cat /tmp/fishing-practice-server.log 2>/dev/null || true
       - name: Verify required UI controls
         run: |
           python - <<'PY'
