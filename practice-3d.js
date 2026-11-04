@@ -125,6 +125,11 @@ for(let i=0;i<12;i++){
   drop.visible=false;droplets.push({drop,phase:i*.83});
 }
 const rippleMat=new THREE.MeshBasicMaterial({color:0xd5f6ff,transparent:true,opacity:.35,side:THREE.DoubleSide});
+// A pulsing bite marker makes the short hook window visible on mobile.
+const biteMarker=new THREE.Group();biteMarker.position.set(-2.7,1.3,-8);scene.add(biteMarker);
+const markerRing=new THREE.Mesh(new THREE.TorusGeometry(.38,.055,6,24),new THREE.MeshBasicMaterial({color:0xffe27d}));biteMarker.add(markerRing);
+const markerCore=new THREE.Mesh(new THREE.SphereGeometry(.12,8,8),new THREE.MeshBasicMaterial({color:0xff6b42}));biteMarker.add(markerCore);
+biteMarker.visible=false;
 const ripples=[];for(let i=0;i<3;i++){const r=mesh(new THREE.RingGeometry(.4,.46,40),rippleMat.clone(),-2.7,.06,-8);r.rotation.x=-Math.PI/2;ripples.push(r)}
 let phase='idle',biteAt=0,biteUntil=0,progress=0,tension=0,last=performance.now(),fishKg=0,fishName='',reeling=false,fishBurst=0,fishDirection=1;
 const cameraButton=$('camera'),soundButton=$('sound');let cameraMode='auto',audioContext=null,soundOn=false,lastAlert=0;
@@ -155,6 +160,8 @@ dancers.forEach(({dancer,offset})=>{dancer.position.y=1+Math.abs(Math.sin(now*.0
 stageScreen.material.emissiveIntensity=.3+Math.sin(now*.002)*.16;
 boat.position.y=.15+Math.sin(now*.0018)*.07;boat.rotation.z=Math.sin(now*.0013)*.018;
 shoal.forEach(({swimmer,tail,baseX,baseZ,phase})=>{const t=now*.00055+phase;swimmer.position.x=baseX+Math.sin(t)*2.4;swimmer.position.z=baseZ+Math.cos(t*.8)*1.8;swimmer.rotation.y=Math.cos(t)*.8;tail.rotation.y=Math.sin(now*.009+phase)*.65});
+biteMarker.visible=phase==='bite';
+if(biteMarker.visible){biteMarker.position.y=1.3+Math.sin(now*.014)*.22;biteMarker.scale.setScalar(1+Math.sin(now*.02)*.18)}
 const active=phase==='waiting'||phase==='bite'||phase==='fight';
 const closeUp=cameraMode==='float'||(cameraMode==='auto'&&(phase==='bite'||phase==='fight'));
 const targetPos=closeUp?new THREE.Vector3(-.6,3.2,2.5):cameraMode==='wide'?new THREE.Vector3(3.7,8.5,18):new THREE.Vector3(-6.8,5.2,16.8);
