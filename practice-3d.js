@@ -55,52 +55,30 @@ for(let i=0;i<3;i++){
   lakeRipples.push({ring,offset:i/3});
 }
 
-const avatarBody=mesh(new THREE.BoxGeometry(1.22,1.48,.73),mat(0x168fa6),-8.9,1.8,8);
-mesh(new THREE.BoxGeometry(.96,.92,.82),mat(0xe3b68e),-8.9,2.85,8);
-// Stylized angler and lakeside scenery, built only from local Three.js primitives.
-const outfit=mat(0x172b42),skin=mat(0xf0bb8c),hair=mat(0xe9edf5),cap=mat(0x111a27);
-avatarBody.material=outfit;
-const head=scene.children.find(o=>o.isMesh&&o.geometry.type==='BoxGeometry'&&Math.abs(o.position.x+8.9)<.01&&Math.abs(o.position.y-2.85)<.01);
-if(head)head.material=skin;
-// Angular layered hair fits the blocky head without the oversized sphere silhouette.
-mesh(new THREE.BoxGeometry(1.04,.22,.9),hair,-8.9,3.36,8.05);
-for(const side of [-1,1])mesh(new THREE.BoxGeometry(.16,.28,.72),hair,-8.9+side*.5,3.17,8.05);
-mesh(new THREE.BoxGeometry(.42,.16,.17),hair,-8.9,3.22,7.58);
-mesh(new THREE.CylinderGeometry(.52,.52,.19,12),cap,-8.9,3.48,8.06);
-mesh(new THREE.BoxGeometry(.72,.08,.3),cap,-8.9,3.43,7.7);
-// Extra low-poly Roblox-inspired outfit details, built from geometry (no downloads).
-const trim=mat(0x2dd4bf),gold=mat(0xf9cf76),denim=mat(0x263a59),boot=mat(0x101a2b);
-mesh(new THREE.BoxGeometry(.86,.13,.18),trim,-8.9,2.39,7.49);
-mesh(new THREE.BoxGeometry(.55,.54,.12),mat(0x264c60),-8.9,1.88,7.45);
-mesh(new THREE.BoxGeometry(.32,.18,.14),gold,-8.9,2.07,7.37);
-mesh(new THREE.BoxGeometry(.23,.18,.12),trim,-8.9,3.48,7.49);
+// Chibi angler with a larger round head, compact body and blue fishing outfit.
+const skin=mat(0xffc69d),hair=mat(0x252334),cap=mat(0x123c67),jacket=mat(0x1769a5),hood=mat(0x0a456f),trim=mat(0x57c5ef),pants=mat(0x303746),shoes=mat(0xe9f7ff);
+const avatarBody=mesh(new THREE.BoxGeometry(1.1,1.05,.74),jacket,-8.9,1.7,8);
+const head=mesh(new THREE.SphereGeometry(.72,16,12),skin,-8.9,2.85,7.98);head.scale.set(1,1.05,.88);
+mesh(new THREE.SphereGeometry(.73,12,8),hair,-8.9,3.16,8.12).scale.set(1,.53,.8);
+mesh(new THREE.CylinderGeometry(.65,.65,.22,16),cap,-8.9,3.47,8.02);
+mesh(new THREE.BoxGeometry(.92,.1,.34),cap,-8.9,3.4,7.55);
+mesh(new THREE.BoxGeometry(.34,.11,.1),trim,-8.9,3.49,7.32);
+mesh(new THREE.BoxGeometry(1.16,.16,.83),hood,-8.9,2.19,8.04);
+mesh(new THREE.BoxGeometry(.9,.15,.12),trim,-8.9,1.98,8.43);
+mesh(new THREE.BoxGeometry(.5,.44,.13),hood,-8.9,1.62,8.44);
+mesh(new THREE.BoxGeometry(.4,.11,.15),trim,-8.9,1.7,8.52);
+const anglerArms=[],anglerLegs=[];
 for(const side of [-1,1]){
-  mesh(new THREE.BoxGeometry(.19,.11,.13),mat(0x243047),-8.9+side*.18,2.86,7.55);
-  mesh(new THREE.BoxGeometry(.2,.08,.1),hair,-8.9+side*.38,3.12,7.59);
-  mesh(new THREE.BoxGeometry(.44,.15,.17),denim,-8.9+side*.32,.9,7.03);
-  mesh(new THREE.BoxGeometry(.49,.12,.16),boot,-8.9+side*.32,.42,6.66);
+ const arm=mesh(new THREE.BoxGeometry(.39,.72,.48),jacket,-8.9+side*.72,1.82,7.78);
+ arm.rotation.x=-.48;arm.rotation.z=side*.2;anglerArms.push(arm);
+ mesh(new THREE.BoxGeometry(.34,.18,.34),skin,-8.9+side*.82,1.43,7.5);
+ const leg=mesh(new THREE.BoxGeometry(.5,.58,.65),pants,-8.9+side*.3,.91,7.43);
+ leg.rotation.x=-.8;anglerLegs.push(leg);
+ mesh(new THREE.BoxGeometry(.53,.25,.78),shoes,-8.9+side*.3,.49,6.99);
+ mesh(new THREE.BoxGeometry(.5,.07,.16),trim,-8.9+side*.3,.48,6.56);
 }
-mesh(new THREE.BoxGeometry(.34,.09,.11),mat(0x8c4f45),-8.9,2.72,7.57);
-mesh(new THREE.BoxGeometry(.42,.09,.13),gold,-8.9,1.4,7.44);
-const vest=mat(0x1e5267),seam=mat(0x5cd2c4);
-mesh(new THREE.BoxGeometry(.18,1.18,.09),vest,-8.9,1.88,8.42);
-mesh(new THREE.BoxGeometry(.9,.1,.09),seam,-8.9,2.35,8.42);
-mesh(new THREE.BoxGeometry(.65,.35,.17),vest,-8.9,1.65,8.48);
-mesh(new THREE.BoxGeometry(.43,.1,.12),gold,-8.9,1.83,8.59);
-for(const side of [-1,1]){
-  mesh(new THREE.BoxGeometry(.17,.7,.16),vest,-8.9+side*.5,1.9,8.39);
-  mesh(new THREE.BoxGeometry(.14,.15,.1),gold,-8.9+side*.45,2.37,8.42);
-}
-
-
-for(const side of [-1,1]){
-  const arm=mesh(new THREE.BoxGeometry(.36,.9,.42),outfit,-8.9+side*.78,2.02,7.8);
-  arm.rotation.x=-.48;arm.rotation.z=side*.3;
-  mesh(new THREE.BoxGeometry(.3,.25,.32),skin,-8.9+side*.8,1.52,7.52);
-  const leg=mesh(new THREE.BoxGeometry(.47,.82,.48),mat(0x233447),-8.9+side*.32,.83,7.45);
-  leg.rotation.x=-.85;
-  mesh(new THREE.BoxGeometry(.48,.22,.7),mat(0xf2f5fa),-8.9+side*.32,.48,7.0);
-}
+mesh(new THREE.BoxGeometry(.65,.7,.25),hood,-8.9,1.68,8.53);
+mesh(new THREE.BoxGeometry(.48,.12,.08),trim,-8.9,1.95,8.7);
 const lanternMat=new THREE.MeshStandardMaterial({color:0xffc875,emissive:0xf5a33c,emissiveIntensity:.55});
 for(const x of [-10.3,-5.8]){
   mesh(new THREE.CylinderGeometry(.09,.11,2.5,7),mat(0x68452d),x,1.45,4.1);
@@ -196,8 +174,6 @@ for(let i=0;i<14;i++){
   scene.add(swimmer);shoal.push({swimmer,tail,baseX:swimmer.position.x,baseZ:swimmer.position.z,phase:i*1.7});
 }
 // Animate the local angler only: a subtle breathing pose and reactive arm movement.
-const anglerArms=scene.children.filter(o=>o.isMesh&&o.geometry.type==='CapsuleGeometry'&&Math.abs(o.position.y-2.04)<.02&&Math.abs(o.position.x+8.9)<1);
-const anglerLegs=scene.children.filter(o=>o.isMesh&&o.geometry.type==='CapsuleGeometry'&&Math.abs(o.position.y-.83)<.02&&Math.abs(o.position.x+8.9)<1);
 const rodPoints=[new THREE.Vector3(-8.4,2.1,7.8),new THREE.Vector3(-6.2,3.8,4),new THREE.Vector3(-3.4,4.4,-1)];
 const rodCurve=new THREE.CatmullRomCurve3(rodPoints),rod=mesh(new THREE.TubeGeometry(rodCurve,20,.065,7,false),mat(0x303b41));
 const lineMaterial=new THREE.LineBasicMaterial({color:0xf6f5d9});let line=new THREE.Line(new THREE.BufferGeometry().setFromPoints([rodPoints[2],new THREE.Vector3(-2.7,.1,-8)]),lineMaterial);scene.add(line);
