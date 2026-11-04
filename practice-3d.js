@@ -91,8 +91,8 @@ if(tension>=100){phase='done';reeling=false;tell('💥 Đứt dây! Cá chạy m
 else if(progress>=100){phase='done';reeling=false;const result=awardCatch(practiceProgress,fishKg);practiceProgress=result.profile;showPracticeProgress();tell('🎉 Tập thành công: '+fishName+' '+fishKg+' kg · +'+result.xpGained+' EXP luyện tập (không lưu).');beep(940,.3);buttons()}}
 const active=phase==='waiting'||phase==='bite'||phase==='fight';
 const closeUp=cameraMode==='float'||(cameraMode==='auto'&&(phase==='bite'||phase==='fight'));
-const targetPos=closeUp?new THREE.Vector3(-.6,3.2,2.5):new THREE.Vector3(3.7,8.5,18);
-const lookAt=closeUp?new THREE.Vector3(-2.7,.15,-8):new THREE.Vector3(0,0,-12);
+const targetPos=closeUp?new THREE.Vector3(-.6,3.2,2.5):cameraMode==='wide'?new THREE.Vector3(3.7,8.5,18):new THREE.Vector3(-6.8,5.2,16.8);
+const lookAt=closeUp?new THREE.Vector3(-2.7,.15,-8):cameraMode==='wide'?new THREE.Vector3(0,0,-12):new THREE.Vector3(-5,1.1,-3);
 camera.position.lerp(targetPos,Math.min(1,dt*2.4));camera.lookAt(lookAt);
 bob.visible=bobTop.visible=active;line.visible=active;fishModel.visible=phase==='fight';
 const dip=phase==='bite'?.35:0;const wave=Math.sin(now*.005)*.06;bob.position.y=.24+wave-dip;bobTop.position.y=.55+wave-dip;
