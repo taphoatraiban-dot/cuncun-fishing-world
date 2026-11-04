@@ -47,7 +47,7 @@
         ? '🎣 Đã thả câu trên VPS. Chờ ít nhất 3 giây rồi kéo cá.'
         : '🐟 Câu được ' + String(result.fish || 'cá') + ' · +' + Number(result.points || 0) + ' điểm VPS!';
       if (kind === 'reel') {
-        window.dispatchEvent(new Event('cuncun:server-catch'));
+        window.dispatchEvent(new CustomEvent('cuncun:server-catch', { detail: { fish: String(result.fish || 'Cá'), points: Number(result.points || 0) } }));
       }
     } catch {
       status.textContent = 'Không kết nối được VPS. Hãy thử lại.';
