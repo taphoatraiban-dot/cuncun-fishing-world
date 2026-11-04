@@ -30,12 +30,44 @@ def issue(name, minutes):
     return token, expiry
 
 
+def revoke_sessions(name):
+    name = name.strip()
+    if not 1 <= len(name) <= 32:
+        raise ValueError("Invalid player name")
+    with server.connection() as db:
+        cursor = db.execute("DELETE FROM player_sessions WHERE player_name=? COLLATE NOCASE", (name,))
+        return cursor.rowcount
+
+
+def rotate_session(name):
+    name = name.strip()
+    now = int(time.time())
+    with server.connection() as db:
+        db.execute("BEGIN IMMEDIATE")
+        expiry = db.execute("SELECT MAX(expires_at) FROM tickets WHERE player_name=? COLLATE NOCASE", (name,)).fetchone()[0]
+        if not expiry or expiry <= now:
+            raise ValueError("Player has no active ticket")
+        db.execute("DELETE FROM player_sessions WHERE player_name=? COLLATE NOCASE", (name,))
+        token = secrets.token_urlsafe(32)
+        digest = hashlib.sha256(token.encode("utf-8")).hexdigest()
+        db.execute("INSERT INTO player_sessions(token_hash,player_name,expires_at) VALUES(?,?,?)", (digest,name,expiry))
+    return token, expiry
+
+
 def main():
     if len(sys.argv) != 3:
-        raise SystemExit("Usage: python3 -m backend.issue_ticket 'Player Name' 10")
+        raise SystemExit("Usage: python3 -m backend.issue_ticket 'Player Name' 10|rotate|revoke")
     try:
-        minutes = int(sys.argv[2])
-        token, expiry = issue(sys.argv[1], minutes)
+        action = sys.argv[2].lower()
+        if action == "revoke":
+            count = revoke_sessions(sys.argv[1])
+            print("Revoked sessions:", count)
+            return
+        if action == "rotate":
+            token, expiry = rotate_session(sys.argv[1])
+        else:
+            minutes = int(action)
+            token, expiry = issue(sys.argv[1], minutes)
     except ValueError as error:
         raise SystemExit(str(error)) from error
     print("Player:", sys.argv[1].strip())
