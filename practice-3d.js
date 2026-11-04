@@ -136,27 +136,27 @@ eyeMesh(new THREE.CylinderGeometry(.38,.33,.2,20),eyeBlue,-.92,-.8,-2.18);
 eyeMesh(new THREE.CylinderGeometry(.31,.31,.035,20),baitMix,-.92,-.68,-2.18);
 eyeMesh(new THREE.CylinderGeometry(.21,.19,.15,16),baitRim,-.49,-.78,-2.39);
 eyeMesh(new THREE.CylinderGeometry(.16,.16,.03,16),mat(0xe6b842),-.49,-.69,-2.39);
-// Seat clamp, forward support and V cradle share one right-hand axis.
-// The previous diagonal brace across the screen has been removed.
-eyeTube(new THREE.Vector3(.75,-1.48,-1.6),new THREE.Vector3(.91,-1.18,-2.1),.055,eyeMetal);
-eyeTube(new THREE.Vector3(.91,-1.18,-2.1),new THREE.Vector3(.91,-.65,-3.45),.047,eyeMetal);
-eyeTube(new THREE.Vector3(.91,-.65,-3.45),new THREE.Vector3(.74,-.43,-3.5),.045,eyeRed);
-eyeTube(new THREE.Vector3(.91,-.65,-3.45),new THREE.Vector3(1.08,-.43,-3.5),.045,eyeRed);
-// Rod is a separate articulated assembly: the fixed V support never moves.
+// A slim telescopic rest projects forward from the right side of the tackle box.
+// Its small rubber V is below the rod, not a second fishing pole.
+eyeTube(new THREE.Vector3(.79,-1.46,-1.65),new THREE.Vector3(.91,-1.13,-2.18),.042,eyeMetal);
+eyeTube(new THREE.Vector3(.91,-1.13,-2.18),new THREE.Vector3(.91,-.62,-4.18),.031,eyeMetal);
+eyeTube(new THREE.Vector3(.91,-.62,-4.18),new THREE.Vector3(.78,-.47,-4.24),.027,eyeRed);
+eyeTube(new THREE.Vector3(.91,-.62,-4.18),new THREE.Vector3(1.04,-.47,-4.24),.027,eyeRed);
+// One continuous tapered fishing rod: handle in the right hand, blank in the V,
+// and the fine tip reaching down toward the lake.
 const firstPersonRod=new THREE.Group();
-firstPersonRod.position.set(1.04,-1.13,-1.34);eyeRig.add(firstPersonRod);
+firstPersonRod.position.set(.77,-.91,-1.78);eyeRig.add(firstPersonRod);
 function mountedRodTube(a,b,r,material){
  const part=eyeTube(a,b,r,material);
  part.position.sub(firstPersonRod.position);
  firstPersonRod.add(part);
  return part;
 }
-mountedRodTube(new THREE.Vector3(1.04,-1.13,-1.34),new THREE.Vector3(.91,-.59,-3.5),.069,eyeRod);
-// Resting tip follows the lake surface at the cast point; lift occurs only during strike.
-mountedRodTube(new THREE.Vector3(.91,-.59,-3.5),new THREE.Vector3(.52,-1.83,-12),.026,eyeRod);
+mountedRodTube(new THREE.Vector3(.77,-.91,-1.78),new THREE.Vector3(.91,-.46,-4.22),.055,eyeRod);
+mountedRodTube(new THREE.Vector3(.91,-.46,-4.22),new THREE.Vector3(.85,-1.81,-12),.018,eyeRod);
 for(let i=0;i<3;i++)mountedRodTube(
- new THREE.Vector3(1.04-i*.025,-1.12+i*.16,-1.5-i*.5),
- new THREE.Vector3(1.04-i*.025,-1.12+i*.16,-1.39-i*.5),.074,eyeRed);
+ new THREE.Vector3(.77+i*.015,-.91+i*.11,-1.83-i*.37),
+ new THREE.Vector3(.77+i*.015,-.91+i*.11,-1.74-i*.37),.062,eyeRed);
 // Detailed first-person tackle: food pellets, molded tray edges and gripping hands.
 const eyeSkin=mat(0xf5bb94),eyeBaitDark=mat(0x8b663c),eyeGold=mat(0xf0c76b);
 for(let i=0;i<12;i++){
@@ -172,7 +172,7 @@ const firstPersonHands=[];
 for(const side of [-1,1]){
  const sleeve=eyeMesh(new THREE.CapsuleGeometry(.18,.4,5,10),eyeFabric,side*.66,-1.02,-1.65);
  sleeve.rotation.x=-.7;
- const hand=eyeMesh(new THREE.SphereGeometry(.17,12,10),eyeSkin,side*.59,-.78,-2.02);
+ const hand=eyeMesh(new THREE.SphereGeometry(.17,12,10),eyeSkin,side===1?.77:-.59,side===1?-.91:-.78,side===1?-1.78:-2.02);
  hand.scale.set(.85,1.05,1.2);
  firstPersonHands.push({sleeve,hand,side});
 }
@@ -449,11 +449,13 @@ firstPersonRod.rotation.z=Math.sin(now*.009)*eyeFight*.055;
 eyeRig.rotation.x=0;eyeRig.rotation.z=0;
 firstPersonHands.forEach(({sleeve,hand,side})=>{
  const grabbing=phase==='fight'||phase==='bite';
- hand.position.x=side*(grabbing?.38:.59);
- hand.position.y=grabbing?-.55:-.78;
- hand.position.z=grabbing?-2.42:-2.02;
+ hand.position.x=side===1?.77:-.59;
+ hand.position.y=side===1?-.91+(grabbing?.1:0):-.78;
+ hand.position.z=side===1?-1.78:-2.02;
  sleeve.rotation.x=grabbing?-1.05:-.7;
 });
+rod.visible=cameraMode!=='eyes';
+line.visible=cameraMode!=='eyes';
 head.visible=cameraMode!=='eyes';
 const desiredFov=cameraMode==='eyes'?70:52;
 if(Math.abs(camera.fov-desiredFov)>.01){camera.fov=desiredFov;camera.updateProjectionMatrix()}
