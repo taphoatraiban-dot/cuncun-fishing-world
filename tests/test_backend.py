@@ -9,6 +9,7 @@ from http.server import ThreadingHTTPServer
 from unittest.mock import patch
 
 from backend import server
+from backend.issue_ticket import issue
 
 class BackendTests(unittest.TestCase):
     @classmethod
@@ -111,6 +112,16 @@ class BackendTests(unittest.TestCase):
         self.assertEqual(row[0], name)
         status, _ = self.request("POST", "/api/player/reel", {"name": "Imposter"}, "invalid-token")
         self.assertEqual(status, 401)
+
+    def test_cli_ticket_issues_usable_player_session(self):
+        token, expiry = issue("CliTicketPlayer", 10)
+        self.assertGreater(expiry, 0)
+        status, result = self.request("POST", "/api/player/cast", {}, token)
+        self.assertEqual(status, 200)
+        self.assertTrue(result["ok"])
+        with server.connection() as db:
+            row = db.execute("SELECT cast_at FROM casts WHERE player_name=?", ("CliTicketPlayer",)).fetchone()
+        self.assertIsNotNone(row)
 
     def test_catch_and_leaderboard(self):
         status, result = self.request("POST", "/api/events", {"name":"Cun","kind":"catch","points":9}, server.TOKEN)
