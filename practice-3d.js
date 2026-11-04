@@ -1,4 +1,5 @@
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.module.js';
+import {initialProgress,awardCatch,xpNeeded} from './fishing-progression.js';
 const $=id=>document.getElementById(id),canvas=$('lake'),cast=$('cast'),hook=$('hook'),reel=$('reel'),reset=$('reset'),status=$('status'),meter=$('tension');
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x9bd5f0);scene.fog=new THREE.Fog(0x9bd5f0,70,210);
 const camera=new THREE.PerspectiveCamera(52,720/620,.1,250);camera.position.set(3.7,8.5,18);camera.lookAt(0,0,-12);
@@ -30,6 +31,8 @@ const cameraButton=$('camera'),soundButton=$('sound');let cameraMode='auto',audi
 function beep(freq=540,duration=.13){if(!soundOn||!audioContext)return;try{const osc=audioContext.createOscillator(),gain=audioContext.createGain();osc.type='sine';osc.frequency.value=freq;gain.gain.setValueAtTime(.0001,audioContext.currentTime);gain.gain.exponentialRampToValueAtTime(.065,audioContext.currentTime+.012);gain.gain.exponentialRampToValueAtTime(.0001,audioContext.currentTime+duration);osc.connect(gain);gain.connect(audioContext.destination);osc.start();osc.stop(audioContext.currentTime+duration+.02)}catch{}}
 cameraButton.addEventListener('click',()=>{cameraMode=cameraMode==='auto'?'float':cameraMode==='float'?'wide':'auto';cameraButton.textContent='📷 Camera: '+({auto:'Tự động',float:'Cận phao',wide:'Toàn cảnh'})[cameraMode]});
 soundButton.addEventListener('click',async()=>{if(!soundOn){const AudioCtor=window.AudioContext||window.webkitAudioContext;if(!AudioCtor){tell('Thiết bị chưa hỗ trợ âm thanh.');return}audioContext ||=new AudioCtor();try{await audioContext.resume()}catch{return}soundOn=true;beep(650)}else soundOn=false;soundButton.textContent=soundOn?'🔊 Âm thanh: Bật':'🔇 Âm thanh: Tắt'});
+let practiceProgress=initialProgress();
+function showPracticeProgress(){const p=practiceProgress;document.getElementById('practice-level').textContent='Cấp '+p.level+' · '+p.xp+'/'+xpNeeded(p.level)+' EXP · '+p.catches+' cá';document.getElementById('practice-xp').style.width=(xpNeeded(p.level)?100*p.xp/xpNeeded(p.level):100)+'%'}
 const fishes=['cá rô phi','cá chép','cá trắm','cá trôi','cá lóc'];
 function tell(s){status.textContent=s}
 function buttons(){cast.disabled=phase!=='idle'&&phase!=='done';hook.disabled=phase!=='bite';reel.disabled=phase!=='fight'}
@@ -46,7 +49,7 @@ if(phase==='waiting'&&now>=biteAt){phase='bite';biteUntil=now+1600;tell('⚡ PHA
 if(phase==='bite'&&now>biteUntil){phase='idle';tell('Cá đã nhả mồi. Thả lại nhé!');buttons()}
 if(phase==='fight'){fishBurst+=dt;const surge=Math.sin(now*.0032+fishKg)*Math.sin(now*.0017)*fishKg*.7;tension=Math.max(0,Math.min(100,tension+(reeling?(31+fishKg*2.4+Math.max(0,surge)*3):-(30+fishKg))*dt));if(reeling)progress+=dt*Math.max(4,15-fishKg*.9);
 if(tension>=100){phase='done';reeling=false;tell('💥 Đứt dây! Cá chạy mất rồi.');beep(220,.32);buttons()}
-else if(progress>=100){phase='done';reeling=false;tell('🎉 Tập thành công: '+fishName+' '+fishKg+' kg (mô phỏng, không tính điểm).');beep(940,.3);buttons()}}
+else if(progress>=100){phase='done';reeling=false;const result=awardCatch(practiceProgress,fishKg);practiceProgress=result.profile;showPracticeProgress();tell('🎉 Tập thành công: '+fishName+' '+fishKg+' kg · +'+result.xpGained+' EXP luyện tập (không lưu).');beep(940,.3);buttons()}}
 const active=phase==='waiting'||phase==='bite'||phase==='fight';
 const closeUp=cameraMode==='float'||(cameraMode==='auto'&&(phase==='bite'||phase==='fight'));
 const targetPos=closeUp?new THREE.Vector3(-.6,3.2,2.5):new THREE.Vector3(3.7,8.5,18);
@@ -67,4 +70,4 @@ ripples.forEach((r,i)=>{r.visible=active;r.position.x=phase==='fight'?fishModel.
 water.material.color.setHSL(.52,.6,.4+Math.sin(now*.001)*.012);
 meter.style.width=tension+'%';meter.style.background=tension>75?'#ef6258':'#eab65c';
 renderer.render(scene,camera);requestAnimationFrame(frame)}
-buttons();requestAnimationFrame(frame);
+showPracticeProgress();buttons();requestAnimationFrame(frame);
