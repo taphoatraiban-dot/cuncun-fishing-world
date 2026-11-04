@@ -93,6 +93,27 @@ for(const side of [-1,1]){
   }
  }
 }
+// Distant forested ridgelines add depth and natural silhouettes to the horizon.
+const ridgeMats=[mat(0x769c8c,{roughness:1}),mat(0x507b70,{roughness:1}),mat(0x365e51,{roughness:1})];
+for(let layer=0;layer<3;layer++){
+ const z=-103+layer*12,verts=[],indices=[];
+ const width=165,segments=55,base=-1.1-layer*.2;
+ for(let i=0;i<=segments;i++){
+  const x=-width/2+i*width/segments;
+  const height=5+layer*2+Math.sin(i*.39+layer)*2.6+Math.sin(i*.17+layer*1.8)*3.4;
+  verts.push(x,base,z,x,height,z);
+  if(i<segments){const a=i*2;indices.push(a,a+1,a+2,a+1,a+3,a+2)}
+ }
+ const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(verts,3));geo.setIndex(indices);geo.computeVertexNormals();
+ const ridge=mesh(geo,ridgeMats[layer]);ridge.material.side=THREE.DoubleSide;
+}
+// Reeds and uneven shoreline break up the straight artificial bank.
+const reedGreen=[mat(0x537e4a),mat(0x71945a),mat(0x426d46)];
+for(const side of [-1,1])for(let i=0;i<110;i++){
+ const z=10-i*.77,x=side*(26.8+(i%7)*.18),h=.3+(i%5)*.13;
+ const reed=mesh(new THREE.CylinderGeometry(.009,.018,h,5),reedGreen[i%3],x,h*.5,z);
+ reed.rotation.z=Math.sin(i*1.7)*.22;
+}
 const pier=mesh(new THREE.BoxGeometry(5,.28,9),mat(0x966b43),-8,.18,8);
 for(let i=0;i<5;i++)mesh(new THREE.BoxGeometry(4.9,.05,.07),mat(0xb98b58),-8,.35,4.4+i*1.8);
 // Fishing station rebuilt around a seated angler facing negative Z (the lake).
@@ -185,7 +206,7 @@ for(let i=0;i<3;i++)mountedRodTube(
  new THREE.Vector3(.77+i*.015,-.91+i*.11,-1.83-i*.37),
  new THREE.Vector3(.77+i*.015,-.91+i*.11,-1.74-i*.37),.062,eyeRed);
 // Detailed first-person tackle: food pellets, molded tray edges and gripping hands.
-const eyeSkin=mat(0xf5bb94),eyeBaitDark=mat(0x8b663c),eyeGold=mat(0xf0c76b);
+const eyeSkin=mat(0xd9a47f,{roughness:.91}),eyeBaitDark=mat(0x8b663c),eyeGold=mat(0xf0c76b);
 for(let i=0;i<12;i++){
  const a=i*2.399,rr=.1+(i%4)*.065;
  const pellet=eyeMesh(new THREE.SphereGeometry(.048+(i%3)*.012,8,6),i%3?baitMix:eyeBaitDark,-.92+Math.cos(a)*rr,-.59,-2.18+Math.sin(a)*rr);
@@ -401,7 +422,7 @@ const markerCore=new THREE.Mesh(new THREE.SphereGeometry(.12,8,8),new THREE.Mesh
 biteMarker.visible=false;
 const ripples=[];for(let i=0;i<3;i++){const r=mesh(new THREE.RingGeometry(.4,.46,40),rippleMat.clone(),-2.7,.06,-8);r.rotation.x=-Math.PI/2;ripples.push(r)}
 let phase='idle',biteAt=0,biteUntil=0,progress=0,tension=0,last=performance.now(),fishKg=0,fishName='',reeling=false,fishBurst=0,fishDirection=1;
-const cameraButton=$('camera'),soundButton=$('sound');let cameraMode='behind',audioContext=null,soundOn=false,lastAlert=0;
+const cameraButton=$('camera'),soundButton=$('sound');let cameraMode='eyes',audioContext=null,soundOn=false,lastAlert=0;
 function beep(freq=540,duration=.13){if(!soundOn||!audioContext)return;try{const osc=audioContext.createOscillator(),gain=audioContext.createGain();osc.type='sine';osc.frequency.value=freq;gain.gain.setValueAtTime(.0001,audioContext.currentTime);gain.gain.exponentialRampToValueAtTime(.065,audioContext.currentTime+.012);gain.gain.exponentialRampToValueAtTime(.0001,audioContext.currentTime+duration);osc.connect(gain);gain.connect(audioContext.destination);osc.start();osc.stop(audioContext.currentTime+duration+.02)}catch{}}
 const cameraModes=['behind','float','eyes','aerial'];const cameraLabels={behind:'Sau lưng',float:'Nhìn phao',eyes:'Từ mắt',aerial:'Trên cao'};cameraButton.textContent='📷 '+cameraLabels[cameraMode];cameraButton.addEventListener('click',()=>{cameraMode=cameraModes[(cameraModes.indexOf(cameraMode)+1)%cameraModes.length];cameraButton.textContent='📷 '+cameraLabels[cameraMode]});
 soundButton.addEventListener('click',async()=>{if(!soundOn){const AudioCtor=window.AudioContext||window.webkitAudioContext;if(!AudioCtor){tell('Thiết bị chưa hỗ trợ âm thanh.');return}audioContext ||=new AudioCtor();try{await audioContext.resume()}catch{return}soundOn=true;beep(650)}else soundOn=false;soundButton.textContent=soundOn?'🔊 Âm thanh: Bật':'🔇 Âm thanh: Tắt'});
