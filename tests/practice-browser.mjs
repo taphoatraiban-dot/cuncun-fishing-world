@@ -32,8 +32,9 @@ try {
   await page.keyboard.press('c');
   assert.equal(await page.locator('#cast').isDisabled(),true);
   assert.match(await page.locator('#status').innerText(),/Đã thả câu/);
-  await page.locator('#reset').click();
+  await page.keyboard.press('r');
   assert.equal(await page.locator('#cast').isEnabled(),true);
+  assert.match(await page.locator('#status').innerText(),/Sẵn sàng tập câu/);
   await page.locator('#camera').click();
   assert.match(await page.locator('#camera').innerText(),/Cận phao/);
   const profileLink = page.locator('a[href="./profile-demo.html"]');
