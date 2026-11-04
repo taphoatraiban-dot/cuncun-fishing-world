@@ -29,41 +29,46 @@ const water=mesh(new THREE.PlaneGeometry(54,90),new THREE.MeshPhongMaterial({col
 for(const side of [-1,1]){const bank=mesh(new THREE.BoxGeometry(2,.3,90),mat(0xb3a17a),side*28,-.02,-25);for(let i=0;i<22;i++){const z=12-i*3.7,x=side*(31+(i%3)*1.8);const trunk=mesh(new THREE.CylinderGeometry(.15,.2,2,6),mat(0x765238),x,.8,z);mesh(new THREE.ConeGeometry(1.2,3,7),mat(0x347b49),x,3,z)}}
 const pier=mesh(new THREE.BoxGeometry(5,.28,9),mat(0x966b43),-8,.18,8);
 for(let i=0;i<5;i++)mesh(new THREE.BoxGeometry(4.9,.05,.07),mat(0xb98b58),-8,.35,4.4+i*1.8);
-// Compact real-world fishing seat box with adjustable legs, cushion and side tray.
-const seatShell=mat(0x233b49),seatEdge=mat(0x70b6b4),seatCushion=mat(0x1b2932);
-const chair=mesh(new THREE.BoxGeometry(1.38,.65,1.32),seatShell,-9,.98,8);
-mesh(new THREE.BoxGeometry(1.46,.13,1.4),seatCushion,-9,1.36,8);
-mesh(new THREE.BoxGeometry(1.49,.07,1.43),seatEdge,-9,1.28,8);
-for(const x of [-9.58,-8.42])for(const z of [7.49,8.51]){
- mesh(new THREE.CylinderGeometry(.075,.09,.88,8),seatEdge,x,.62,z);
- mesh(new THREE.CylinderGeometry(.12,.12,.09,8),seatShell,x,.2,z);
+// Fishing station rebuilt around a seated angler facing negative Z (the lake).
+// Rod rest is physically attached to the seat box, not planted separately in water.
+const seatShell=mat(0x233b49),seatEdge=mat(0x70b6b4,{metalness:.45}),seatCushion=mat(0x1b2932);
+const chair=mesh(new THREE.BoxGeometry(1.5,.72,1.45),seatShell,-8.9,.99,8.15);
+mesh(new THREE.BoxGeometry(1.55,.17,1.49),seatCushion,-8.9,1.41,8.15);
+for(const x of [-9.5,-8.3])for(const z of [7.55,8.75]){
+ mesh(new THREE.CylinderGeometry(.065,.085,1.05,10),seatEdge,x,.64,z);
+ mesh(new THREE.CylinderGeometry(.14,.14,.075,10),seatShell,x,.17,z);
 }
-mesh(new THREE.BoxGeometry(.76,.055,.72),seatEdge,-7.95,1.05,8.13);
-mesh(new THREE.BoxGeometry(.7,.1,.65),seatShell,-7.95,1.13,8.13);
-mesh(new THREE.BoxGeometry(.13,.85,.12),seatEdge,-7.95,.7,8.13);
-// Bait tray is clamped to the seat box within reach of the seated angler.
-const baitTray=mat(0x3b5964),baitMix=mat(0xb88b56),baitRim=mat(0xb9d8d3);
-mesh(new THREE.BoxGeometry(.16,.15,.22),seatEdge,-8.36,1.08,7.65);
-mesh(new THREE.BoxGeometry(.9,.075,.65),baitTray,-7.95,1.33,7.58);
-const baitBowl=mesh(new THREE.CylinderGeometry(.27,.22,.18,12),baitRim,-7.95,1.46,7.58);
-mesh(new THREE.CylinderGeometry(.215,.215,.025,12),baitMix,-7.95,1.565,7.58);
-for(let i=0;i<5;i++){
- const a=i*Math.PI*2/5;
- mesh(new THREE.SphereGeometry(.045,6,5),baitMix,-7.95+Math.cos(a)*.12,1.59,7.58+Math.sin(a)*.12);
+// Side rail and clamp, visible from both behind and first-person views.
+mesh(new THREE.BoxGeometry(.15,.16,1.2),seatEdge,-8.09,1.08,7.96);
+mesh(new THREE.BoxGeometry(.34,.35,.35),mat(0x171f28),-8.04,1.23,7.66);
+mesh(new THREE.CylinderGeometry(.09,.09,.15,12),mat(0xc8d3da),-7.83,1.27,7.66).rotation.z=Math.PI/2;
+// Forward cantilever tube: aligned with the direction of the rod and lake.
+function tubeBetween(a,b,r,material){
+ const d=new THREE.Vector3().subVectors(b,a);
+ const m=mesh(new THREE.CylinderGeometry(r,r,d.length(),10),material);
+ m.position.copy(a).add(b).multiplyScalar(.5);
+ m.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),d.normalize());
+ return m;
 }
-// Telescoping support extends from the seat clamp towards the lake.
-const restArm=mesh(new THREE.CylinderGeometry(.045,.055,2.1,8),seatEdge,-7.66,1.46,6.9);
-restArm.rotation.x=-Math.PI/2.65;
-
-// V-shaped fishing rod rest and two-section support, aligned to the real rod.
-const rodRest=mat(0x202b36);
-mesh(new THREE.CylinderGeometry(.055,.075,2.45,8),seatEdge,-7.48,1.6,6.6);
-mesh(new THREE.BoxGeometry(.58,.12,.14),rodRest,-7.48,2.88,6.6);
-for(const side of [-1,1]){
- const prong=mesh(new THREE.CylinderGeometry(.045,.055,.38,8),rodRest,-7.48+side*.26,3.07,6.6);
- prong.rotation.z=side*.48;
+const restSteel=mat(0x9eb8c2,{metalness:.65,roughness:.3}),restGrip=mat(0x1d2934);
+tubeBetween(new THREE.Vector3(-8.04,1.25,7.66),new THREE.Vector3(-8.12,1.88,6.55),.085,restSteel);
+tubeBetween(new THREE.Vector3(-8.12,1.88,6.55),new THREE.Vector3(-8.18,2.23,5.1),.065,restSteel);
+tubeBetween(new THREE.Vector3(-8.18,2.23,5.1),new THREE.Vector3(-8.21,2.35,4.55),.048,restGrip);
+// U/V rest at the end of the long cantilever.
+const vPoint=new THREE.Vector3(-8.21,2.35,4.55);
+tubeBetween(vPoint,new THREE.Vector3(-8.43,2.58,4.49),.055,restGrip);
+tubeBetween(vPoint,new THREE.Vector3(-7.99,2.58,4.49),.055,restGrip);
+// Bait tray and bowl sit in reach, on the opposite side of the seat.
+const baitTray=mat(0x405d65),baitMix=mat(0xb78b52),baitRim=mat(0xc7d5d8,{metalness:.35});
+mesh(new THREE.BoxGeometry(.24,.2,.28),seatEdge,-9.7,1.18,7.78);
+mesh(new THREE.BoxGeometry(.96,.09,.83),baitTray,-10.05,1.52,7.33);
+mesh(new THREE.CylinderGeometry(.37,.31,.2,18),baitRim,-10.05,1.66,7.33);
+mesh(new THREE.CylinderGeometry(.3,.3,.027,18),baitMix,-10.05,1.77,7.33);
+for(let i=0;i<7;i++){
+ const a=i*Math.PI*2/7;
+ mesh(new THREE.SphereGeometry(.065,8,6),baitMix,-10.05+Math.cos(a)*.18,1.8,7.33+Math.sin(a)*.18);
 }
-
+mesh(new THREE.BoxGeometry(.38,.08,.45),mat(0x253c42),-9.58,1.57,7.05);
 // Wooden dock supports, side rails and fishing-station details.
 const dockWood=mat(0x62422d),dockTrim=mat(0xc99b61),metal=mat(0x33434b);
 for(const z of [4.3,8.1,12.1]){
@@ -91,22 +96,30 @@ for(let i=0;i<3;i++){
 
 // Chibi angler with a larger round head, compact body and blue fishing outfit.
 const skin=mat(0xffc69d),hair=mat(0x252334),cap=mat(0x123c67),jacket=mat(0x1769a5),hood=mat(0x0a456f),trim=mat(0x57c5ef),pants=mat(0x303746),shoes=mat(0xe9f7ff);
-const avatarBody=mesh(new THREE.BoxGeometry(1.1,1.05,.74),jacket,-8.9,1.7,8);
+const avatarBody=mesh(new THREE.CapsuleGeometry(.56,.48,6,12),jacket,-8.9,1.7,8);
 const head=mesh(new THREE.SphereGeometry(.72,16,12),skin,-8.9,2.85,7.98);head.scale.set(1,1.05,.88);
 mesh(new THREE.SphereGeometry(.73,12,8),hair,-8.9,3.16,8.12).scale.set(1,.53,.8);
 mesh(new THREE.CylinderGeometry(.65,.65,.22,16),cap,-8.9,3.47,8.02);
 mesh(new THREE.BoxGeometry(.92,.1,.34),cap,-8.9,3.4,7.55);
 mesh(new THREE.BoxGeometry(.34,.11,.1),trim,-8.9,3.49,7.32);
+// Face looks forward towards the float (negative Z).
+const eyeWhite=mat(0xffffff),iris=mat(0x283a4d),cheek=mat(0xf1a6a3);
+for(const dx of [-.29,.29]){
+ mesh(new THREE.SphereGeometry(.145,12,10),eyeWhite,-8.9+dx,2.87,7.36);
+ mesh(new THREE.SphereGeometry(.085,10,8),iris,-8.9+dx,2.865,7.23);
+ mesh(new THREE.SphereGeometry(.115,10,8),cheek,-8.9+dx*1.7,2.62,7.52).scale.set(1,.55,.35);
+}
+mesh(new THREE.SphereGeometry(.085,10,8),mat(0xc67b75),-8.9,2.61,7.31).scale.set(1,.3,.4);
 mesh(new THREE.BoxGeometry(1.16,.16,.83),hood,-8.9,2.19,8.04);
 mesh(new THREE.BoxGeometry(.9,.15,.12),trim,-8.9,1.98,8.43);
 mesh(new THREE.BoxGeometry(.5,.44,.13),hood,-8.9,1.62,8.44);
 mesh(new THREE.BoxGeometry(.4,.11,.15),trim,-8.9,1.7,8.52);
 const anglerArms=[],anglerLegs=[];
 for(const side of [-1,1]){
- const arm=mesh(new THREE.BoxGeometry(.39,.72,.48),jacket,-8.9+side*.72,1.82,7.78);
+ const arm=mesh(new THREE.CapsuleGeometry(.22,.38,5,10),jacket,-8.9+side*.72,1.82,7.78);
  arm.rotation.x=-.48;arm.rotation.z=side*.2;anglerArms.push(arm);
  mesh(new THREE.BoxGeometry(.34,.18,.34),skin,-8.9+side*.82,1.43,7.5);
- const leg=mesh(new THREE.BoxGeometry(.5,.58,.65),pants,-8.9+side*.3,.91,7.43);
+ const leg=mesh(new THREE.CapsuleGeometry(.27,.35,5,10),pants,-8.9+side*.3,.91,7.43);
  leg.rotation.x=-.8;anglerLegs.push(leg);
  mesh(new THREE.BoxGeometry(.53,.25,.78),shoes,-8.9+side*.3,.49,6.99);
  mesh(new THREE.BoxGeometry(.5,.07,.16),trim,-8.9+side*.3,.48,6.56);
@@ -208,7 +221,7 @@ for(let i=0;i<14;i++){
   scene.add(swimmer);shoal.push({swimmer,tail,baseX:swimmer.position.x,baseZ:swimmer.position.z,phase:i*1.7});
 }
 // Animate the local angler only: a subtle breathing pose and reactive arm movement.
-const rodPoints=[new THREE.Vector3(-8.4,2.1,7.8),new THREE.Vector3(-6.2,3.8,4),new THREE.Vector3(-3.4,4.4,-1)];
+const rodPoints=[new THREE.Vector3(-8.75,2.04,7.5),new THREE.Vector3(-8.2,2.39,4.55),new THREE.Vector3(-5.1,3.5,-2.2)];
 const rodCurve=new THREE.CatmullRomCurve3(rodPoints),rod=mesh(new THREE.TubeGeometry(rodCurve,20,.065,7,false),mat(0x303b41));
 const lineMaterial=new THREE.LineBasicMaterial({color:0xf6f5d9});let line=new THREE.Line(new THREE.BufferGeometry().setFromPoints([rodPoints[2],new THREE.Vector3(-2.7,.1,-8)]),lineMaterial);scene.add(line);
 const lineCoords=new Float32Array(6);line.geometry.dispose();line.geometry=new THREE.BufferGeometry();line.geometry.setAttribute('position',new THREE.BufferAttribute(lineCoords,3));
@@ -309,8 +322,8 @@ if(catchBanner&&!catchBanner.hidden&&now>=catchBannerUntil)catchBanner.hidden=tr
 catchGlow.visible=now<catchGlowUntil;
 if(catchGlow.visible){const t=1-(catchGlowUntil-now)/1600;catchGlow.scale.setScalar(.7+t*2);catchGlow.material.opacity=Math.max(0,1-t)}
 const active=phase==='waiting'||phase==='bite'||phase==='fight';
-const targetPos=cameraMode==='float'?new THREE.Vector3(-1.4,2.4,-3):cameraMode==='eyes'?new THREE.Vector3(-8.9,2.86,7.42):cameraMode==='aerial'?new THREE.Vector3(-5,28,15):new THREE.Vector3(-6.8,5.2,16.8);
-const lookAt=cameraMode==='float'||cameraMode==='eyes'?new THREE.Vector3(-2.7,.22,-8):cameraMode==='aerial'?new THREE.Vector3(-4,0,-8):new THREE.Vector3(-5,1.1,-3);
+const targetPos=cameraMode==='float'?new THREE.Vector3(-1.4,2.4,-3):cameraMode==='eyes'?new THREE.Vector3(-8.9,2.94,7.15):cameraMode==='aerial'?new THREE.Vector3(-5,28,15):new THREE.Vector3(-6.8,5.2,16.8);
+const lookAt=cameraMode==='float'?new THREE.Vector3(-2.7,.22,-8):cameraMode==='eyes'?new THREE.Vector3(-5.0,1.2,-10):cameraMode==='aerial'?new THREE.Vector3(-4,0,-8):new THREE.Vector3(-5,1.1,-3);
 camera.position.lerp(targetPos,Math.min(1,dt*2.4));camera.lookAt(lookAt);
 bob.visible=bobTop.visible=active;line.visible=active;fishModel.visible=phase==='fight';
 const dip=phase==='bite'?.35:0;const wave=Math.sin(now*.005)*.06;bob.position.y=.24+wave-dip;bobTop.position.y=.55+wave-dip;
@@ -333,8 +346,8 @@ const lift=fighting?Math.min(1,(15+tension)/55):0;
 const bent=fighting?(tension/100)*1.2:0;
 if(rod.userData.lastBend===undefined||Math.abs(rod.userData.lastBend-bent)>.035||Math.abs((rod.userData.lastLift||0)-lift)>.035){
  rod.geometry.dispose();
- const middle=new THREE.Vector3(-6.2,3.8+lift*.45,4);
- const tipShape=new THREE.Vector3(-3.4-bent,4.4+lift*1.1-bent*1.3,-1);
+ const middle=new THREE.Vector3(-8.2,2.39+lift*.45,4.55);
+ const tipShape=new THREE.Vector3(-5.1-bent,3.5+lift*1.1-bent*1.3,-2.2);
  rod.geometry=new THREE.TubeGeometry(new THREE.CatmullRomCurve3([rodPoints[0],middle,tipShape]),20,.065,7,false);
  rod.userData.lastBend=bent;rod.userData.lastLift=lift;
 }
