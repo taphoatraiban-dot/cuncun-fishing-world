@@ -96,6 +96,21 @@ try {
   assert.match(await page.locator('#status').innerText(),/Đã thả câu/);
   await page.locator('#reset').click();
   assert.equal(await page.locator('#cast').isEnabled(),true);
+  // Alternate reeling and resting to land a fish without snapping the line.
+  await page.locator('#cast').click();
+  await page.waitForFunction(()=>document.querySelector('#hook')?.disabled===false,null,{timeout:9000});
+  await page.locator('#hook').click();
+  await page.locator('#lake').click({position:{x:12,y:12}});
+  for(let attempt=0;attempt<40;attempt++){
+    if(await page.locator('#reel').isDisabled())break;
+    await page.keyboard.down('Space');
+    await page.waitForTimeout(380);
+    await page.keyboard.up('Space');
+    await page.waitForTimeout(520);
+  }
+  assert.match(await page.locator('#status').innerText(),/Tập thành công/);
+  assert.match(await page.locator('#practice-level').innerText(),/1 cá/);
+  assert.equal(await page.locator('#cast').isEnabled(),true);
   await page.locator('#camera').click();
   assert.match(await page.locator('#camera').innerText(),/Cận phao/);
   const profileLink = page.locator('a[href="./profile-demo.html"]');
