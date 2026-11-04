@@ -109,6 +109,8 @@ class Handler(BaseHTTPRequestHandler):
             return self.serve_static("index.html", "text/html; charset=utf-8")
         if path == "/server-leaderboard.js":
             return self.serve_static("server-leaderboard.js", "text/javascript; charset=utf-8")
+        if path == "/online-fishing.js":
+            return self.serve_static("online-fishing.js", "text/javascript; charset=utf-8")
         if path == "/health":
             return self.respond(200, {"ok": True, "service": "cuncun-fishing-backend"})
         if path == "/api/tickets/active":
