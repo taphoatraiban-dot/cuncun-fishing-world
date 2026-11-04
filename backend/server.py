@@ -42,6 +42,12 @@ def connection():
         created_at INTEGER NOT NULL,
         FOREIGN KEY(player_id) REFERENCES players(id)
     )""")
+    db.execute("""CREATE TABLE IF NOT EXISTS tickets (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        player_name TEXT NOT NULL COLLATE NOCASE,
+        expires_at INTEGER NOT NULL,
+        created_at INTEGER NOT NULL
+    )""")
     return db
 
 class Handler(BaseHTTPRequestHandler):
@@ -82,6 +88,11 @@ class Handler(BaseHTTPRequestHandler):
             return self.serve_static("server-leaderboard.js", "text/javascript; charset=utf-8")
         if path == "/health":
             return self.respond(200, {"ok": True, "service": "cuncun-fishing-backend"})
+        if path == "/api/tickets/active":
+            with connection() as db:
+                now = int(time.time())
+                rows = db.execute("SELECT player_name,MAX(expires_at) FROM tickets WHERE expires_at>? GROUP BY player_name ORDER BY player_name LIMIT 200", (now,)).fetchall()
+            return self.respond(200, {"players": [{"name": n, "expires_at": e} for n,e in rows]})
         if path == "/api/stats":
             with connection() as db:
                 players = db.execute("SELECT COUNT(*) FROM players").fetchone()[0]
@@ -94,7 +105,8 @@ class Handler(BaseHTTPRequestHandler):
         return self.respond(404, {"error": "not_found"})
 
     def do_POST(self):
-        if urlparse(self.path).path != "/api/events":
+        path = urlparse(self.path).path
+        if path not in ("/api/events", "/api/tickets"):
             return self.respond(404, {"error": "not_found"})
         if not self.authorized():
             return self.respond(401, {"error": "unauthorized"})
@@ -105,15 +117,29 @@ class Handler(BaseHTTPRequestHandler):
             payload = json.loads(self.rfile.read(size))
             name = payload.get("name")
             kind = payload.get("kind")
-            points = payload.get("points")
             if not isinstance(name, str) or not 1 <= len(name.strip()) <= 32:
                 raise ValueError("invalid name")
-            if kind != "catch" or type(points) is not int or not 1 <= points <= 100:
-                raise ValueError("invalid event")
+            if path == "/api/events":
+                points = payload.get("points")
+                if kind != "catch" or type(points) is not int or not 1 <= points <= 100:
+                    raise ValueError("invalid event")
+            else:
+                minutes = payload.get("minutes", 10)
+                if type(minutes) is not int or not 1 <= minutes <= 60:
+                    raise ValueError("invalid ticket duration")
             name = name.strip()
         except (ValueError, TypeError, json.JSONDecodeError):
             return self.respond(400, {"error": "invalid_payload"})
         now = int(time.time())
+        if path == "/api/tickets":
+            with connection() as db:
+                active = db.execute("SELECT COUNT(DISTINCT player_name) FROM tickets WHERE expires_at>?", (now,)).fetchone()[0]
+                existing = db.execute("SELECT MAX(expires_at) FROM tickets WHERE player_name=? COLLATE NOCASE AND expires_at>?", (name,now)).fetchone()[0]
+                if active >= 200 and existing is None:
+                    return self.respond(409, {"error": "lake_full"})
+                expires = max(now, existing or now) + minutes * 60
+                db.execute("INSERT INTO tickets(player_name,expires_at,created_at) VALUES(?,?,?)", (name,expires,now))
+            return self.respond(200, {"ok": True, "name": name, "expires_at": expires})
         with connection() as db:
             db.execute("INSERT OR IGNORE INTO players(name,created_at) VALUES(?,?)", (name, now))
             db.execute("UPDATE players SET points=points+?,catches=catches+1 WHERE name=? COLLATE NOCASE", (points,name))
