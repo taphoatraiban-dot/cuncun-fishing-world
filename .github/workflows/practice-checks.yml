@@ -1,0 +1,61 @@
+name: Fishing practice checks
+on:
+  push:
+    branches:
+      - feature/practice-fishing-mvp-20261104
+  pull_request:
+    paths:
+      - 'practice.html'
+      - 'profile-demo.html'
+      - 'practice-3d.js'
+      - 'backend/server.py'
+      - 'tests/test_practice_routes.py'
+      - 'tests/test_practice_isolation.py'
+      - 'tests/practice-browser.mjs'
+      - '.github/workflows/practice-checks.yml'
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Python route regression tests
+        run: python -m unittest discover -s tests -p 'test_practice_*.py' -v
+      - name: JavaScript syntax check
+        run: node --check practice-3d.js
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install browser test dependencies
+        run: |
+          npm install --no-save playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Chromium iPhone-size smoke test
+        env:
+          FISHING_ADMIN_TOKEN: practice-test-token-0123456789abcdef
+          FISHING_DB_PATH: /tmp/cuncun-practice-test.sqlite3
+        run: |
+          python backend/server.py > /tmp/fishing-practice-server.log 2>&1 &
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8791/health >/dev/null 2>&1; then break; fi
+            sleep 1
+          done
+          curl -fsS http://127.0.0.1:8791/health
+          node tests/practice-browser.mjs
+      - name: Show server logs on failure
+        if: failure()
+        run: cat /tmp/fishing-practice-server.log 2>/dev/null || true
+      - name: Verify required UI controls
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          html=Path('practice.html').read_text()
+          for element in ('lake','cast','hook','reel','reset','camera','sound','status','tension'):
+              assert f'id="{element}"' in html, element
+          assert 'type="module" src="./practice-3d.js"' in html
+          print('Practice controls present')
+          PY
