@@ -645,14 +645,15 @@ biteMarker.visible=phase==='bite';
 if(biteMarker.visible){biteMarker.position.y=1.3+Math.sin(now*.014)*.22;biteMarker.scale.setScalar(1+Math.sin(now*.02)*.18)}
 // Lift both arms towards the rod handle while striking and fighting.
 const holdingRod=phase==='fight';
+// Keep the human-sized seated rig anchored to its own shoulders and hips.
 anglerArms.forEach((arm,i)=>{
- const target=holdingRod?-.95:phase==='bite'?-.6:-.48;
- arm.rotation.x+=(target-arm.rotation.x)*Math.min(1,dt*9);
- arm.rotation.z=(i===0?-.2:.2)+(holdingRod?(i===0?.12:-.12):0);
- arm.position.y=1.82+(holdingRod?.16:0);
- arm.position.z=7.78-(holdingRod?.18:0);
+ const side=i===0?-1:1;
+ const target=holdingRod?-.9:phase==='bite'?-.7:-.58;
+ arm.rotation.x+=(target-arm.rotation.x)*Math.min(1,dt*8);
+ arm.rotation.z=side*(holdingRod?.2:.3);
+ arm.position.set(avatarX+side*.48,1.79+(holdingRod?.055:0),avatarZ-.12-(holdingRod?.09:0));
 });
-anglerLegs.forEach((leg,i)=>{leg.rotation.x=-.85+Math.sin(now*.0015+i)*.025});
+anglerLegs.forEach((leg,i)=>{leg.rotation.x=-1.25+Math.sin(now*.0015+i)*.012});
 if(catchBanner&&!catchBanner.hidden&&now>=catchBannerUntil)catchBanner.hidden=true;
 catchGlow.visible=now<catchGlowUntil;
 if(catchGlow.visible){const t=1-(catchGlowUntil-now)/1600;catchGlow.scale.setScalar(.7+t*2);catchGlow.material.opacity=Math.max(0,1-t)}
