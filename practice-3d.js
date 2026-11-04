@@ -175,7 +175,7 @@ const fishes=['cá rô phi','cá chép','cá trắm','cá trôi','cá lóc'];
 function tell(s){status.textContent=s}
 function hideCatchCelebration(){catchGlowUntil=0;catchBannerUntil=0;catchGlow.visible=false;if(catchBanner)catchBanner.hidden=true}
 function buttons(){cast.disabled=phase!=='idle'&&phase!=='done';hook.disabled=phase!=='bite';reel.disabled=phase!=='fight'}
-function start(){hideCatchCelebration();phase='waiting';const now=performance.now();biteAt=now+2200+Math.random()*4000;progress=0;tension=0;fishBurst=0;fishDirection=1;reeling=false;fishKg=+(0.4+Math.random()*5.6).toFixed(1);fishName=fishes[Math.floor(Math.random()*fishes.length)];tell('Đã thả câu. Nhìn phao giữa hồ nhé!');buttons()}
+function start(){if(phase!=='idle'&&phase!=='done')return;hideCatchCelebration();phase='waiting';const now=performance.now();biteAt=now+2200+Math.random()*4000;progress=0;tension=0;fishBurst=0;fishDirection=1;reeling=false;fishKg=+(0.4+Math.random()*5.6).toFixed(1);fishName=fishes[Math.floor(Math.random()*fishes.length)];tell('Đã thả câu. Nhìn phao giữa hồ nhé!');buttons()}
 function clear(){hideCatchCelebration();phase='idle';biteAt=0;biteUntil=0;progress=0;tension=0;fishBurst=0;reeling=false;tell('Sẵn sàng tập câu.');buttons()}
 function strike(){if(phase!=='bite')return;phase='fight';progress=0;tension=15;fishBurst=0;tell('Dính cá! Giữ Kéo cá, thả nút nếu dây quá căng.');beep(620,.16);buttons()}
 cast.addEventListener('click',start);reset.addEventListener('click',clear);hook.addEventListener('click',strike);
