@@ -25,7 +25,24 @@ scene.add(new THREE.HemisphereLight(0xe9f7ff,0x345638,2.1));const sun=new THREE.
 const mat=(c,extra={})=>new THREE.MeshStandardMaterial({color:c,roughness:.8,...extra});
 function mesh(geometry,material,x=0,y=0,z=0){const o=new THREE.Mesh(geometry,material);o.position.set(x,y,z);scene.add(o);return o}
 const ground=mesh(new THREE.PlaneGeometry(180,180),mat(0x659a57),0,-.22,-25);ground.rotation.x=-Math.PI/2;
-const water=mesh(new THREE.PlaneGeometry(54,90),new THREE.MeshPhongMaterial({color:0x268ba5,transparent:true,opacity:.92,shininess:120,side:THREE.DoubleSide}),0,.02,-25);water.rotation.x=-Math.PI/2;
+// Lightweight animated lake surface: actual moving waves rather than a flat blue sheet.
+const lakeGeometry=new THREE.PlaneGeometry(54,90,42,54);
+const lakePositions=lakeGeometry.attributes.position;
+const lakeBase=new Float32Array(lakePositions.array);
+const water=mesh(lakeGeometry,new THREE.MeshPhongMaterial({color:0x268fa7,specular:0xc7eff5,transparent:true,opacity:.94,shininess:145,side:THREE.DoubleSide}),0,.02,-25);
+water.rotation.x=-Math.PI/2;
+renderer.outputColorSpace=THREE.SRGBColorSpace;
+renderer.toneMapping=THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure=1.15;
+function animateLake(t){
+ const a=lakePositions.array;
+ for(let i=0;i<a.length;i+=3){
+  const x=lakeBase[i],z=lakeBase[i+1];
+  a[i+2]=Math.sin(x*.42+t*1.5+z*.12)*.07+Math.cos(z*.27-t*1.1+x*.18)*.055;
+ }
+ lakePositions.needsUpdate=true;
+ lakeGeometry.computeVertexNormals();
+}
 for(const side of [-1,1]){const bank=mesh(new THREE.BoxGeometry(2,.3,90),mat(0xb3a17a),side*28,-.02,-25);for(let i=0;i<22;i++){const z=12-i*3.7,x=side*(31+(i%3)*1.8);const trunk=mesh(new THREE.CylinderGeometry(.15,.2,2,6),mat(0x765238),x,.8,z);mesh(new THREE.ConeGeometry(1.2,3,7),mat(0x347b49),x,3,z)}}
 const pier=mesh(new THREE.BoxGeometry(5,.28,9),mat(0x966b43),-8,.18,8);
 for(let i=0;i<5;i++)mesh(new THREE.BoxGeometry(4.9,.05,.07),mat(0xb98b58),-8,.35,4.4+i*1.8);
@@ -335,6 +352,7 @@ window.addEventListener('blur',()=>reeling=false);canvas.addEventListener('webgl
 });
 const fishModel=new THREE.Group();const body=new THREE.Mesh(new THREE.SphereGeometry(.65,14,10),mat(0xe1b85a));body.scale.set(1.7,.8,.65);fishModel.add(body);const tail=new THREE.Mesh(new THREE.ConeGeometry(.45,.9,3),mat(0xbd8439));tail.rotation.z=Math.PI/2;tail.position.x=-1.1;fishModel.add(tail);const fin=new THREE.Mesh(new THREE.ConeGeometry(.32,.65,3),mat(0xc38c3d));fin.position.set(0,.55,0);fishModel.add(fin);fishModel.position.set(-2.7,-.45,-8);scene.add(fishModel);
 function frame(now){const dt=Math.min((now-last)/1000,.05);last=now;
+if(!document.hidden)animateLake(now*.001);
 if(document.hidden&&(phase==='waiting'||phase==='bite'||phase==='fight')){clear();tell('Đã tạm dừng vì rời màn hình. Bấm Thả câu để chơi lại.')}
 if(phase==='waiting'&&now>=biteAt){phase='bite';biteUntil=now+1600;tell('⚡ PHAO CHÌM! Bấm Giật cần!');beep(820,.2);buttons()}
 if(phase==='bite'&&now>biteUntil){phase='idle';reeling=false;tell('Cá đã nhả mồi. Thả lại nhé!');buttons()}
