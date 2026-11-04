@@ -188,6 +188,7 @@ class Handler(BaseHTTPRequestHandler):
                     if previous:
                         return self.respond(409, {"error": "already_cast"})
                     db.execute("INSERT INTO casts(player_name,cast_at) VALUES(?,?)", (name,now))
+                    db.commit()
                     return self.respond(200, {"ok": True, "cast_at": now, "min_wait_seconds": 3})
                 previous = db.execute("SELECT cast_at FROM casts WHERE player_name=? COLLATE NOCASE", (name,)).fetchone()
                 if not previous:
