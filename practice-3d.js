@@ -142,10 +142,18 @@ eyeTube(new THREE.Vector3(.75,-1.48,-1.6),new THREE.Vector3(.91,-1.18,-2.1),.055
 eyeTube(new THREE.Vector3(.91,-1.18,-2.1),new THREE.Vector3(.91,-.65,-3.45),.047,eyeMetal);
 eyeTube(new THREE.Vector3(.91,-.65,-3.45),new THREE.Vector3(.74,-.43,-3.5),.045,eyeRed);
 eyeTube(new THREE.Vector3(.91,-.65,-3.45),new THREE.Vector3(1.08,-.43,-3.5),.045,eyeRed);
-// Rod sits in the V and recedes towards the water, rather than crossing the view.
-eyeTube(new THREE.Vector3(1.04,-1.13,-1.34),new THREE.Vector3(.91,-.59,-3.5),.069,eyeRod);
-eyeTube(new THREE.Vector3(.91,-.59,-3.5),new THREE.Vector3(.12,-.15,-12),.026,eyeRod);
-for(let i=0;i<3;i++)eyeTube(
+// Rod is a separate articulated assembly: the fixed V support never moves.
+const firstPersonRod=new THREE.Group();
+firstPersonRod.position.set(1.04,-1.13,-1.34);eyeRig.add(firstPersonRod);
+function mountedRodTube(a,b,r,material){
+ const part=eyeTube(a,b,r,material);
+ part.position.sub(firstPersonRod.position);
+ firstPersonRod.add(part);
+ return part;
+}
+mountedRodTube(new THREE.Vector3(1.04,-1.13,-1.34),new THREE.Vector3(.91,-.59,-3.5),.069,eyeRod);
+mountedRodTube(new THREE.Vector3(.91,-.59,-3.5),new THREE.Vector3(.12,-.15,-12),.026,eyeRod);
+for(let i=0;i<3;i++)mountedRodTube(
  new THREE.Vector3(1.04-i*.025,-1.12+i*.16,-1.5-i*.5),
  new THREE.Vector3(1.04-i*.025,-1.12+i*.16,-1.39-i*.5),.074,eyeRed);
 // Detailed first-person tackle: food pellets, molded tray edges and gripping hands.
@@ -433,10 +441,11 @@ const targetPos=cameraMode==='float'?new THREE.Vector3(-1.4,2.4,-3):cameraMode==
 const lookAt=cameraMode==='float'?new THREE.Vector3(-2.7,.22,-8):cameraMode==='eyes'?new THREE.Vector3(-8.9,1.65,-12):cameraMode==='aerial'?new THREE.Vector3(-4,0,-8):new THREE.Vector3(-5,1.1,-3);
 camera.position.lerp(targetPos,Math.min(1,dt*2.4));camera.lookAt(lookAt);
 eyeRig.visible=cameraMode==='eyes';
-// When a fish is hooked, lift the foreground rod off its V support.
-const eyeFight=phase==='fight'?Math.min(1,(20+tension)/65):0;
-eyeRig.rotation.x=-eyeFight*.11;
-eyeRig.rotation.z=Math.sin(now*.009)*eyeFight*.025;
+// Raise only the rod when striking; keep the seat, bait tray and V support fixed.
+const eyeFight=phase==='fight'?Math.min(1,(20+tension)/65):phase==='bite'?.12:0;
+firstPersonRod.rotation.x=eyeFight*.36;
+firstPersonRod.rotation.z=Math.sin(now*.009)*eyeFight*.055;
+eyeRig.rotation.x=0;eyeRig.rotation.z=0;
 firstPersonHands.forEach(({sleeve,hand,side})=>{
  const grabbing=phase==='fight'||phase==='bite';
  hand.position.x=side*(grabbing?.38:.59);
