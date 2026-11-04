@@ -47,6 +47,14 @@
         ? '🎣 Đã thả câu trên VPS. Chờ ít nhất 3 giây rồi kéo cá.'
         : '🐟 Câu được ' + String(result.fish || 'cá') + ' · +' + Number(result.points || 0) + ' điểm VPS!';
       if (kind === 'reel') {
+        const pop = document.getElementById('serverCatchPop');
+        const popText = document.getElementById('serverCatchPopText');
+        if (pop && popText) {
+          popText.textContent = String(result.fish || 'Cá') + ' · +' + Number(result.points || 0) + ' điểm VPS';
+          pop.classList.remove('active');
+          void pop.offsetWidth;
+          pop.classList.add('active');
+        }
         window.dispatchEvent(new CustomEvent('cuncun:server-catch', { detail: { fish: String(result.fish || 'Cá'), points: Number(result.points || 0) } }));
       }
     } catch {
