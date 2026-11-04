@@ -131,6 +131,16 @@ for(let i=0;i<12;i++){
 const catchGlow=new THREE.Mesh(new THREE.TorusGeometry(.8,.09,8,32),new THREE.MeshBasicMaterial({color:0xffd86c,transparent:true,opacity:.9}));
 catchGlow.rotation.x=-Math.PI/2;catchGlow.position.set(-2.7,.4,-8);catchGlow.visible=false;scene.add(catchGlow);
 let catchGlowUntil=0;
+const catchBanner=$('catch-banner');
+let catchBannerUntil=0;
+function showCatchBanner(name,kg,xp,now){
+  if(!catchBanner)return;
+  catchBanner.replaceChildren();
+  const heading=document.createElement('div');heading.textContent='🎉 CÂU THÀNH CÔNG!';
+  const detail=document.createElement('small');detail.textContent=name+' · '+kg+' kg · +'+xp+' EXP tập';
+  catchBanner.append(heading,detail);catchBanner.hidden=false;catchBannerUntil=now+2600;
+}
+
 const rippleMat=new THREE.MeshBasicMaterial({color:0xd5f6ff,transparent:true,opacity:.35,side:THREE.DoubleSide});
 // A pulsing bite marker makes the short hook window visible on mobile.
 const biteMarker=new THREE.Group();biteMarker.position.set(-2.7,1.3,-8);scene.add(biteMarker);
@@ -161,7 +171,7 @@ if(phase==='waiting'&&now>=biteAt){phase='bite';biteUntil=now+1600;tell('⚡ PHA
 if(phase==='bite'&&now>biteUntil){phase='idle';tell('Cá đã nhả mồi. Thả lại nhé!');buttons()}
 if(phase==='fight'){fishBurst+=dt;const surge=Math.sin(now*.0032+fishKg)*Math.sin(now*.0017)*fishKg*.7;tension=Math.max(0,Math.min(100,tension+(reeling?(31+fishKg*2.4+Math.max(0,surge)*3):-(30+fishKg))*dt));if(reeling)progress+=dt*Math.max(4,15-fishKg*.9);
 if(tension>=100){phase='done';reeling=false;tell('💥 Đứt dây! Cá chạy mất rồi.');beep(220,.32);buttons()}
-else if(progress>=100){phase='done';reeling=false;const result=awardCatch(practiceProgress,fishKg);practiceProgress=result.profile;showPracticeProgress();catchGlowUntil=now+1600;tell('🎉 Tập thành công: '+fishName+' '+fishKg+' kg · +'+result.xpGained+' EXP luyện tập (không lưu).');beep(940,.3);buttons()}}
+else if(progress>=100){phase='done';reeling=false;const result=awardCatch(practiceProgress,fishKg);practiceProgress=result.profile;showPracticeProgress();catchGlowUntil=now+1600;showCatchBanner(fishName,fishKg,result.xpGained,now);tell('🎉 Tập thành công: '+fishName+' '+fishKg+' kg · +'+result.xpGained+' EXP luyện tập (không lưu).');beep(940,.3);buttons()}}
 visitorAnglers.forEach(({group,shirt,offset})=>{shirt.rotation.z=Math.sin(now*.0013+offset)*.035;group.rotation.y=Math.sin(now*.0005+offset)*.07});
 dancers.forEach(({dancer,offset})=>{dancer.position.y=1+Math.abs(Math.sin(now*.002+offset))*.18;dancer.rotation.y=Math.sin(now*.0014+offset)*.3});
 stageScreen.material.emissiveIntensity=.3+Math.sin(now*.002)*.16;
@@ -171,6 +181,7 @@ biteMarker.visible=phase==='bite';
 if(biteMarker.visible){biteMarker.position.y=1.3+Math.sin(now*.014)*.22;biteMarker.scale.setScalar(1+Math.sin(now*.02)*.18)}
 anglerArms.forEach((arm,i)=>{arm.rotation.x=-.48+(phase==='fight'?-.22:phase==='bite'?.14:0)+Math.sin(now*.002+i)*.025});
 anglerLegs.forEach((leg,i)=>{leg.rotation.x=-.85+Math.sin(now*.0015+i)*.025});
+if(catchBanner&&!catchBanner.hidden&&now>=catchBannerUntil)catchBanner.hidden=true;
 catchGlow.visible=now<catchGlowUntil;
 if(catchGlow.visible){const t=1-(catchGlowUntil-now)/1600;catchGlow.scale.setScalar(.7+t*2);catchGlow.material.opacity=Math.max(0,1-t)}
 const active=phase==='waiting'||phase==='bite'||phase==='fight';
