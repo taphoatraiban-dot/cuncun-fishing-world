@@ -9,7 +9,7 @@ from backend.server import Handler, SITE_ROOT
 
 class PracticeRouteTests(unittest.TestCase):
     def test_practice_assets_exist(self):
-        for filename in ("practice.html", "practice-3d.js", "profile-demo.html"):
+        for filename in ("practice.html", "practice-3d.js", "profile-demo.html", "fishing-progression.js"):
             with self.subTest(filename=filename):
                 self.assertTrue((SITE_ROOT / filename).is_file())
 
@@ -18,6 +18,7 @@ class PracticeRouteTests(unittest.TestCase):
             ("/practice.html", "practice.html", "text/html; charset=utf-8"),
             ("/profile-demo.html", "profile-demo.html", "text/html; charset=utf-8"),
             ("/practice-3d.js", "practice-3d.js", "text/javascript; charset=utf-8"),
+            ("/fishing-progression.js", "fishing-progression.js", "text/javascript; charset=utf-8"),
         ):
             with self.subTest(path=path):
                 handler = object.__new__(Handler)
