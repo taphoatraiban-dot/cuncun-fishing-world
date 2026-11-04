@@ -27,3 +27,22 @@ export function awardCatch(previous, weightKg) {
   if (state.level === MAX_LEVEL) state.xp = 0;
   return {profile: state, xpGained: gained};
 }
+
+/** Preview-only equipment swaps. The allowed starter items are not purchases. */
+export const PRACTICE_EQUIPMENT = Object.freeze({
+  rod: Object.freeze(['Cần cơ bản 4,5 m', 'Cần tập 5,4 m']),
+  line: Object.freeze(['Dây thường', 'Dây tập chịu lực']),
+  hook: Object.freeze(['Số 5', 'Số 6']),
+  float: Object.freeze(['Phao cơ bản', 'Phao tập nhạy'])
+});
+export function equipPracticeItem(previous, slot, item) {
+  if (!Object.hasOwn(PRACTICE_EQUIPMENT, slot) || !PRACTICE_EQUIPMENT[slot].includes(item)) {
+    throw new RangeError('Invalid practice equipment');
+  }
+  if (!previous || !previous.equipment || typeof previous.equipment !== 'object') {
+    throw new TypeError('Invalid profile equipment');
+  }
+  const next = structuredClone(previous);
+  next.equipment[slot] = item;
+  return next;
+}
