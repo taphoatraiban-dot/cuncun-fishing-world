@@ -223,11 +223,38 @@ function mountedRodTube(a,b,r,material){
  firstPersonRod.add(part);
  return part;
 }
-mountedRodTube(new THREE.Vector3(.77,-.91,-1.78),new THREE.Vector3(.91,-.49,-4.20),.047,eyeRod);
-mountedRodTube(new THREE.Vector3(.91,-.49,-4.20),new THREE.Vector3(.85,-1.81,-12),.012,eyeRod);
-for(let i=0;i<3;i++)mountedRodTube(
- new THREE.Vector3(.77+i*.015,-.91+i*.11,-1.83-i*.37),
- new THREE.Vector3(.77+i*.015,-.91+i*.11,-1.74-i*.37),.062,eyeRed);
+// Tapered carbon blank with an actual grip, ferrules and ceramic guide rings.
+const carbon=mat(0x111923,{metalness:.24,roughness:.3});
+const gripRubber=mat(0x202326,{roughness:.96});
+const ferrule=mat(0xb0b7bb,{metalness:.82,roughness:.22});
+const winding=mat(0x97272c,{metalness:.32,roughness:.36});
+const rodNodes=[
+ new THREE.Vector3(.77,-.91,-1.78),
+ new THREE.Vector3(.86,-.65,-3.15),
+ new THREE.Vector3(.91,-.49,-4.20),
+ new THREE.Vector3(.90,-.72,-6.65),
+ new THREE.Vector3(.87,-1.13,-9.0),
+ new THREE.Vector3(.85,-1.81,-12)
+];
+for(let i=0;i<rodNodes.length-1;i++){
+ const a=rodNodes[i],b=rodNodes[i+1],d=new THREE.Vector3().subVectors(b,a);
+ const radius0=.062*Math.pow(.65,i),radius1=.062*Math.pow(.65,i+1);
+ const segment=new THREE.Mesh(new THREE.CylinderGeometry(radius1,radius0,d.length(),12),carbon);
+ segment.position.copy(a).add(b).multiplyScalar(.5).sub(firstPersonRod.position);
+ segment.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),d.normalize());
+ firstPersonRod.add(segment);
+}
+mountedRodTube(new THREE.Vector3(.77,-.91,-1.78),new THREE.Vector3(.81,-.81,-2.32),.069,gripRubber);
+for(let i=0;i<4;i++){
+ const z=-2.36-i*.21;
+ const ring=eyeMesh(new THREE.TorusGeometry(.055-i*.009,.012,8,16),winding,.82+i*.01,-.8+i*.04,z);
+ ring.rotation.x=Math.PI/2;ring.position.sub(firstPersonRod.position);firstPersonRod.add(ring);
+}
+for(let i=2;i<rodNodes.length;i++){
+ const pt=rodNodes[i];
+ const guide=eyeMesh(new THREE.TorusGeometry(.07-(i-2)*.01,.009,7,14),ferrule,pt.x,pt.y-.075,pt.z);
+ guide.rotation.x=Math.PI/2;guide.position.sub(firstPersonRod.position);firstPersonRod.add(guide);
+}
 // Detailed first-person tackle: food pellets, molded tray edges and gripping hands.
 const eyeSkin=mat(0xd9a47f,{roughness:.91}),eyeBaitDark=mat(0x8b663c),eyeGold=mat(0xf0c76b);
 for(let i=0;i<12;i++){
