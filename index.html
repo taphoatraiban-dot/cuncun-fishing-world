@@ -23,14 +23,48 @@ for(const side of [-1,1]){
     dummy.position.set(x+side*.5,.66,z+.35);dummy.updateMatrix();chairs.setMatrixAt(id,dummy.matrix);
     dummy.position.set(x-side*.65,.72,z-.4);dummy.rotation.set(0,side*.25,0);dummy.updateMatrix();rods.setMatrixAt(id,dummy.matrix);
   }
-  // Trees are deliberately sparse to keep the 3D lake responsive on phones.
+  // Mixed broadleaf trees with layered, irregular canopies instead of cones.
+  const bark=mat(0x76543a),leafMats=[mat(0x367a3f),mat(0x4b9146),mat(0x276c42)];
   for(let i=0;i<38;i++){
-    const z=10-i*27.5,x=side*(20+(i%3)*.65);
-    const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.22,.34,2.8,6),mat(0x785038));
-    trunk.position.set(x,1.5,z);scene.add(trunk);
-    const crown=new THREE.Mesh(new THREE.ConeGeometry(1.8,4.4,7),mat(i%3?0x287b48:0x4b984d));
-    crown.position.set(x,4.7,z);scene.add(crown);
+    const z=10-i*27.5,x=side*(19.5+(i%3)*1.1),h=2.5+(i%4)*.35;
+    const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.18,.35,h,7),bark);
+    trunk.position.set(x,h/2+.12,z);scene.add(trunk);
+    for(let j=0;j<4;j++){
+      const crown=new THREE.Mesh(new THREE.IcosahedronGeometry(1.25+(j%2)*.35,1),leafMats[(i+j)%3]);
+      crown.position.set(x+Math.sin(i*3+j*2)*.85,h+1.0+(j%3)*.65,z+Math.cos(i*2+j*3)*.7);
+      crown.scale.set(1.25,.85,1.15);scene.add(crown);
+    }
   }
+}
+// Winding earth-and-grass shoreline with reeds and stones near the playable area.
+for(const side of [-1,1]){
+  const verts=[],indices=[];
+  for(let i=0;i<=100;i++){
+    const z=12-i*10.6,edge=side*(11.4+Math.sin(i*.31)*.7+Math.cos(i*.13)*.35);
+    verts.push(edge,.10,z,side*15,.16,z);
+    if(i<100){const k=i*2;indices.push(k,k+1,k+2,k+1,k+3,k+2)}
+  }
+  const geom=new THREE.BufferGeometry();
+  geom.setAttribute('position',new THREE.Float32BufferAttribute(verts,3));geom.setIndex(indices);geom.computeVertexNormals();
+  scene.add(new THREE.Mesh(geom,new THREE.MeshStandardMaterial({color:0x8a9560,side:THREE.DoubleSide,roughness:1})));
+  for(let i=0;i<65;i++){
+    const z=9-i*15.8,x=side*(11.7+Math.sin(i*.49)*.55);
+    const reed=new THREE.Mesh(new THREE.ConeGeometry(.15,.75,5),mat(i%2?0x6e9442:0x8a9c46));
+    reed.position.set(x,.48,z);scene.add(reed);
+  }
+}
+// A wooden footbridge spanning both banks in the distance, with posts and railings.
+const bridgeZ=-28;
+for(let i=0;i<24;i++){
+  const x=-12+i*1.05;
+  block(1.03,.23,2.7,i%2?0xa87848:0xb88956,x,.48,bridgeZ);
+}
+for(const side of [-1,1]){
+  for(let i=0;i<13;i++){
+    const x=-12+i*2;
+    block(.13,1.1,.13,0x705039,x,1.05,bridgeZ+side*1.15);
+  }
+  const rail=block(24.3,.13,.14,0x865d3d,0,1.58,bridgeZ+side*1.15);
 }
 for(const mesh of [bays,chairs,rods]){mesh.instanceMatrix.needsUpdate=true;mesh.frustumCulled=false;scene.add(mesh)}
 // Numbered guide signs every 50 bays; individual seat IDs are derived from the index.
