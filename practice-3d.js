@@ -25,6 +25,30 @@ scene.add(new THREE.HemisphereLight(0xe9f7ff,0x345638,2.1));const sun=new THREE.
 const mat=(c,extra={})=>new THREE.MeshStandardMaterial({color:c,roughness:.8,...extra});
 function mesh(geometry,material,x=0,y=0,z=0){const o=new THREE.Mesh(geometry,material);o.position.set(x,y,z);scene.add(o);return o}
 const ground=mesh(new THREE.PlaneGeometry(180,180),mat(0x659a57),0,-.22,-25);ground.rotation.x=-Math.PI/2;
+// Atmospheric sky dome: soft horizon gradient and warm sunlight, no external assets.
+const sky=new THREE.Mesh(
+ new THREE.SphereGeometry(185,32,16),
+ new THREE.ShaderMaterial({
+  side:THREE.BackSide,depthWrite:false,fog:false,
+  uniforms:{topColor:{value:new THREE.Color(0x317ec5)},horizonColor:{value:new THREE.Color(0xd3f3f4)},warmColor:{value:new THREE.Color(0xffe0ae)}},
+  vertexShader:'varying vec3 vWorld; void main(){vec4 w=modelMatrix*vec4(position,1.0);vWorld=w.xyz;gl_Position=projectionMatrix*viewMatrix*w;}',
+  fragmentShader:'varying vec3 vWorld;uniform vec3 topColor;uniform vec3 horizonColor;uniform vec3 warmColor;void main(){float h=clamp(normalize(vWorld).y,0.0,1.0);vec3 col=mix(horizonColor,topColor,pow(h,0.72));float glow=pow(max(0.0,dot(normalize(vWorld),normalize(vec3(-0.45,0.36,-0.82)))),14.0);col=mix(col,warmColor,glow*0.5);gl_FragColor=vec4(col,1.0);}'
+ })
+);
+sky.frustumCulled=false;scene.add(sky);
+const sunDisc=mesh(new THREE.SphereGeometry(3.8,18,12),new THREE.MeshBasicMaterial({color:0xfff1cf,fog:false}),-70,58,-105);
+const cloudMat=new THREE.MeshBasicMaterial({color:0xf5fbff,transparent:true,opacity:.68,depthWrite:false,fog:false});
+for(let i=0;i<9;i++){
+ const cloud=new THREE.Group();
+ const x=-66+(i%5)*34,z=-95-Math.floor(i/5)*29,y=31+(i%3)*5;
+ cloud.position.set(x,y,z);scene.add(cloud);
+ for(let j=0;j<4;j++){
+  const puff=new THREE.Mesh(new THREE.SphereGeometry(1,10,7),cloudMat);
+  puff.position.set((j-1.5)*3,Math.sin(j*2.1)*.6,0);
+  puff.scale.set(3.5+(j%2),1.1+(j%3)*.2,1.4);cloud.add(puff);
+ }
+}
+
 // Lightweight animated lake surface: actual moving waves rather than a flat blue sheet.
 const lakeGeometry=new THREE.PlaneGeometry(54,90,42,54);
 const lakePositions=lakeGeometry.attributes.position;
