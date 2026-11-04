@@ -113,6 +113,8 @@ class Handler(BaseHTTPRequestHandler):
         path = urlparse(self.path).path
         if path in ("/", "/index.html"):
             return self.serve_static("index.html", "text/html; charset=utf-8")
+        if path == "/profile-demo.html":
+            return self.serve_static("profile-demo.html", "text/html; charset=utf-8")
         if path == "/practice.html":
             return self.serve_static("practice.html", "text/html; charset=utf-8")
         if path == "/practice-3d.js":
