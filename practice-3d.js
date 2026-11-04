@@ -1,4 +1,5 @@
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.module.js';
+import {GLTFLoader} from 'https://cdn.jsdelivr.net/npm/three@0.160.1/examples/jsm/loaders/GLTFLoader.js';
 import {initialProgress,awardCatch,xpNeeded,PRACTICE_EQUIPMENT,equipPracticeItem} from './fishing-progression.js';
 const $=id=>document.getElementById(id),canvas=$('lake'),cast=$('cast'),hook=$('hook'),reel=$('reel'),reset=$('reset'),status=$('status'),meter=$('tension');
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x9bd5f0);scene.fog=new THREE.Fog(0x9bd5f0,70,210);
@@ -116,6 +117,28 @@ for(const side of [-1,1])for(let i=0;i<110;i++){
 }
 const pier=mesh(new THREE.BoxGeometry(5,.28,9),mat(0x966b43),-8,.18,8);
 for(let i=0;i<5;i++)mesh(new THREE.BoxGeometry(4.9,.05,.07),mat(0xb98b58),-8,.35,4.4+i*1.8);
+// External CC0 PBR glTF asset pilot (Khronos Lantern, CC0).
+// This loads asynchronously and is entirely optional: failures never stop fishing.
+// Attribution/license: https://github.com/KhronosGroup/glTF-Sample-Assets/tree/main/Models/Lantern
+const modelLoader=new GLTFLoader();
+modelLoader.load(
+ 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/Lantern/glTF-Binary/Lantern.glb',
+ gltf=>{
+  const model=gltf.scene;
+  const bounds=new THREE.Box3().setFromObject(model);
+  const size=bounds.getSize(new THREE.Vector3());
+  if(!Number.isFinite(size.y)||size.y<=0)return;
+  model.scale.setScalar(1.15/size.y);
+  model.updateMatrixWorld(true);
+  const scaled=new THREE.Box3().setFromObject(model);
+  const center=scaled.getCenter(new THREE.Vector3());
+  model.position.set(-10.25-center.x,.44-scaled.min.y,6.25-center.z);
+  model.traverse(o=>{if(o.isMesh){o.castShadow=false;o.receiveShadow=true}});
+  scene.add(model);
+ },
+ undefined,
+ error=>console.warn('Optional CC0 lantern model unavailable; fishing continues.',error)
+);
 // Fishing station rebuilt around a seated angler facing negative Z (the lake).
 // Rod rest is physically attached to the seat box, not planted separately in water.
 const seatShell=mat(0x233b49),seatEdge=mat(0x70b6b4,{metalness:.45}),seatCushion=mat(0x1b2932);
