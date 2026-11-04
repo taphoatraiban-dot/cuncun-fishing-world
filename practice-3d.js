@@ -139,21 +139,23 @@ eyeMesh(new THREE.CylinderGeometry(.16,.16,.03,16),mat(0xe6b842),-.49,-.69,-2.39
 // A slim telescopic rest projects forward from the right side of the tackle box.
 // Its small rubber V is below the rod, not a second fishing pole.
 eyeTube(new THREE.Vector3(.79,-1.46,-1.65),new THREE.Vector3(.91,-1.13,-2.18),.042,eyeMetal);
-eyeTube(new THREE.Vector3(.91,-1.13,-2.18),new THREE.Vector3(.91,-.62,-4.18),.031,eyeMetal);
-eyeTube(new THREE.Vector3(.91,-.62,-4.18),new THREE.Vector3(.78,-.47,-4.24),.027,eyeRed);
-eyeTube(new THREE.Vector3(.91,-.62,-4.18),new THREE.Vector3(1.04,-.47,-4.24),.027,eyeRed);
+eyeTube(new THREE.Vector3(.91,-1.13,-2.18),new THREE.Vector3(.91,-.71,-4.12),.029,eyeMetal);
+// Only two short rubber prongs form the V. The rod runs BETWEEN them.
+eyeTube(new THREE.Vector3(.91,-.71,-4.12),new THREE.Vector3(.80,-.48,-4.20),.022,eyeRed);
+eyeTube(new THREE.Vector3(.91,-.71,-4.12),new THREE.Vector3(1.02,-.48,-4.20),.022,eyeRed);
 // One continuous tapered fishing rod: handle in the right hand, blank in the V,
 // and the fine tip reaching down toward the lake.
 const firstPersonRod=new THREE.Group();
 firstPersonRod.position.set(.77,-.91,-1.78);eyeRig.add(firstPersonRod);
 function mountedRodTube(a,b,r,material){
  const part=eyeTube(a,b,r,material);
+ // Preserve its camera-local position when reparenting under the animated rod.
  part.position.sub(firstPersonRod.position);
  firstPersonRod.add(part);
  return part;
 }
-mountedRodTube(new THREE.Vector3(.77,-.91,-1.78),new THREE.Vector3(.91,-.46,-4.22),.055,eyeRod);
-mountedRodTube(new THREE.Vector3(.91,-.46,-4.22),new THREE.Vector3(.85,-1.81,-12),.018,eyeRod);
+mountedRodTube(new THREE.Vector3(.77,-.91,-1.78),new THREE.Vector3(.91,-.49,-4.20),.047,eyeRod);
+mountedRodTube(new THREE.Vector3(.91,-.49,-4.20),new THREE.Vector3(.85,-1.81,-12),.012,eyeRod);
 for(let i=0;i<3;i++)mountedRodTube(
  new THREE.Vector3(.77+i*.015,-.91+i*.11,-1.83-i*.37),
  new THREE.Vector3(.77+i*.015,-.91+i*.11,-1.74-i*.37),.062,eyeRed);
@@ -175,6 +177,11 @@ for(const side of [-1,1]){
  const hand=eyeMesh(new THREE.SphereGeometry(.17,12,10),eyeSkin,side===1?.77:-.59,side===1?-.91:-.78,side===1?-1.78:-2.02);
  hand.scale.set(.85,1.05,1.2);
  firstPersonHands.push({sleeve,hand,side});
+}
+// Fingers wrap around the handle instead of floating beside the rod.
+for(let i=0;i<3;i++){
+ const finger=eyeMesh(new THREE.SphereGeometry(.085,10,8),eyeSkin,.77+(i-1)*.055,-.94,-1.84-i*.075);
+ finger.scale.set(.75,.75,1.35);
 }
 eyeMesh(new THREE.BoxGeometry(.5,.06,.08),eyeGold,-.94,-1.02,-1.74);
 eyeRig.visible=false;
