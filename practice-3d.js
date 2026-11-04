@@ -1,5 +1,5 @@
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.module.js';
-import {initialProgress,awardCatch,xpNeeded} from './fishing-progression.js';
+import {initialProgress,awardCatch,xpNeeded,PRACTICE_EQUIPMENT,equipPracticeItem} from './fishing-progression.js';
 const $=id=>document.getElementById(id),canvas=$('lake'),cast=$('cast'),hook=$('hook'),reel=$('reel'),reset=$('reset'),status=$('status'),meter=$('tension');
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x9bd5f0);scene.fog=new THREE.Fog(0x9bd5f0,70,210);
 const camera=new THREE.PerspectiveCamera(52,720/620,.1,250);camera.position.set(3.7,8.5,18);camera.lookAt(0,0,-12);
@@ -71,3 +71,25 @@ water.material.color.setHSL(.52,.6,.4+Math.sin(now*.001)*.012);
 meter.style.width=tension+'%';meter.style.background=tension>75?'#ef6258':'#eab65c';
 renderer.render(scene,camera);requestAnimationFrame(frame)}
 showPracticeProgress();buttons();requestAnimationFrame(frame);
+
+// Practice-only inventory: never syncs or persists to accounts.
+for (const slot of Object.keys(PRACTICE_EQUIPMENT)) {
+  const select=document.getElementById('equip-'+slot);
+  if (!select) continue;
+  for (const item of PRACTICE_EQUIPMENT[slot]) {
+    const option=document.createElement('option');
+    option.value=item;
+    option.textContent=item;
+    select.appendChild(option);
+  }
+  select.value=practiceProgress.equipment[slot];
+  select.addEventListener('change',()=>{
+    try {
+      practiceProgress=equipPracticeItem(practiceProgress,slot,select.value);
+      document.getElementById('equipment-status').textContent='Đã thay '+slot+': '+select.value+' (chỉ phiên tập câu).';
+    } catch(error) {
+      select.value=practiceProgress.equipment[slot];
+      document.getElementById('equipment-status').textContent='Trang bị không hợp lệ.';
+    }
+  });
+}
