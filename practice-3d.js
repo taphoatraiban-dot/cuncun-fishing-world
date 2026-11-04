@@ -75,6 +75,21 @@ for(let i=0;i<5;i++){
   const rodMesh=new THREE.Mesh(rodGeo,mat(0x2a343b));rodMesh.position.set(.4,2.75,-1.4);rodMesh.rotation.x=-.75;group.add(rodMesh);
   visitorAnglers.push({group,shirt,offset:i*1.7});
 }
+// Decorative festival area: local 3D scenery, not a LIVE or gift integration.
+const stageBase=mesh(new THREE.BoxGeometry(9,.7,5),mat(0x29394f),18,.45,-10);
+mesh(new THREE.BoxGeometry(9.5,.35,1),mat(0x7441a5),18,3.6,-12.5);
+for(const x of [14,22]){
+  mesh(new THREE.CylinderGeometry(.18,.18,4.1,8),mat(0x273e57),x,2,-12.3);
+  mesh(new THREE.SphereGeometry(.48,10,8),new THREE.MeshStandardMaterial({color:0x75e5fa,emissive:0x1592c1,emissiveIntensity:.7}),x,4,-12.3);
+}
+const stageScreen=mesh(new THREE.BoxGeometry(4.5,2.2,.22),new THREE.MeshStandardMaterial({color:0x502b81,emissive:0x6a2a9b,emissiveIntensity:.4}),18,2.35,-12.4);
+const dancers=[];
+for(let i=0;i<2;i++){
+  const dancer=new THREE.Group();dancer.position.set(16.6+i*2.8,1,-10);scene.add(dancer);
+  const torso=new THREE.Mesh(new THREE.CapsuleGeometry(.35,.9,4,8),mat(i?0xf2ba49:0xec5ca7));torso.position.y=1.15;dancer.add(torso);
+  const head=new THREE.Mesh(new THREE.SphereGeometry(.33,10,8),skin);head.position.y=2.05;dancer.add(head);
+  dancers.push({dancer,offset:i*Math.PI});
+}
 const rodPoints=[new THREE.Vector3(-8.4,2.1,7.8),new THREE.Vector3(-6.2,3.8,4),new THREE.Vector3(-3.4,4.4,-1)];
 const rodCurve=new THREE.CatmullRomCurve3(rodPoints),rod=mesh(new THREE.TubeGeometry(rodCurve,20,.065,7,false),mat(0x303b41));
 const lineMaterial=new THREE.LineBasicMaterial({color:0xf6f5d9});let line=new THREE.Line(new THREE.BufferGeometry().setFromPoints([rodPoints[2],new THREE.Vector3(-2.7,.1,-8)]),lineMaterial);scene.add(line);
@@ -107,6 +122,8 @@ if(phase==='fight'){fishBurst+=dt;const surge=Math.sin(now*.0032+fishKg)*Math.si
 if(tension>=100){phase='done';reeling=false;tell('💥 Đứt dây! Cá chạy mất rồi.');beep(220,.32);buttons()}
 else if(progress>=100){phase='done';reeling=false;const result=awardCatch(practiceProgress,fishKg);practiceProgress=result.profile;showPracticeProgress();tell('🎉 Tập thành công: '+fishName+' '+fishKg+' kg · +'+result.xpGained+' EXP luyện tập (không lưu).');beep(940,.3);buttons()}}
 visitorAnglers.forEach(({group,shirt,offset})=>{shirt.rotation.z=Math.sin(now*.0013+offset)*.035;group.rotation.y=Math.sin(now*.0005+offset)*.07});
+dancers.forEach(({dancer,offset})=>{dancer.position.y=1+Math.abs(Math.sin(now*.002+offset))*.18;dancer.rotation.y=Math.sin(now*.0014+offset)*.3});
+stageScreen.material.emissiveIntensity=.3+Math.sin(now*.002)*.16;
 const active=phase==='waiting'||phase==='bite'||phase==='fight';
 const closeUp=cameraMode==='float'||(cameraMode==='auto'&&(phase==='bite'||phase==='fight'));
 const targetPos=closeUp?new THREE.Vector3(-.6,3.2,2.5):cameraMode==='wide'?new THREE.Vector3(3.7,8.5,18):new THREE.Vector3(-6.8,5.2,16.8);
