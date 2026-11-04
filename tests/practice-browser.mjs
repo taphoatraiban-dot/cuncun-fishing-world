@@ -12,7 +12,7 @@ try {
   assert.equal(response.status(),200);
   await page.waitForTimeout(1800);
   assert.equal(await page.locator('#render-error').isVisible(),false,'WebGL initialization failed');
-  await page.waitForFunction(() => document.querySelector('#cast')?.disabled === false,{timeout:10000});
+  await page.waitForFunction(() => document.querySelector('#cast')?.disabled === false, null, {timeout:10000});
   assert.equal(await page.locator('#cast').isEnabled(),true);
   await page.locator('#cast').click();
   assert.equal(await page.locator('#cast').isDisabled(),true);
