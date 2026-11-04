@@ -113,6 +113,9 @@ for(let i=0;i<14;i++){
   swimmer.position.set(-16+(i%7)*5,-.12,-18-Math.floor(i/7)*15);
   scene.add(swimmer);shoal.push({swimmer,tail,baseX:swimmer.position.x,baseZ:swimmer.position.z,phase:i*1.7});
 }
+// Animate the local angler only: a subtle breathing pose and reactive arm movement.
+const anglerArms=scene.children.filter(o=>o.isMesh&&o.geometry.type==='CapsuleGeometry'&&Math.abs(o.position.y-2.04)<.02&&Math.abs(o.position.x+8.9)<1);
+const anglerLegs=scene.children.filter(o=>o.isMesh&&o.geometry.type==='CapsuleGeometry'&&Math.abs(o.position.y-.83)<.02&&Math.abs(o.position.x+8.9)<1);
 const rodPoints=[new THREE.Vector3(-8.4,2.1,7.8),new THREE.Vector3(-6.2,3.8,4),new THREE.Vector3(-3.4,4.4,-1)];
 const rodCurve=new THREE.CatmullRomCurve3(rodPoints),rod=mesh(new THREE.TubeGeometry(rodCurve,20,.065,7,false),mat(0x303b41));
 const lineMaterial=new THREE.LineBasicMaterial({color:0xf6f5d9});let line=new THREE.Line(new THREE.BufferGeometry().setFromPoints([rodPoints[2],new THREE.Vector3(-2.7,.1,-8)]),lineMaterial);scene.add(line);
@@ -162,6 +165,8 @@ boat.position.y=.15+Math.sin(now*.0018)*.07;boat.rotation.z=Math.sin(now*.0013)*
 shoal.forEach(({swimmer,tail,baseX,baseZ,phase})=>{const t=now*.00055+phase;swimmer.position.x=baseX+Math.sin(t)*2.4;swimmer.position.z=baseZ+Math.cos(t*.8)*1.8;swimmer.rotation.y=Math.cos(t)*.8;tail.rotation.y=Math.sin(now*.009+phase)*.65});
 biteMarker.visible=phase==='bite';
 if(biteMarker.visible){biteMarker.position.y=1.3+Math.sin(now*.014)*.22;biteMarker.scale.setScalar(1+Math.sin(now*.02)*.18)}
+anglerArms.forEach((arm,i)=>{arm.rotation.x=-.48+(phase==='fight'?-.22:phase==='bite'?.14:0)+Math.sin(now*.002+i)*.025});
+anglerLegs.forEach((leg,i)=>{leg.rotation.x=-.85+Math.sin(now*.0015+i)*.025});
 const active=phase==='waiting'||phase==='bite'||phase==='fight';
 const closeUp=cameraMode==='float'||(cameraMode==='auto'&&(phase==='bite'||phase==='fight'));
 const targetPos=closeUp?new THREE.Vector3(-.6,3.2,2.5):cameraMode==='wide'?new THREE.Vector3(3.7,8.5,18):new THREE.Vector3(-6.8,5.2,16.8);
