@@ -24,6 +24,12 @@ try {
   assert.equal(await page.locator('#cast').isEnabled(),true);
   await page.locator('#camera').click();
   assert.match(await page.locator('#camera').innerText(),/Cận phao/);
+  const profileLink = page.locator('a[href="./profile-demo.html"]');
+  assert.equal(await profileLink.count(),1);
+  await profileLink.click();
+  await page.waitForURL('**/profile-demo.html');
+  assert.match(await page.locator('h1').innerText(),/Hồ sơ cần thủ/);
+  await page.goBack({waitUntil:'networkidle'});
   const dimensions=await page.locator('#lake').boundingBox();
   assert.ok(dimensions.width<=390,'canvas overflows iPhone viewport');
   assert.deepEqual(errors,[],'Unexpected JavaScript errors');
