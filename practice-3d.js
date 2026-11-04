@@ -24,6 +24,31 @@ for(const side of [-1,1]){const bank=mesh(new THREE.BoxGeometry(2,.3,90),mat(0xb
 const pier=mesh(new THREE.BoxGeometry(5,.28,9),mat(0x966b43),-8,.18,8);
 for(let i=0;i<5;i++)mesh(new THREE.BoxGeometry(4.9,.05,.07),mat(0xb98b58),-8,.35,4.4+i*1.8);
 const chair=mesh(new THREE.BoxGeometry(1.1,.7,1.2),mat(0x775235),-9,1,8);
+// Wooden dock supports, side rails and fishing-station details.
+const dockWood=mat(0x62422d),dockTrim=mat(0xc99b61),metal=mat(0x33434b);
+for(const z of [4.3,8.1,12.1]){
+  for(const x of [-10.3,-5.7]){
+    mesh(new THREE.CylinderGeometry(.15,.19,2.2,7),dockWood,x,-.72,z);
+    mesh(new THREE.BoxGeometry(.35,.11,.35),metal,x,.4,z);
+  }
+}
+for(const x of [-10.42,-5.58]){
+  mesh(new THREE.BoxGeometry(.14,.12,8.7),dockTrim,x,.39,8);
+}
+for(let i=0;i<9;i++){
+  mesh(new THREE.BoxGeometry(4.8,.018,.055),dockWood,-8,.36,4.2+i*.95);
+}
+mesh(new THREE.BoxGeometry(.68,.24,.55),mat(0x277c89),-7.0,.57,9.1);
+mesh(new THREE.BoxGeometry(.62,.09,.49),metal,-7.0,.74,9.1);
+mesh(new THREE.CylinderGeometry(.18,.22,.4,9),mat(0xb6c3c9),-6.6,.62,7.4);
+// Subtle concentric ripples near the float; decorative and lightweight.
+const lakeRipples=[];
+for(let i=0;i<3;i++){
+  const ring=new THREE.Mesh(new THREE.RingGeometry(.72, .79, 32),new THREE.MeshBasicMaterial({color:0xd3faff,transparent:true,opacity:.22,side:THREE.DoubleSide,depthWrite:false}));
+  ring.rotation.x=-Math.PI/2;ring.position.set(-6,.055,-12);scene.add(ring);
+  lakeRipples.push({ring,offset:i/3});
+}
+
 const avatarBody=mesh(new THREE.CylinderGeometry(.55,.5,1.5,10),mat(0x168fa6),-8.9,1.8,8);
 mesh(new THREE.SphereGeometry(.48,12,10),mat(0xe3b68e),-8.9,2.85,8);
 // Stylized angler and lakeside scenery, built only from local Three.js primitives.
@@ -272,6 +297,7 @@ if(rod.userData.lastBend===undefined||Math.abs(rod.userData.lastBend-bent)>.035)
 const tip=new THREE.Vector3(-3.4-bent,4.4-bent*1.3,-1);
 lineCoords.set([tip.x,tip.y,tip.z,bob.position.x,bob.position.y,bob.position.z]);line.geometry.attributes.position.needsUpdate=true;
 ripples.forEach((r,i)=>{r.visible=active;r.position.x=phase==='fight'?fishModel.position.x:bob.position.x;r.position.z=phase==='fight'?fishModel.position.z:bob.position.z;const scale=.8+((now*(splash?.0014:.0006)+i/3)%1.7);r.scale.setScalar(scale);r.material.opacity=(splash?.6:.25)*(1-(scale-.8)/1.7)});
+lakeRipples.forEach(({ring,offset})=>{const cycle=(now*.00032+offset)%1;ring.scale.setScalar(.65+cycle*3.1);ring.material.opacity=(1-cycle)*.25;});
 water.material.color.setHSL(.52,.6,.4+Math.sin(now*.001)*.012);
 meter.style.width=tension+'%';meter.style.background=tension>75?'#ef6258':'#eab65c';
 document.getElementById('tension-value').textContent=Math.round(tension)+'%';
