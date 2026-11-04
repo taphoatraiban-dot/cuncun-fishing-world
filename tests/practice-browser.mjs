@@ -32,6 +32,11 @@ try {
   await page.keyboard.press('c');
   assert.equal(await page.locator('#cast').isDisabled(),true);
   assert.match(await page.locator('#status').innerText(),/Đã thả câu/);
+  // A synthetic duplicate click bypasses the disabled button. The game logic
+  // itself must reject it rather than restarting the bite countdown.
+  await page.locator('#cast').evaluate(button=>button.dispatchEvent(new MouseEvent('click',{bubbles:true})));
+  assert.equal(await page.locator('#cast').isDisabled(),true);
+  assert.match(await page.locator('#status').innerText(),/Đã thả câu/);
   // Simulate browser backgrounding deterministically: headless tab scheduling
   // is platform-dependent, so relying on a second tab makes CI flaky.
   await page.evaluate(()=>{
