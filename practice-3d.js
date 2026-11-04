@@ -455,36 +455,44 @@ for(let i=0;i<9;i++){
   const fish=mesh(new THREE.SphereGeometry(.33,7,6),mat(i%2?0xe0bc57:0x7db4a4),x,-.18,z);
   fish.scale.set(1.8,.45,.7);
 }
-// Lightweight animated neighboring anglers with rounded bodies, caps and fishing gear.
+// Five human-proportioned neighboring anglers; decorative only, not live users.
+// Shared geometries/materials and small silhouettes keep mobile rendering affordable.
 const visitorAnglers=[];
-const visitorColors=[0xd85f64,0x3978bb,0xe9b94f,0x8a67b8,0x3c9e82];
-const visitorSkin=mat(0xe8b48e),visitorPants=mat(0x344254),visitorHair=mat(0x293344);
+const visitorColors=[0x576a59,0x4b677b,0x806a4b,0x746575,0x4d786d];
+const visitorSkin=mat(0xc79b7a),visitorPants=mat(0x343c3e),visitorHair=mat(0x2e2a25);
+const visitorHeadGeo=new THREE.SphereGeometry(.24,12,10);
+const visitorLimbGeo=new THREE.CapsuleGeometry(.095,.32,4,8);
+const visitorLegGeo=new THREE.CapsuleGeometry(.13,.48,4,8);
+const visitorBootGeo=new THREE.BoxGeometry(.27,.17,.43);
+function visitorPart(group,geo,material,x,y,z){
+ const obj=new THREE.Mesh(geo,material);obj.position.set(x,y,z);group.add(obj);return obj;
+}
 for(let i=0;i<5;i++){
-  const x=-21+i*8,z=-7-(i%2)*10;
-  const group=new THREE.Group();group.position.set(x,0,z);scene.add(group);
-  const shirtMat=mat(visitorColors[i]),hatMat=mat([0x394d63,0x334b79,0x6a4c3c,0x4b395c,0x2c5d53][i]);
-  const shirt=new THREE.Mesh(new THREE.CapsuleGeometry(.43,.54,5,10),shirtMat);shirt.position.y=1.6;group.add(shirt);
-  const neck=new THREE.Mesh(new THREE.CylinderGeometry(.15,.16,.25,10),visitorSkin);neck.position.y=2.13;group.add(neck);
-  const face=new THREE.Mesh(new THREE.SphereGeometry(.38,14,10),visitorSkin);face.position.set(0,2.49,-.045);face.scale.set(.95,1.08,.88);group.add(face);
-  const hairMesh=new THREE.Mesh(new THREE.SphereGeometry(.39,12,8),visitorHair);hairMesh.position.set(0,2.72,.01);hairMesh.scale.set(1,.45,.92);group.add(hairMesh);
-  const capMesh=new THREE.Mesh(new THREE.CylinderGeometry(.4,.4,.15,14),hatMat);capMesh.position.set(0,2.86,-.04);group.add(capMesh);
-  const brim=new THREE.Mesh(new THREE.BoxGeometry(.6,.055,.26),hatMat);brim.position.set(0,2.79,-.42);group.add(brim);
-  for(const side of [-1,1]){
-    const eye=new THREE.Mesh(new THREE.SphereGeometry(.046,8,6),visitorHair);
-    eye.position.set(side*.15,2.5,-.385);group.add(eye);
-    const arm=new THREE.Mesh(new THREE.CapsuleGeometry(.14,.4,4,8),shirtMat);
-    arm.position.set(side*.52,1.55,-.23);arm.rotation.x=-.55;arm.rotation.z=side*.2;group.add(arm);
-    const glove=new THREE.Mesh(new THREE.SphereGeometry(.15,8,6),visitorSkin);
-    glove.position.set(side*.57,1.14,-.52);group.add(glove);
-    const leg=new THREE.Mesh(new THREE.CapsuleGeometry(.19,.36,4,8),visitorPants);
-    leg.position.set(side*.25,.67,-.2);leg.rotation.x=-.65;group.add(leg);
-    const boot=new THREE.Mesh(new THREE.BoxGeometry(.42,.2,.65),hatMat);
-    boot.position.set(side*.25,.22,-.56);group.add(boot);
-  }
-  const vest=new THREE.Mesh(new THREE.BoxGeometry(.42,.25,.08),hatMat);vest.position.set(0,1.65,-.44);group.add(vest);
-  const rodGeo=new THREE.CylinderGeometry(.013,.045,4.2,7);
-  const rodMesh=new THREE.Mesh(rodGeo,mat(0x26323b));rodMesh.position.set(.45,2.4,-1.5);rodMesh.rotation.x=-.85;group.add(rodMesh);
-  visitorAnglers.push({group,shirt,offset:i*1.7});
+ const x=-21+i*8,z=-7-(i%2)*10;
+ const group=new THREE.Group();group.position.set(x,0,z);scene.add(group);
+ const jacketMat=mat(visitorColors[i]),hatMat=mat([0x394d63,0x334b79,0x6a4c3c,0x4b395c,0x2c5d53][i]);
+ const torso=visitorPart(group,new THREE.CylinderGeometry(.29,.25,.7,10),jacketMat,0,1.45,0);
+ torso.scale.z=.8;
+ visitorPart(group,new THREE.CylinderGeometry(.1,.1,.15,8),visitorSkin,0,1.88,-.02);
+ const face=visitorPart(group,visitorHeadGeo,visitorSkin,0,2.1,-.03);
+ face.scale.set(.85,1.12,.9);
+ const hairMesh=visitorPart(group,visitorHeadGeo,visitorHair,0,2.24,.005);
+ hairMesh.scale.set(.9,.45,.95);
+ visitorPart(group,new THREE.CylinderGeometry(.24,.24,.10,12),hatMat,0,2.34,-.03);
+ visitorPart(group,new THREE.BoxGeometry(.35,.035,.17),hatMat,0,2.29,-.26);
+ for(const side of [-1,1]){
+   visitorPart(group,new THREE.SphereGeometry(.022,8,6),visitorHair,side*.095,2.11,-.255);
+   const arm=visitorPart(group,visitorLimbGeo,jacketMat,side*.37,1.43,-.18);
+   arm.rotation.x=-.75;arm.rotation.z=side*.24;
+   visitorPart(group,new THREE.SphereGeometry(.075,8,6),visitorSkin,side*.39,1.09,-.48);
+   const thigh=visitorPart(group,visitorLegGeo,visitorPants,side*.17,.73,-.25);
+   thigh.rotation.x=-.85;
+   visitorPart(group,visitorBootGeo,hatMat,side*.17,.16,-.57);
+ }
+ visitorPart(group,new THREE.BoxGeometry(.2,.16,.06),hatMat,0,1.36,-.24);
+ const rod=visitorPart(group,new THREE.CylinderGeometry(.01,.032,3.7,6),mat(0x26323b),.35,2.12,-1.52);
+ rod.rotation.x=-.95;
+ visitorAnglers.push({group,torso,rod,offset:i*1.7});
 }
 // Decorative festival area: local 3D scenery, not a LIVE or gift integration.
 const stageBase=mesh(new THREE.BoxGeometry(9,.7,5),mat(0x29394f),18,.45,-10);
@@ -626,7 +634,7 @@ if(phase==='bite'&&now>biteUntil){phase='idle';reeling=false;tell('Cá đã nh�
 if(phase==='fight'){fishBurst+=dt;const surge=Math.sin(now*.0032+fishKg)*Math.sin(now*.0017)*fishKg*.7;tension=Math.max(0,Math.min(100,tension+(reeling?(31+fishKg*2.4+Math.max(0,surge)*3):-(30+fishKg))*dt));if(reeling)progress+=dt*Math.max(4,15-fishKg*.9);
 if(tension>=100){phase='done';reeling=false;tension=100;tell('💥 Đứt dây! Cá chạy mất rồi.');beep(220,.32);buttons()}
 else if(progress>=100){phase='done';reeling=false;const result=awardCatch(practiceProgress,fishKg);practiceProgress=result.profile;showPracticeProgress();catchGlowUntil=now+1600;showCatchBanner(fishName,fishKg,result.xpGained,now);tell('🎉 Tập thành công: '+fishName+' '+fishKg+' kg · +'+result.xpGained+' EXP luyện tập (không lưu).');beep(940,.3);buttons()}}
-visitorAnglers.forEach(({group,shirt,offset})=>{shirt.rotation.z=Math.sin(now*.0013+offset)*.035;group.rotation.y=Math.sin(now*.0005+offset)*.07});
+visitorAnglers.forEach(({group,torso,rod,offset})=>{torso.rotation.z=Math.sin(now*.0013+offset)*.012;group.rotation.y=Math.sin(now*.0005+offset)*.045;rod.rotation.x=-.95+Math.sin(now*.0011+offset)*.025});
 dancers.forEach(({dancer,offset})=>{dancer.position.y=1+Math.abs(Math.sin(now*.002+offset))*.18;dancer.rotation.y=Math.sin(now*.0014+offset)*.3});
 stageScreen.material.emissiveIntensity=.3+Math.sin(now*.002)*.16;
 boat.position.y=.15+Math.sin(now*.0018)*.07;boat.rotation.z=Math.sin(now*.0013)*.018;
