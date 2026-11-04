@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {initialProgress, awardCatch, xpNeeded, MAX_LEVEL} from '../fishing-progression.js';
+import {initialProgress, awardCatch, xpNeeded, MAX_LEVEL, PRACTICE_EQUIPMENT, equipPracticeItem} from '../fishing-progression.js';
 test('starter profile has no catches and isolated equipment',()=>{
   const a=initialProgress(),b=initialProgress();
   a.equipment.rod='Custom';
@@ -45,4 +45,13 @@ test('reject invalid catches and levels',()=>{
   for(const weight of [0,-1,Infinity,NaN,501]) assert.throws(()=>awardCatch(initialProgress(),weight),RangeError);
   assert.equal(xpNeeded(MAX_LEVEL),0);
   assert.throws(()=>xpNeeded(100),RangeError);
+});
+
+test('practice equipment can be changed without changing the saved input',()=>{
+  const original=initialProgress();
+  const updated=equipPracticeItem(original,'rod',PRACTICE_EQUIPMENT.rod[1]);
+  assert.equal(updated.equipment.rod,'Cần tập 5,4 m');
+  assert.equal(original.equipment.rod,'Cần cơ bản 4,5 m');
+  assert.throws(()=>equipPracticeItem(original,'rod','Cần VIP trả phí'),RangeError);
+  assert.throws(()=>equipPracticeItem(original,'unknown','anything'),RangeError);
 });
