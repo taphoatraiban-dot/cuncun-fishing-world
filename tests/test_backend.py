@@ -9,7 +9,7 @@ from http.server import ThreadingHTTPServer
 from unittest.mock import patch
 
 from backend import server
-from backend.issue_ticket import issue
+from backend.issue_ticket import issue, rotate_session, revoke_sessions
 
 class BackendTests(unittest.TestCase):
     @classmethod
@@ -122,6 +122,18 @@ class BackendTests(unittest.TestCase):
         with server.connection() as db:
             row = db.execute("SELECT cast_at FROM casts WHERE player_name=?", ("CliTicketPlayer",)).fetchone()
         self.assertIsNotNone(row)
+
+    def test_rotate_and_revoke_player_session(self):
+        old, _ = issue("RotationPlayer", 10)
+        new, _ = rotate_session("RotationPlayer")
+        self.assertNotEqual(old, new)
+        status, _ = self.request("POST", "/api/player/cast", {}, old)
+        self.assertEqual(status, 401)
+        status, _ = self.request("POST", "/api/player/cast", {}, new)
+        self.assertEqual(status, 200)
+        self.assertEqual(revoke_sessions("RotationPlayer"), 1)
+        status, _ = self.request("POST", "/api/player/reel", {}, new)
+        self.assertEqual(status, 401)
 
     def test_catch_and_leaderboard(self):
         status, result = self.request("POST", "/api/events", {"name":"Cun","kind":"catch","points":9}, server.TOKEN)
