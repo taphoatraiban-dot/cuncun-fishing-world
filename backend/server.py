@@ -10,6 +10,7 @@ Use a trusted reverse proxy with TLS, rate limiting and authentication before pu
 import json
 import os
 import secrets
+import random
 import sqlite3
 import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -47,6 +48,10 @@ def connection():
         player_name TEXT NOT NULL COLLATE NOCASE,
         expires_at INTEGER NOT NULL,
         created_at INTEGER NOT NULL
+    )""")
+    db.execute("""CREATE TABLE IF NOT EXISTS casts (
+        player_name TEXT PRIMARY KEY COLLATE NOCASE,
+        cast_at INTEGER NOT NULL
     )""")
     return db
 
@@ -106,7 +111,7 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         path = urlparse(self.path).path
-        if path not in ("/api/events", "/api/tickets"):
+        if path not in ("/api/events", "/api/tickets", "/api/cast", "/api/reel"):
             return self.respond(404, {"error": "not_found"})
         if not self.authorized():
             return self.respond(401, {"error": "unauthorized"})
@@ -123,7 +128,7 @@ class Handler(BaseHTTPRequestHandler):
                 points = payload.get("points")
                 if kind != "catch" or type(points) is not int or not 1 <= points <= 100:
                     raise ValueError("invalid event")
-            else:
+            elif path == "/api/tickets":
                 minutes = payload.get("minutes", 10)
                 if type(minutes) is not int or not 1 <= minutes <= 60:
                     raise ValueError("invalid ticket duration")
@@ -140,6 +145,30 @@ class Handler(BaseHTTPRequestHandler):
                 expires = max(now, existing or now) + minutes * 60
                 db.execute("INSERT INTO tickets(player_name,expires_at,created_at) VALUES(?,?,?)", (name,expires,now))
             return self.respond(200, {"ok": True, "name": name, "expires_at": expires})
+        if path in ("/api/cast", "/api/reel"):
+            with connection() as db:
+                db.execute("BEGIN IMMEDIATE")
+                valid = db.execute("SELECT MAX(expires_at) FROM tickets WHERE player_name=? COLLATE NOCASE", (name,)).fetchone()[0]
+                if not valid or valid <= now:
+                    return self.respond(403, {"error": "ticket_required"})
+                if path == "/api/cast":
+                    previous = db.execute("SELECT cast_at FROM casts WHERE player_name=? COLLATE NOCASE", (name,)).fetchone()
+                    if previous:
+                        return self.respond(409, {"error": "already_cast"})
+                    db.execute("INSERT INTO casts(player_name,cast_at) VALUES(?,?)", (name,now))
+                    return self.respond(200, {"ok": True, "cast_at": now, "min_wait_seconds": 3})
+                previous = db.execute("SELECT cast_at FROM casts WHERE player_name=? COLLATE NOCASE", (name,)).fetchone()
+                if not previous:
+                    return self.respond(409, {"error": "cast_first"})
+                if now - previous[0] < 3:
+                    return self.respond(429, {"error": "fish_not_ready"})
+                db.execute("DELETE FROM casts WHERE player_name=? COLLATE NOCASE", (name,))
+                fish, points = random.SystemRandom().choice([("Cá rô", 3), ("Cá chép", 7), ("Cá trắm", 12), ("Cá vàng", 18), ("Cá boss", 35)])
+                db.execute("INSERT OR IGNORE INTO players(name,created_at) VALUES(?,?)", (name,now))
+                db.execute("UPDATE players SET points=points+?,catches=catches+1 WHERE name=? COLLATE NOCASE", (points,name))
+                player_id = db.execute("SELECT id FROM players WHERE name=? COLLATE NOCASE", (name,)).fetchone()[0]
+                db.execute("INSERT INTO events(player_id,kind,points,created_at) VALUES(?,?,?,?)", (player_id,"catch",points,now))
+            return self.respond(200, {"ok": True, "fish": fish, "points": points})
         with connection() as db:
             db.execute("INSERT OR IGNORE INTO players(name,created_at) VALUES(?,?)", (name, now))
             db.execute("UPDATE players SET points=points+?,catches=catches+1 WHERE name=? COLLATE NOCASE", (points,name))
