@@ -216,19 +216,32 @@ for(const x of [-.92,-.49]){
  const z=x===-.92?-2.18:-2.39,r=x===-.92?.4:.22;
  eyeMesh(new THREE.TorusGeometry(r,.035,8,24),eyeMetal,x,-.66,z).rotation.x=Math.PI/2;
 }
+// Sculpted forearms and articulated gripping fingers. Right-hand grip is bound
+// to the rod group so it follows the rod during a strike.
 const firstPersonHands=[];
-for(const side of [-1,1]){
- const sleeve=eyeMesh(new THREE.CapsuleGeometry(.18,.4,5,10),eyeFabric,side*.66,-1.02,-1.65);
- sleeve.rotation.x=-.7;
- const hand=eyeMesh(new THREE.SphereGeometry(.17,12,10),eyeSkin,side===1?.77:-.59,side===1?-.91:-.78,side===1?-1.78:-2.02);
- hand.scale.set(.85,1.05,1.2);
- firstPersonHands.push({sleeve,hand,side});
+function eyeLimb(a,b,r0,r1,material,parent=eyeRig){
+ const d=new THREE.Vector3().subVectors(b,a);
+ const part=new THREE.Mesh(new THREE.CylinderGeometry(r1,r0,d.length(),12),material);
+ part.position.copy(a).add(b).multiplyScalar(.5);
+ part.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),d.normalize());
+ parent.add(part);return part;
 }
-// Fingers wrap around the handle instead of floating beside the rod.
-for(let i=0;i<3;i++){
- const finger=eyeMesh(new THREE.SphereGeometry(.085,10,8),eyeSkin,.77+(i-1)*.055,-.94,-1.84-i*.075);
- finger.scale.set(.75,.75,1.35);
+const rightHandGroup=new THREE.Group();
+rightHandGroup.position.set(0,0,0);firstPersonRod.add(rightHandGroup);
+const rightSkin=eyeSkin;
+eyeLimb(new THREE.Vector3(1.0,-1.55,-1.06),new THREE.Vector3(.82,-1.02,-1.66),.22,.16,eyeFabric,rightHandGroup);
+const palm=new THREE.Mesh(new THREE.SphereGeometry(.19,18,14),rightSkin);
+palm.position.set(.79,-.94,-1.77);palm.scale.set(.85,.75,1.3);rightHandGroup.add(palm);
+for(let i=0;i<4;i++){
+ const z=-1.72-i*.095;
+ eyeLimb(new THREE.Vector3(.68,-.93,z),new THREE.Vector3(.81,-1.035,z-.035),.045,.035,rightSkin,rightHandGroup);
+ eyeLimb(new THREE.Vector3(.81,-1.035,z-.035),new THREE.Vector3(.89,-.94,z-.065),.035,.025,rightSkin,rightHandGroup);
 }
+eyeLimb(new THREE.Vector3(.66,-.91,-1.66),new THREE.Vector3(.78,-.81,-1.83),.066,.042,rightSkin,rightHandGroup);
+eyeLimb(new THREE.Vector3(-.73,-1.4,-1.3),new THREE.Vector3(-.6,-.89,-1.96),.21,.15,eyeFabric);
+const leftPalm=eyeMesh(new THREE.SphereGeometry(.16,16,12),eyeSkin,-.59,-.78,-2.02);
+leftPalm.scale.set(.9,.7,1.25);
+firstPersonHands.push({sleeve:null,hand:leftPalm,side:-1});
 eyeMesh(new THREE.BoxGeometry(.5,.06,.08),eyeGold,-.94,-1.02,-1.74);
 eyeRig.visible=false;
 // Wooden dock supports, side rails and fishing-station details.
@@ -500,13 +513,8 @@ const eyeFight=phase==='fight'?Math.min(1,(20+tension)/65):phase==='bite'?.12:0;
 firstPersonRod.rotation.x=eyeFight*.36;
 firstPersonRod.rotation.z=Math.sin(now*.009)*eyeFight*.055;
 eyeRig.rotation.x=0;eyeRig.rotation.z=0;
-firstPersonHands.forEach(({sleeve,hand,side})=>{
- const grabbing=phase==='fight'||phase==='bite';
- hand.position.x=side===1?.77:-.59;
- hand.position.y=side===1?-.91+(grabbing?.1:0):-.78;
- hand.position.z=side===1?-1.78:-2.02;
- sleeve.rotation.x=grabbing?-1.05:-.7;
-});
+// The right hand is parented to the rod; the left stays at the bait tray.
+rightHandGroup.rotation.x=0;
 rod.visible=cameraMode!=='eyes';
 line.visible=cameraMode!=='eyes';
 head.visible=cameraMode!=='eyes';
