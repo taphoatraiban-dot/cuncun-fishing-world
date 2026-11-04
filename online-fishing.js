@@ -45,6 +45,49 @@
   input.addEventListener('input', rememberEnteredToken);
   input.addEventListener('change', rememberEnteredToken);
   input.addEventListener('blur', rememberEnteredToken);
+  // Seat draw is server-side and available only to players with a valid paid ticket.
+  const seatButton = document.createElement('button');
+  seatButton.type = 'button';
+  seatButton.textContent = '🎲 Bốc số ghế (vé đã được duyệt)';
+  seatButton.style.margin = '8px 0';
+  seatButton.style.padding = '10px 12px';
+  seatButton.style.borderRadius = '10px';
+  seatButton.style.cursor = 'pointer';
+  const seatResult = document.createElement('div');
+  seatResult.setAttribute('aria-live', 'polite');
+  seatResult.style.fontWeight = 'bold';
+  status.insertAdjacentElement('afterend', seatResult);
+  seatResult.insertAdjacentElement('beforebegin', seatButton);
+  seatButton.addEventListener('click', async () => {
+    const token = input.value.trim();
+    if (!validToken(token)) {
+      seatResult.textContent = 'Cần mã phiên vé hợp lệ để bốc số.';
+      return;
+    }
+    seatButton.disabled = true;
+    seatResult.textContent = 'Đang bốc số ngẫu nhiên trên VPS…';
+    try {
+      const response = await fetch('/api/player/seat', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token},
+        body: '{}'
+      });
+      const result = await response.json();
+      seatResult.textContent = response.ok
+        ? '🎣 Ghế của bạn: ' + String(result.seat).padStart(3, '0') + ' (giữ đến hết hạn vé)'
+        : response.status === 403 ? 'Chưa có vé còn hạn. Vui lòng mua vé và chờ xác nhận thanh toán.'
+        : response.status === 401 ? 'Mã phiên không hợp lệ hoặc đã hết hạn.'
+        : 'Chưa bốc được ghế: ' + String(result.error || response.status);
+    } catch {
+      seatResult.textContent = 'Không kết nối được VPS để bốc số.';
+    } finally { seatButton.disabled = false; }
+  });
+  fetch('/api/ticket-prices').then(r => r.ok ? r.json() : null).then(data => {
+    if (!data) return;
+    const prices = document.createElement('p');
+    prices.textContent = '👀 Xem miễn phí · Vé câu: ' + data.tickets.map(t => t.minutes + ' phút ' + Number(t.price).toLocaleString('vi-VN') + 'đ').join(' · ') + ' · Thanh toán cần được quản trị xác nhận.';
+    seatButton.insertAdjacentElement('beforebegin', prices);
+  }).catch(() => {});
   let busy = false;
   async function action(kind) {
     if (busy) return;
