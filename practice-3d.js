@@ -90,6 +90,17 @@ for(let i=0;i<2;i++){
   const head=new THREE.Mesh(new THREE.SphereGeometry(.33,10,8),skin);head.position.y=2.05;dancer.add(head);
   dancers.push({dancer,offset:i*Math.PI});
 }
+// Small VIP dock and boat; visual landmarks only, no paid access.
+mesh(new THREE.BoxGeometry(7,.35,8),mat(0x9b754f),21,.24,8);
+for(const x of [17.8,24.2])for(const z of [4.7,11.2]){
+  mesh(new THREE.CylinderGeometry(.12,.14,2.2,7),mat(0xcaa46d),x,1.3,z);
+  mesh(new THREE.SphereGeometry(.28,8,6),lanternMat,x,2.5,z);
+}
+const boat=new THREE.Group();boat.position.set(9,.15,-18);scene.add(boat);
+const hull=new THREE.Mesh(new THREE.BoxGeometry(4,.65,1.8),mat(0xede7d7));hull.position.y=.22;boat.add(hull);
+const bow=new THREE.Mesh(new THREE.ConeGeometry(.95,1.4,4),mat(0xede7d7));bow.rotation.z=-Math.PI/2;bow.position.set(2.5,.22,0);boat.add(bow);
+const cabin=new THREE.Mesh(new THREE.BoxGeometry(1.65,1.2,1.5),mat(0x65c6dc));cabin.position.set(-.5,1.08,0);boat.add(cabin);
+const roof=new THREE.Mesh(new THREE.BoxGeometry(2,.2,1.85),mat(0xf9d77b));roof.position.set(-.5,1.77,0);boat.add(roof);
 const rodPoints=[new THREE.Vector3(-8.4,2.1,7.8),new THREE.Vector3(-6.2,3.8,4),new THREE.Vector3(-3.4,4.4,-1)];
 const rodCurve=new THREE.CatmullRomCurve3(rodPoints),rod=mesh(new THREE.TubeGeometry(rodCurve,20,.065,7,false),mat(0x303b41));
 const lineMaterial=new THREE.LineBasicMaterial({color:0xf6f5d9});let line=new THREE.Line(new THREE.BufferGeometry().setFromPoints([rodPoints[2],new THREE.Vector3(-2.7,.1,-8)]),lineMaterial);scene.add(line);
@@ -124,6 +135,7 @@ else if(progress>=100){phase='done';reeling=false;const result=awardCatch(practi
 visitorAnglers.forEach(({group,shirt,offset})=>{shirt.rotation.z=Math.sin(now*.0013+offset)*.035;group.rotation.y=Math.sin(now*.0005+offset)*.07});
 dancers.forEach(({dancer,offset})=>{dancer.position.y=1+Math.abs(Math.sin(now*.002+offset))*.18;dancer.rotation.y=Math.sin(now*.0014+offset)*.3});
 stageScreen.material.emissiveIntensity=.3+Math.sin(now*.002)*.16;
+boat.position.y=.15+Math.sin(now*.0018)*.07;boat.rotation.z=Math.sin(now*.0013)*.018;
 const active=phase==='waiting'||phase==='bite'||phase==='fight';
 const closeUp=cameraMode==='float'||(cameraMode==='auto'&&(phase==='bite'||phase==='fight'));
 const targetPos=closeUp?new THREE.Vector3(-.6,3.2,2.5):cameraMode==='wide'?new THREE.Vector3(3.7,8.5,18):new THREE.Vector3(-6.8,5.2,16.8);
