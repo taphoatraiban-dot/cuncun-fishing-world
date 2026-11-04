@@ -17,6 +17,9 @@ try {
   assert.match(await page.locator('#practice-level').innerText(),/Cấp 1/);
   const xpResponse = await page.request.get('http://127.0.0.1:8791/fishing-progression.js');
   assert.equal(xpResponse.status(),200);
+  assert.equal(await page.locator('#equipment-panel').isHidden(),true);
+  await page.locator('#inventory-toggle').click();
+  assert.equal(await page.locator('#equipment-panel').isVisible(),true);
   const rod=page.locator('#equip-rod');
   assert.equal(await rod.locator('option').count(),2);
   await rod.selectOption({index:1});
