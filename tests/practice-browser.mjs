@@ -32,6 +32,16 @@ try {
   await page.keyboard.press('c');
   assert.equal(await page.locator('#cast').isDisabled(),true);
   assert.match(await page.locator('#status').innerText(),/Đã thả câu/);
+  // Switching tabs during an active attempt must not leave the player trapped.
+  const otherTab=await page.context().newPage();
+  await otherTab.goto('about:blank');
+  await page.waitForFunction(()=>document.hidden,{timeout:5000});
+  await page.waitForFunction(()=>document.querySelector('#cast')?.disabled===false,{timeout:5000});
+  assert.match(await page.locator('#status').innerText(),/Đã tạm dừng/);
+  await otherTab.close();
+  await page.bringToFront();
+  await page.keyboard.press('c');
+  assert.equal(await page.locator('#cast').isDisabled(),true);
   await page.keyboard.press('r');
   assert.equal(await page.locator('#cast').isEnabled(),true);
   assert.match(await page.locator('#status').innerText(),/Sẵn sàng tập câu/);
