@@ -16,7 +16,10 @@
         item.textContent = String(player.name) + ' — ' + Number(player.points || 0) + ' điểm (' + Number(player.catches || 0) + ' cá)';
         list.appendChild(item);
       }
-      status.textContent = payload.players.length ? 'Đã đồng bộ bảng xếp hạng từ VPS.' : 'Đã kết nối VPS · Chưa có người chơi thật.';
+      const statsResponse = await fetch('https://fishing.cuncun.icu/api/stats', { cache: 'no-store' });
+      if (!statsResponse.ok) throw new Error('Stats HTTP ' + statsResponse.status);
+      const stats = await statsResponse.json();
+      status.textContent = '🌐 VPS: ' + Number(stats.players || 0) + ' người chơi · ' + Number(stats.catches || 0) + ' cá · ' + Number(stats.points || 0) + ' điểm';
     } catch {
       status.textContent = 'Chưa đọc được bảng xếp hạng VPS (kiểm tra CORS/kết nối).';
     }
