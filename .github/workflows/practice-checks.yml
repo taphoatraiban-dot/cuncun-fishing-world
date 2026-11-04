@@ -24,6 +24,21 @@ jobs:
         run: python -m unittest discover -s tests -p 'test_practice_routes.py' -v
       - name: JavaScript syntax check
         run: node --check practice-3d.js
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install browser test dependencies
+        run: |
+          npm install --no-save playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Chromium iPhone-size smoke test
+        env:
+          FISHING_ADMIN_TOKEN: practice-test-token-0123456789abcdef
+          FISHING_DB_PATH: /tmp/cuncun-practice-test.sqlite3
+        run: |
+          python backend/server.py > /tmp/fishing-practice-server.log 2>&1 &
+          for i in $(seq 1 30); do curl -fsS http://127.0.0.1:8791/health >/dev/null && break; sleep 1; done
+          node tests/practice-browser.mjs
       - name: Verify required UI controls
         run: |
           python - <<'PY'
