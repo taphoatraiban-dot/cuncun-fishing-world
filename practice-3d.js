@@ -281,7 +281,15 @@ waterfalls.forEach(({fall,foam,phase})=>{fall.material.opacity=.55+Math.sin(now*
 shoal.forEach(({swimmer,tail,baseX,baseZ,phase})=>{const t=now*.00055+phase;swimmer.position.x=baseX+Math.sin(t)*2.4;swimmer.position.z=baseZ+Math.cos(t*.8)*1.8;swimmer.rotation.y=Math.cos(t)*.8;tail.rotation.y=Math.sin(now*.009+phase)*.65});
 biteMarker.visible=phase==='bite';
 if(biteMarker.visible){biteMarker.position.y=1.3+Math.sin(now*.014)*.22;biteMarker.scale.setScalar(1+Math.sin(now*.02)*.18)}
-anglerArms.forEach((arm,i)=>{arm.rotation.x=-.48+(phase==='fight'?-.22:phase==='bite'?.14:0)+Math.sin(now*.002+i)*.025});
+// Lift both arms towards the rod handle while striking and fighting.
+const holdingRod=phase==='fight';
+anglerArms.forEach((arm,i)=>{
+ const target=holdingRod?-.95:phase==='bite'?-.6:-.48;
+ arm.rotation.x+=(target-arm.rotation.x)*Math.min(1,dt*9);
+ arm.rotation.z=(i===0?-.2:.2)+(holdingRod?(i===0?.12:-.12):0);
+ arm.position.y=1.82+(holdingRod?.16:0);
+ arm.position.z=7.78-(holdingRod?.18:0);
+});
 anglerLegs.forEach((leg,i)=>{leg.rotation.x=-.85+Math.sin(now*.0015+i)*.025});
 if(catchBanner&&!catchBanner.hidden&&now>=catchBannerUntil)catchBanner.hidden=true;
 catchGlow.visible=now<catchGlowUntil;
