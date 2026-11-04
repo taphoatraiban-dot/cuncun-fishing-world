@@ -118,6 +118,12 @@ const rodCurve=new THREE.CatmullRomCurve3(rodPoints),rod=mesh(new THREE.TubeGeom
 const lineMaterial=new THREE.LineBasicMaterial({color:0xf6f5d9});let line=new THREE.Line(new THREE.BufferGeometry().setFromPoints([rodPoints[2],new THREE.Vector3(-2.7,.1,-8)]),lineMaterial);scene.add(line);
 const lineCoords=new Float32Array(6);line.geometry.dispose();line.geometry=new THREE.BufferGeometry();line.geometry.setAttribute('position',new THREE.BufferAttribute(lineCoords,3));
 const bob=mesh(new THREE.SphereGeometry(.23,12,10),mat(0xf2f5ec),-2.7,.24,-8);const bobTop=mesh(new THREE.ConeGeometry(.12,.45,10),mat(0xf04c38),-2.7,.55,-8);
+const droplets=[];
+const dropletMaterial=new THREE.MeshBasicMaterial({color:0xd5f5ff,transparent:true,opacity:.8});
+for(let i=0;i<12;i++){
+  const drop=mesh(new THREE.SphereGeometry(.065,6,4),dropletMaterial.clone(),-2.7,-3,-8);
+  drop.visible=false;droplets.push({drop,phase:i*.83});
+}
 const rippleMat=new THREE.MeshBasicMaterial({color:0xd5f6ff,transparent:true,opacity:.35,side:THREE.DoubleSide});
 const ripples=[];for(let i=0;i<3;i++){const r=mesh(new THREE.RingGeometry(.4,.46,40),rippleMat.clone(),-2.7,.06,-8);r.rotation.x=-Math.PI/2;ripples.push(r)}
 let phase='idle',biteAt=0,biteUntil=0,progress=0,tension=0,last=performance.now(),fishKg=0,fishName='',reeling=false,fishBurst=0,fishDirection=1;
@@ -159,7 +165,16 @@ const dip=phase==='bite'?.35:0;const wave=Math.sin(now*.005)*.06;bob.position.y=
 const fishFight=phase==='fight'?Math.sin(now*.008+fishKg)*(.6+fishKg*.15):0;
 const approach=phase==='fight'?Math.min(1,progress/100):0;
 fishModel.position.set(-2.7+fishFight,-.45+approach*.9,-8+Math.sin(now*.006)*.6+approach*2);fishModel.rotation.y=Math.sin(now*.008)*.7;fishModel.rotation.z=Math.sin(now*.018)*.18;tail.rotation.y=Math.sin(now*.025)*.7;
+// Splash particles are pooled and reused to avoid allocations each frame.
 const splash=phase==='fight'&&tension>55;
+droplets.forEach(({drop,phase:offset})=>{
+  drop.visible=splash;
+  if(!splash)return;
+  const t=(now*.0027+offset)%1;
+  const angle=offset*2.399;
+  drop.position.set(fishModel.position.x+Math.cos(angle)*t*.95,.08+Math.sin(t*Math.PI)*(.5+fishKg*.05),fishModel.position.z+Math.sin(angle)*t*.95);
+  drop.material.opacity=.8*(1-t);
+});
 if(splash&&now-lastAlert>1200){lastAlert=now;if(tension>82)tell('⚠️ Dây quá căng! Thả nút kéo cá một chút.')} 
 const bent=phase==='fight'?(tension/100)*1.2:0;
 if(rod.userData.lastBend===undefined||Math.abs(rod.userData.lastBend-bent)>.035){rod.geometry.dispose();const tipShape=new THREE.Vector3(-3.4-bent,4.4-bent*1.3,-1);rod.geometry=new THREE.TubeGeometry(new THREE.CatmullRomCurve3([rodPoints[0],rodPoints[1],tipShape]),20,.065,7,false);rod.userData.lastBend=bent}
