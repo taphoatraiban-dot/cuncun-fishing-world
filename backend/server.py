@@ -117,6 +117,8 @@ class Handler(BaseHTTPRequestHandler):
             return self.serve_static("profile-demo.html", "text/html; charset=utf-8")
         if path == "/practice.html":
             return self.serve_static("practice.html", "text/html; charset=utf-8")
+        if path == "/fishing-progression.js":
+            return self.serve_static("fishing-progression.js", "text/javascript; charset=utf-8")
         if path == "/practice-3d.js":
             return self.serve_static("practice-3d.js", "text/javascript; charset=utf-8")
         if path == "/server-leaderboard.js":
