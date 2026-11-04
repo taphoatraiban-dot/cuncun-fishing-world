@@ -18,6 +18,13 @@ class IsolationTests(unittest.TestCase):
                 self.assertNotIn(forbidden, js)
                 self.assertNotIn(forbidden, html)
 
+    def test_profile_demo_is_read_only(self):
+        source = (ROOT / "profile-demo.html").read_text(encoding="utf-8").lower()
+        for forbidden in ("fetch(", "supabase", "cuncun.icu", "localstorage", "xmlhttprequest", "websocket", "<script", "<form"):
+            with self.subTest(forbidden=forbidden):
+                self.assertNotIn(forbidden, source)
+        self.assertIn("không lưu dữ liệu", source)
+
     def test_practice_assets_live_only_in_fishing_repository(self):
         for filename in ("practice.html", "practice-3d.js"):
             self.assertTrue((ROOT / filename).is_file())
