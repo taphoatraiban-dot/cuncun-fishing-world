@@ -6,6 +6,7 @@ import threading
 import unittest
 from pathlib import Path
 from http.server import ThreadingHTTPServer
+from unittest.mock import patch
 
 from backend import server
 
@@ -52,6 +53,43 @@ class BackendTests(unittest.TestCase):
     def test_rejects_invalid_points(self):
         for points in [-1, 0, 101, True, "5"]:
             status, _ = self.request("POST", "/api/events", {"name":"Test","kind":"catch","points":points}, server.TOKEN)
+            self.assertEqual(status, 400)
+
+    def test_ticket_cast_reel_flow(self):
+        name = "TicketFlowPlayer"
+        token = server.TOKEN
+        status, _ = self.request("POST", "/api/cast", {"name": name}, token)
+        self.assertEqual(status, 403)
+        status, ticket = self.request("POST", "/api/tickets", {"name": name, "minutes": 10}, token)
+        self.assertEqual(status, 200)
+        self.assertGreater(ticket["expires_at"], 0)
+        status, roster = self.request("GET", "/api/tickets/active")
+        self.assertEqual(status, 200)
+        self.assertTrue(any(p["name"] == name for p in roster["players"]))
+        status, cast = self.request("POST", "/api/cast", {"name": name}, token)
+        self.assertEqual(status, 200)
+        status, _ = self.request("POST", "/api/cast", {"name": name}, token)
+        self.assertEqual(status, 409)
+        status, _ = self.request("POST", "/api/reel", {"name": name}, token)
+        self.assertEqual(status, 429)
+        with patch.object(server.time, "time", return_value=cast["cast_at"] + 4):
+            status, result = self.request("POST", "/api/reel", {"name": name}, token)
+        self.assertEqual(status, 200)
+        self.assertIn("fish", result)
+        self.assertGreater(result["points"], 0)
+        status, _ = self.request("POST", "/api/reel", {"name": name}, token)
+        self.assertEqual(status, 409)
+        status, leaderboard = self.request("GET", "/api/leaderboard")
+        self.assertEqual(status, 200)
+        player = next(p for p in leaderboard["players"] if p["name"] == name)
+        self.assertEqual(player["catches"], 1)
+        self.assertEqual(player["points"], result["points"])
+
+    def test_ticket_rejects_unauthorized_and_invalid_duration(self):
+        status, _ = self.request("POST", "/api/tickets", {"name": "Guest", "minutes": 10})
+        self.assertEqual(status, 401)
+        for minutes in (0, 61, True, "10"):
+            status, _ = self.request("POST", "/api/tickets", {"name": "Guest", "minutes": minutes}, server.TOKEN)
             self.assertEqual(status, 400)
 
     def test_catch_and_leaderboard(self):
