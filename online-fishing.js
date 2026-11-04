@@ -14,11 +14,39 @@
     cast.disabled = reel.disabled = true;
     return;
   }
+  const sessionKey = 'cuncun-fishing-player-session-v1';
+  const modeKey = 'cuncun-fishing-online-mode-v1';
+  const forget = document.getElementById('forgetPlayerSession');
+  const validToken = value => /^[A-Za-z0-9_-]{43}$/.test(value);
+  try {
+    const saved = localStorage.getItem(sessionKey) || '';
+    if (validToken(saved)) {
+      input.value = saved;
+      status.textContent = 'Đã khôi phục mã phiên. Vé phải còn hạn để câu qua VPS.';
+      if (useMain) useMain.checked = localStorage.getItem(modeKey) !== 'off';
+    }
+  } catch {}
+  function clearSaved() {
+    try { localStorage.removeItem(sessionKey); localStorage.removeItem(modeKey); } catch {}
+  }
+  if (forget) forget.addEventListener('click', () => {
+    clearSaved();
+    input.value = '';
+    if (useMain) useMain.checked = false;
+    status.textContent = 'Đã đăng xuất trên thiết bị. Mã trên VPS chưa bị thu hồi.';
+  });
+  input.addEventListener('change', () => {
+    const token = input.value.trim();
+    try {
+      if (validToken(token)) localStorage.setItem(sessionKey, token);
+      else localStorage.removeItem(sessionKey);
+    } catch {}
+  });
   let busy = false;
   async function action(kind) {
     if (busy) return;
     const token = input.value.trim();
-    if (!/^[A-Za-z0-9_-]{43}$/.test(token)) {
+    if (!validToken(token)) {
       status.textContent = 'Cần mã phiên người chơi hợp lệ (không phải mã quản trị).';
       return;
     }
@@ -40,9 +68,15 @@
           cast_first: 'Cần thả câu trước.',
           fish_not_ready: 'Cá chưa cắn câu, chờ ít nhất 3 giây.'
         };
+        if (response.status === 401) {
+          clearSaved();
+          input.value = '';
+          if (useMain) useMain.checked = false;
+        }
         status.textContent = errors[result.error] || 'VPS từ chối thao tác (' + response.status + ').';
         return;
       }
+      try { localStorage.setItem(sessionKey, token); } catch {}
       status.textContent = kind === 'cast'
         ? '🎣 Đã thả câu trên VPS. Chờ ít nhất 3 giây rồi kéo cá.'
         : '🐟 Câu được ' + String(result.fish || 'cá') + ' · +' + Number(result.points || 0) + ' điểm VPS!';
@@ -83,6 +117,7 @@
       }, true);
     }
     useMain.addEventListener('change', () => {
+      try { localStorage.setItem(modeKey, useMain.checked ? 'on' : 'off'); } catch {}
       status.textContent = useMain.checked
         ? 'Đã chọn câu qua VPS. Hai nút chính sẽ dùng mã phiên; điểm demo không tăng.'
         : 'Đã chọn chế độ demo. Hai nút chính sẽ tính điểm trên trình duyệt.';
