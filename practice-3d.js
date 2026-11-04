@@ -101,6 +101,18 @@ const hull=new THREE.Mesh(new THREE.BoxGeometry(4,.65,1.8),mat(0xede7d7));hull.p
 const bow=new THREE.Mesh(new THREE.ConeGeometry(.95,1.4,4),mat(0xede7d7));bow.rotation.z=-Math.PI/2;bow.position.set(2.5,.22,0);boat.add(bow);
 const cabin=new THREE.Mesh(new THREE.BoxGeometry(1.65,1.2,1.5),mat(0x65c6dc));cabin.position.set(-.5,1.08,0);boat.add(cabin);
 const roof=new THREE.Mesh(new THREE.BoxGeometry(2,.2,1.85),mat(0xf9d77b));roof.position.set(-.5,1.77,0);boat.add(roof);
+// Animated shoal: lightweight local fish models, purely visual.
+const shoal=[];
+for(let i=0;i<14;i++){
+  const swimmer=new THREE.Group();
+  const tint=[0xe5bd67,0x8fc7be,0xc8a7e2,0xe58f72][i%4];
+  const body=new THREE.Mesh(new THREE.SphereGeometry(.28,8,6),mat(tint));
+  body.scale.set(1.8,.65,.8);swimmer.add(body);
+  const tail=new THREE.Mesh(new THREE.ConeGeometry(.22,.5,3),mat(tint));
+  tail.rotation.z=Math.PI/2;tail.position.x=-.6;swimmer.add(tail);
+  swimmer.position.set(-16+(i%7)*5,-.12,-18-Math.floor(i/7)*15);
+  scene.add(swimmer);shoal.push({swimmer,tail,baseX:swimmer.position.x,baseZ:swimmer.position.z,phase:i*1.7});
+}
 const rodPoints=[new THREE.Vector3(-8.4,2.1,7.8),new THREE.Vector3(-6.2,3.8,4),new THREE.Vector3(-3.4,4.4,-1)];
 const rodCurve=new THREE.CatmullRomCurve3(rodPoints),rod=mesh(new THREE.TubeGeometry(rodCurve,20,.065,7,false),mat(0x303b41));
 const lineMaterial=new THREE.LineBasicMaterial({color:0xf6f5d9});let line=new THREE.Line(new THREE.BufferGeometry().setFromPoints([rodPoints[2],new THREE.Vector3(-2.7,.1,-8)]),lineMaterial);scene.add(line);
@@ -136,6 +148,7 @@ visitorAnglers.forEach(({group,shirt,offset})=>{shirt.rotation.z=Math.sin(now*.0
 dancers.forEach(({dancer,offset})=>{dancer.position.y=1+Math.abs(Math.sin(now*.002+offset))*.18;dancer.rotation.y=Math.sin(now*.0014+offset)*.3});
 stageScreen.material.emissiveIntensity=.3+Math.sin(now*.002)*.16;
 boat.position.y=.15+Math.sin(now*.0018)*.07;boat.rotation.z=Math.sin(now*.0013)*.018;
+shoal.forEach(({swimmer,tail,baseX,baseZ,phase})=>{const t=now*.00055+phase;swimmer.position.x=baseX+Math.sin(t)*2.4;swimmer.position.z=baseZ+Math.cos(t*.8)*1.8;swimmer.rotation.y=Math.cos(t)*.8;tail.rotation.y=Math.sin(now*.009+phase)*.65});
 const active=phase==='waiting'||phase==='bite'||phase==='fight';
 const closeUp=cameraMode==='float'||(cameraMode==='auto'&&(phase==='bite'||phase==='fight'));
 const targetPos=closeUp?new THREE.Vector3(-.6,3.2,2.5):cameraMode==='wide'?new THREE.Vector3(3.7,8.5,18):new THREE.Vector3(-6.8,5.2,16.8);
