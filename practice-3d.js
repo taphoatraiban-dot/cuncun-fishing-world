@@ -13,7 +13,7 @@ try{renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:false,powerPre
   throw error;
 }
 const pixelRatio=Math.min(window.devicePixelRatio||1,1.5);renderer.setPixelRatio(pixelRatio);
-function resize(){const width=Math.max(240,Math.round(canvas.getBoundingClientRect().width||720));const height=Math.round(width*620/720);renderer.setSize(width,height,false);camera.aspect=width/height;camera.updateProjectionMatrix()}
+function resize(){const width=Math.max(240,Math.round(canvas.getBoundingClientRect().width||720));const height=Math.max(300,Math.round(canvas.getBoundingClientRect().height||width*620/720));renderer.setSize(width,height,false);camera.aspect=width/height;camera.updateProjectionMatrix()}
 window.addEventListener('resize',resize,{passive:true});resize();
 scene.add(new THREE.HemisphereLight(0xe9f7ff,0x345638,2.1));const sun=new THREE.DirectionalLight(0xffffff,2.1);sun.position.set(-20,32,12);scene.add(sun);
 const mat=(c,extra={})=>new THREE.MeshStandardMaterial({color:c,roughness:.8,...extra});
