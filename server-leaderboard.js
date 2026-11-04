@@ -29,5 +29,6 @@
     }
   }
   refresh();
+  window.addEventListener('cuncun:server-catch', refresh);
   setInterval(refresh, 15000);
 })();
