@@ -1,0 +1,53 @@
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.module.js';
+const $=id=>document.getElementById(id),canvas=$('lake'),cast=$('cast'),hook=$('hook'),reel=$('reel'),reset=$('reset'),status=$('status'),meter=$('tension');
+const scene=new THREE.Scene();scene.background=new THREE.Color(0x9bd5f0);scene.fog=new THREE.Fog(0x9bd5f0,70,210);
+const camera=new THREE.PerspectiveCamera(52,720/620,.1,250);camera.position.set(3.7,8.5,18);camera.lookAt(0,0,-12);
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:false});renderer.setPixelRatio(Math.min(devicePixelRatio,1.7));renderer.setSize(720,620,false);
+scene.add(new THREE.HemisphereLight(0xe9f7ff,0x345638,2.1));const sun=new THREE.DirectionalLight(0xffffff,2.1);sun.position.set(-20,32,12);scene.add(sun);
+const mat=(c,extra={})=>new THREE.MeshStandardMaterial({color:c,roughness:.8,...extra});
+function mesh(geometry,material,x=0,y=0,z=0){const o=new THREE.Mesh(geometry,material);o.position.set(x,y,z);scene.add(o);return o}
+const ground=mesh(new THREE.PlaneGeometry(180,180),mat(0x659a57),0,-.22,-25);ground.rotation.x=-Math.PI/2;
+const water=mesh(new THREE.PlaneGeometry(54,90),new THREE.MeshPhongMaterial({color:0x268ba5,transparent:true,opacity:.92,shininess:120,side:THREE.DoubleSide}),0,.02,-25);water.rotation.x=-Math.PI/2;
+for(const side of [-1,1]){const bank=mesh(new THREE.BoxGeometry(2,.3,90),mat(0xb3a17a),side*28,-.02,-25);for(let i=0;i<22;i++){const z=12-i*3.7,x=side*(31+(i%3)*1.8);const trunk=mesh(new THREE.CylinderGeometry(.15,.2,2,6),mat(0x765238),x,.8,z);mesh(new THREE.ConeGeometry(1.2,3,7),mat(0x347b49),x,3,z)}}
+const pier=mesh(new THREE.BoxGeometry(5,.28,9),mat(0x966b43),-8,.18,8);
+for(let i=0;i<5;i++)mesh(new THREE.BoxGeometry(4.9,.05,.07),mat(0xb98b58),-8,.35,4.4+i*1.8);
+const chair=mesh(new THREE.BoxGeometry(1.1,.7,1.2),mat(0x775235),-9,1,8);
+const avatarBody=mesh(new THREE.CylinderGeometry(.55,.5,1.5,10),mat(0x168fa6),-8.9,1.8,8);
+mesh(new THREE.SphereGeometry(.48,12,10),mat(0xe3b68e),-8.9,2.85,8);
+const rodPoints=[new THREE.Vector3(-8.4,2.1,7.8),new THREE.Vector3(-6.2,3.8,4),new THREE.Vector3(-3.4,4.4,-1)];
+const rodCurve=new THREE.CatmullRomCurve3(rodPoints),rod=mesh(new THREE.TubeGeometry(rodCurve,20,.065,7,false),mat(0x303b41));
+const lineMaterial=new THREE.LineBasicMaterial({color:0xf6f5d9});let line=new THREE.Line(new THREE.BufferGeometry().setFromPoints([rodPoints[2],new THREE.Vector3(-2.7,.1,-8)]),lineMaterial);scene.add(line);
+const bob=mesh(new THREE.SphereGeometry(.23,12,10),mat(0xf2f5ec),-2.7,.24,-8);const bobTop=mesh(new THREE.ConeGeometry(.12,.45,10),mat(0xf04c38),-2.7,.55,-8);
+const rippleMat=new THREE.MeshBasicMaterial({color:0xd5f6ff,transparent:true,opacity:.35,side:THREE.DoubleSide});
+const ripples=[];for(let i=0;i<3;i++){const r=mesh(new THREE.RingGeometry(.4,.46,40),rippleMat.clone(),-2.7,.06,-8);r.rotation.x=-Math.PI/2;ripples.push(r)}
+let phase='idle',biteAt=0,biteUntil=0,progress=0,tension=0,last=performance.now(),fishKg=0,fishName='',reeling=false;
+const fishes=['cá rô phi','cá chép','cá trắm','cá trôi','cá lóc'];
+function tell(s){status.textContent=s}
+function buttons(){cast.disabled=phase!=='idle'&&phase!=='done';hook.disabled=phase!=='bite';reel.disabled=phase!=='fight'}
+function start(){phase='waiting';const now=performance.now();biteAt=now+2200+Math.random()*4000;progress=0;tension=0;reeling=false;fishKg=+(0.4+Math.random()*5.6).toFixed(1);fishName=fishes[Math.floor(Math.random()*fishes.length)];tell('Đã thả câu. Nhìn phao giữa hồ nhé!');buttons()}
+function clear(){phase='idle';progress=0;tension=0;reeling=false;tell('Sẵn sàng tập câu.');buttons()}
+function strike(){if(phase!=='bite')return;phase='fight';progress=0;tension=15;tell('Dính cá! Giữ Kéo cá, thả nút nếu dây quá căng.');buttons()}
+cast.addEventListener('click',start);reset.addEventListener('click',clear);hook.addEventListener('click',strike);
+reel.addEventListener('pointerdown',e=>{if(phase!=='fight')return;e.preventDefault();reeling=true;reel.setPointerCapture(e.pointerId)});
+for(const ev of ['pointerup','pointercancel','lostpointercapture'])reel.addEventListener(ev,()=>reeling=false);
+window.addEventListener('blur',()=>reeling=false);
+const fishModel=new THREE.Group();const body=new THREE.Mesh(new THREE.SphereGeometry(.65,14,10),mat(0xe1b85a));body.scale.set(1.7,.8,.65);fishModel.add(body);const tail=new THREE.Mesh(new THREE.ConeGeometry(.45,.9,3),mat(0xbd8439));tail.rotation.z=Math.PI/2;tail.position.x=-1.1;fishModel.add(tail);fishModel.position.set(-2.7,-.45,-8);scene.add(fishModel);
+function frame(now){const dt=Math.min((now-last)/1000,.05);last=now;
+if(phase==='waiting'&&now>=biteAt){phase='bite';biteUntil=now+1600;tell('⚡ PHAO CHÌM! Bấm Giật cần!');buttons()}
+if(phase==='bite'&&now>biteUntil){phase='idle';tell('Cá đã nhả mồi. Thả lại nhé!');buttons()}
+if(phase==='fight'){tension=Math.max(0,Math.min(100,tension+(reeling?(31+fishKg*2.4):-(30+fishKg))*dt));if(reeling)progress+=dt*(15-fishKg*.9);
+if(tension>=100){phase='done';reeling=false;tell('💥 Đứt dây! Cá chạy mất rồi.');buttons()}
+else if(progress>=100){phase='done';reeling=false;tell('🎉 Tập thành công: '+fishName+' '+fishKg+' kg (mô phỏng, không tính điểm).');buttons()}}
+const active=phase==='waiting'||phase==='bite'||phase==='fight';
+bob.visible=bobTop.visible=active;line.visible=active;fishModel.visible=phase==='fight';
+const dip=phase==='bite'?.35:0;const wave=Math.sin(now*.005)*.06;bob.position.y=.24+wave-dip;bobTop.position.y=.55+wave-dip;
+const fishFight=phase==='fight'?Math.sin(now*.008)*.8:0;
+fishModel.position.set(-2.7+fishFight,-.4,-8+Math.sin(now*.006)*.6);fishModel.rotation.y=Math.sin(now*.008)*.5;
+const bent=phase==='fight'?(tension/100)*1.2:0;
+rod.geometry.dispose();const tip=new THREE.Vector3(-3.4-bent,4.4-bent*1.3,-1);rod.geometry=new THREE.TubeGeometry(new THREE.CatmullRomCurve3([rodPoints[0],rodPoints[1],tip]),20,.065,7,false);
+line.geometry.dispose();line.geometry=new THREE.BufferGeometry().setFromPoints([tip,new THREE.Vector3(bob.position.x,bob.position.y,bob.position.z)]);
+ripples.forEach((r,i)=>{r.visible=active;const scale=.8+((now*.0006+i/3)%1.7);r.scale.setScalar(scale);r.material.opacity=.25*(1-(scale-.8)/1.7)});
+water.material.color.setHSL(.52,.6,.4+Math.sin(now*.001)*.012);
+meter.style.width=tension+'%';meter.style.background=tension>75?'#ef6258':'#eab65c';
+renderer.render(scene,camera);requestAnimationFrame(frame)}
+buttons();requestAnimationFrame(frame);
