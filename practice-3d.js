@@ -330,7 +330,7 @@ for(let i=0;i<14;i++){
   scene.add(swimmer);shoal.push({swimmer,tail,baseX:swimmer.position.x,baseZ:swimmer.position.z,phase:i*1.7});
 }
 // Animate the local angler only: a subtle breathing pose and reactive arm movement.
-const rodPoints=[new THREE.Vector3(-8.75,2.04,7.5),new THREE.Vector3(-8.2,2.39,4.55),new THREE.Vector3(-6.94,3.19,-2.2)];
+const rodPoints=[new THREE.Vector3(-8.75,2.04,7.5),new THREE.Vector3(-8.2,2.39,4.55),new THREE.Vector3(-2.7,.09,-8)];
 const rodCurve=new THREE.CatmullRomCurve3(rodPoints),rod=mesh(new THREE.TubeGeometry(rodCurve,20,.065,7,false),mat(0x303b41));
 const lineMaterial=new THREE.LineBasicMaterial({color:0xf6f5d9});let line=new THREE.Line(new THREE.BufferGeometry().setFromPoints([rodPoints[2],new THREE.Vector3(-2.7,.1,-8)]),lineMaterial);scene.add(line);
 const lineCoords=new Float32Array(6);line.geometry.dispose();line.geometry=new THREE.BufferGeometry();line.geometry.setAttribute('position',new THREE.BufferAttribute(lineCoords,3));
@@ -484,11 +484,11 @@ const bent=fighting?(tension/100)*1.2:0;
 if(rod.userData.lastBend===undefined||Math.abs(rod.userData.lastBend-bent)>.035||Math.abs((rod.userData.lastLift||0)-lift)>.035){
  rod.geometry.dispose();
  const middle=new THREE.Vector3(-8.2,2.39+lift*.45,4.55);
- const tipShape=new THREE.Vector3(-6.94-bent,3.19+lift*1.1-bent*1.3,-2.2);
+ const tipShape=new THREE.Vector3(-2.7-bent,.09+lift*2.4+bent*.3,-8);
  rod.geometry=new THREE.TubeGeometry(new THREE.CatmullRomCurve3([rodPoints[0],middle,tipShape]),20,.065,7,false);
  rod.userData.lastBend=bent;rod.userData.lastLift=lift;
 }
-const tip=new THREE.Vector3(-6.94-bent,3.19+lift*1.1-bent*1.3,-2.2);
+const tip=new THREE.Vector3(-2.7-bent,.09+lift*2.4+bent*.3,-8);
 lineCoords.set([tip.x,tip.y,tip.z,bob.position.x,bob.position.y,bob.position.z]);line.geometry.attributes.position.needsUpdate=true;
 ripples.forEach((r,i)=>{r.visible=active;r.position.x=phase==='fight'?fishModel.position.x:bob.position.x;r.position.z=phase==='fight'?fishModel.position.z:bob.position.z;const scale=.8+((now*(splash?.0014:.0006)+i/3)%1.7);r.scale.setScalar(scale);r.material.opacity=(splash?.6:.25)*(1-(scale-.8)/1.7)});
 lakeRipples.forEach(({ring,offset})=>{const cycle=(now*.00032+offset)%1;ring.visible=active;ring.position.x=bob.position.x;ring.position.z=bob.position.z;ring.scale.setScalar(.65+cycle*3.1);ring.material.opacity=(1-cycle)*(phase==='bite'?.48:phase==='fight'?.34:.2);});
