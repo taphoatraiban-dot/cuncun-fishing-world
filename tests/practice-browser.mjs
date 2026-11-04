@@ -78,6 +78,18 @@ try {
   assert.equal(await page.locator('#reel').isDisabled(),true);
   assert.match(await page.locator('#status').innerText(),/Cá đã nhả mồi/);
   assert.match(await page.locator('#practice-level').innerText(),/0 cá/);
+  // Holding the reel continuously must break the line, not award a fish.
+  await page.locator('#cast').click();
+  await page.waitForFunction(()=>document.querySelector('#hook')?.disabled===false,null,{timeout:9000});
+  await page.locator('#hook').click();
+  const reelBox=await page.locator('#reel').boundingBox();
+  await page.mouse.move(reelBox.x+reelBox.width/2,reelBox.y+reelBox.height/2);
+  await page.mouse.down();
+  await page.waitForFunction(()=>document.querySelector('#status')?.textContent.includes('Đứt dây'),null,{timeout:7000});
+  await page.mouse.up();
+  assert.equal(await page.locator('#cast').isEnabled(),true);
+  assert.equal(await page.locator('#reel').isDisabled(),true);
+  assert.match(await page.locator('#practice-level').innerText(),/0 cá/);
   await page.locator('#camera').click();
   assert.match(await page.locator('#camera').innerText(),/Cận phao/);
   const profileLink = page.locator('a[href="./profile-demo.html"]');
