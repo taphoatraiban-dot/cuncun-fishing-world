@@ -5,6 +5,9 @@
   const cast = document.getElementById('onlineCast');
   const reel = document.getElementById('onlineReel');
   if (!input || !status || !cast || !reel) return;
+  const useMain = document.getElementById('useOnlineControls');
+  const mainCast = document.getElementById('cast');
+  const mainReel = document.getElementById('catch');
   const origin = 'https://fishing.cuncun.icu';
   if (location.origin !== origin) {
     status.textContent = 'Chế độ câu trực tuyến chỉ hoạt động tại fishing.cuncun.icu.';
@@ -49,6 +52,23 @@
       busy = false;
       cast.disabled = reel.disabled = false;
     }
+  }
+  // Capture main-button clicks only when the user explicitly selects online mode.
+  // This prevents the local demo handler from awarding fake points on an online cast.
+  if (useMain && mainCast && mainReel) {
+    for (const [button, kind] of [[mainCast, 'cast'], [mainReel, 'reel']]) {
+      button.addEventListener('click', event => {
+        if (!useMain.checked) return;
+        event.stopImmediatePropagation();
+        event.preventDefault();
+        action(kind);
+      }, true);
+    }
+    useMain.addEventListener('change', () => {
+      status.textContent = useMain.checked
+        ? 'Đã chọn câu qua VPS. Hai nút chính sẽ dùng mã phiên; điểm demo không tăng.'
+        : 'Đã chọn chế độ demo. Hai nút chính sẽ tính điểm trên trình duyệt.';
+    });
   }
   cast.addEventListener('click', () => action('cast'));
   reel.addEventListener('click', () => action('reel'));
