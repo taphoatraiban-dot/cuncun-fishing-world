@@ -252,6 +252,9 @@ lineCoords.set([tip.x,tip.y,tip.z,bob.position.x,bob.position.y,bob.position.z])
 ripples.forEach((r,i)=>{r.visible=active;r.position.x=phase==='fight'?fishModel.position.x:bob.position.x;r.position.z=phase==='fight'?fishModel.position.z:bob.position.z;const scale=.8+((now*(splash?.0014:.0006)+i/3)%1.7);r.scale.setScalar(scale);r.material.opacity=(splash?.6:.25)*(1-(scale-.8)/1.7)});
 water.material.color.setHSL(.52,.6,.4+Math.sin(now*.001)*.012);
 meter.style.width=tension+'%';meter.style.background=tension>75?'#ef6258':'#eab65c';
+document.getElementById('tension-value').textContent=Math.round(tension)+'%';
+document.getElementById('catch-progress').style.width=Math.min(100,progress)+'%';
+document.getElementById('catch-progress-value').textContent=Math.round(Math.min(100,progress))+'%';
 renderer.render(scene,camera);requestAnimationFrame(frame)}
 showPracticeProgress();buttons();requestAnimationFrame(frame);
 
