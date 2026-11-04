@@ -59,6 +59,17 @@ try {
   await page.waitForTimeout(6500);
   assert.equal(await page.locator('#hook').isDisabled(),true);
   assert.match(await page.locator('#status').innerText(),/Sẵn sàng tập câu/);
+  // Full first half of the fishing loop: cast -> bite -> hook -> fight -> reset.
+  await page.locator('#cast').click();
+  await page.waitForFunction(()=>document.querySelector('#hook')?.disabled===false,null,{timeout:9000});
+  assert.match(await page.locator('#status').innerText(),/PHAO CHÌM/);
+  await page.locator('#hook').click();
+  assert.equal(await page.locator('#reel').isEnabled(),true);
+  assert.match(await page.locator('#status').innerText(),/Dính cá/);
+  await page.locator('#reset').click();
+  assert.equal(await page.locator('#cast').isEnabled(),true);
+  assert.equal(await page.locator('#reel').isDisabled(),true);
+  assert.match(await page.locator('#practice-level').innerText(),/0 cá/);
   await page.locator('#camera').click();
   assert.match(await page.locator('#camera').innerText(),/Cận phao/);
   const profileLink = page.locator('a[href="./profile-demo.html"]');
