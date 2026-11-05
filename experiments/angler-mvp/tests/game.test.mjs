@@ -1,0 +1,12 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {FishingGame} from '../game.js';import {sampleFish,SPECIES} from '../species.js';
+function drive(g,to,limit=3000){for(let i=0;i<limit&&g.state!==to;i++)g.update(.05);assert.equal(g.state,to);}
+function hooked(rng=()=>.3){const g=new FishingGame({rng});g.cast();drive(g,'BITE');assert.equal(g.strike(),true);drive(g,'FIGHT');return g;}
+test('đủ năm loài và dữ liệu trong giới hạn',()=>{assert.equal(SPECIES.length,5);let n=1;const r=()=>((n=n*16807%2147483647)-1)/2147483646;for(let i=0;i<1000;i++){const f=sampleFish(r);assert.ok(f.weight>=f.min-.01&&f.weight<=f.max+.01);assert.ok(f.score>0&&f.size>0);}});
+test('giật sớm',()=>{const g=new FishingGame();g.cast();drive(g,'WAIT');g.strike();assert.equal(g.result.reason,'early');assert.equal(g.totalScore,0);});
+test('giật muộn',()=>{const g=new FishingGame();g.cast();drive(g,'RESULT');assert.equal(g.result.reason,'late');});
+test('giữ kéo liên tục làm đứt dây',()=>{const g=hooked();g.setPull(true);drive(g,'RESULT');assert.equal(g.result.reason,'broken');});
+test('hoàn thành vòng câu và chơi lại',()=>{const g=hooked();for(let i=0;i<4000&&g.state!=='RESULT';i++){if(g.state==='FIGHT')g.setPull(g.tension<.68,-g.fishDirection);g.update(.05);}assert.equal(g.result.reason,'caught');assert.equal(g.catches,1);const score=g.totalScore;assert.ok(score>0);g.cast();assert.equal(g.state,'PREPARE');assert.equal(g.totalScore,score);});
+test('cá lớn đòi hỏi dìu lâu hơn',()=>{const a=hooked(()=>.02),b=hooked(()=>.95);for(const g of[a,b]){g.setPull(true);for(let i=0;i<20;i++)g.update(.05);}assert.ok(b.stamina>a.stamina);});
+test('dt không hợp lệ và thao tác ngoài trạng thái không phá game',()=>{const g=new FishingGame();g.update(Infinity);g.update(-1);assert.equal(g.strike(),false);assert.equal(g.state,'READY');g.cast();assert.equal(g.cast(),false);});
+test('dìu đúng bắt được cả năm loài tại cân nặng lớn nhất',()=>{for(const sp of SPECIES){const g=hooked();g.fish={...sp,weight:sp.max,score:Math.round(sp.max*sp.points),size:sp.length*Math.cbrt(sp.max)};for(let i=0;i<5000&&g.state!=='RESULT';i++){if(g.state==='FIGHT')g.setPull(g.tension<.68,-g.fishDirection);g.update(.05);}assert.equal(g.result?.reason,'caught',sp.name);}});
+test('nhả kéo giảm căng dây và mất khoảng cách',()=>{const g=hooked();g.tension=.8;const before=g.distance;g.setPull(false);for(let i=0;i<20;i++)g.update(.05);assert.ok(g.tension<.8);assert.ok(g.distance>before);});
