@@ -1,0 +1,112 @@
+{
+  "date": "2026-11-05",
+  "assets": [
+    {
+      "file": "experiments/service-lake-v1/assets/angler_seated.glb",
+      "sha256": "cc1889651a309e24e9938b2ce66ba7a66ed2aa5c5da8bd6f6ac00fa64f2d7d73",
+      "bytes": 5256144,
+      "provenance": "Existing CUNCUN/MakeHuman-derived Angler",
+      "license_note": "See MakeHuman_character_LICENSE.md"
+    },
+    {
+      "file": "experiments/service-lake-v1/assets/environment.glb",
+      "sha256": "e89848152a440166f94e308bd344a1fb0cf018f519a8e7f3b15aed13bf758fee",
+      "bytes": 2852044,
+      "provenance": "Original CUNCUN Blender geometry; existing CUNCUN assets reused",
+      "license_note": "No third-party game meshes or reference-product logos used"
+    },
+    {
+      "file": "experiments/service-lake-v1/assets/fish_carp.glb",
+      "sha256": "570d74884427d670e968111c2a0d8de1f15d7164290c87153237c5cb9c29b7b1",
+      "bytes": 130028,
+      "provenance": "Original CUNCUN Blender geometry; existing CUNCUN assets reused",
+      "license_note": "No third-party game meshes or reference-product logos used"
+    },
+    {
+      "file": "experiments/service-lake-v1/assets/fish_grass.glb",
+      "sha256": "4878eb0ccb422684f0e8930757452de639dae13e66e89063d2779088e272c452",
+      "bytes": 128520,
+      "provenance": "Original CUNCUN Blender geometry; existing CUNCUN assets reused",
+      "license_note": "No third-party game meshes or reference-product logos used"
+    },
+    {
+      "file": "experiments/service-lake-v1/assets/fish_mud.glb",
+      "sha256": "b858947b16f2e32c6619aabf1ad6aa91879499f34c0688c91192fac2558fb995",
+      "bytes": 127296,
+      "provenance": "Original CUNCUN Blender geometry; existing CUNCUN assets reused",
+      "license_note": "No third-party game meshes or reference-product logos used"
+    },
+    {
+      "file": "experiments/service-lake-v1/assets/fish_silver.glb",
+      "sha256": "9aa9f45ced6670bf7d8a0e7cc8a5c6d3f18d8d993bc75ecf2069b6dd4ee16271",
+      "bytes": 124448,
+      "provenance": "Original CUNCUN Blender geometry; existing CUNCUN assets reused",
+      "license_note": "No third-party game meshes or reference-product logos used"
+    },
+    {
+      "file": "experiments/service-lake-v1/assets/fish_tilapia.glb",
+      "sha256": "f612afd8f8272c7a24d29a60dbe38ba33639c2cf52f94119dfdb2f2102c13ff6",
+      "bytes": 175272,
+      "provenance": "Original CUNCUN Blender geometry; existing CUNCUN assets reused",
+      "license_note": "No third-party game meshes or reference-product logos used"
+    },
+    {
+      "file": "experiments/service-lake-v1/assets/fishing_box.glb",
+      "sha256": "59b25247a8ca3821e1ad86a31074f4f368f6f3489554d60de46a8fd752bf6d04",
+      "bytes": 497684,
+      "provenance": "Original CUNCUN Blender geometry; existing CUNCUN assets reused",
+      "license_note": "No third-party game meshes or reference-product logos used"
+    },
+    {
+      "file": "experiments/service-lake-v1/assets/fishing_box_lod.glb",
+      "sha256": "4c6eeb612e88431bb55b32ee5a2fa91c6adc5d01a5da0939b3185e200b919f6c",
+      "bytes": 43488,
+      "provenance": "Original CUNCUN Blender geometry; existing CUNCUN assets reused",
+      "license_note": "No third-party game meshes or reference-product logos used"
+    },
+    {
+      "file": "experiments/service-lake-v1/assets/float_hook.glb",
+      "sha256": "12007d2ca9f695815b229960a8b4ffb84d77dac9682212f1ef9c064ee2f36e1c",
+      "bytes": 31812,
+      "provenance": "Original CUNCUN Blender geometry; existing CUNCUN assets reused",
+      "license_note": "No third-party game meshes or reference-product logos used"
+    },
+    {
+      "file": "experiments/service-lake-v1/assets/lake-decor.glb",
+      "sha256": "1b1ee5a6793582d122355c9638f24fee57989c5410c627911dc726ef593f111a",
+      "bytes": 1085028,
+      "provenance": "Original CUNCUN Blender geometry; existing CUNCUN assets reused",
+      "license_note": "No third-party game meshes or reference-product logos used"
+    },
+    {
+      "file": "experiments/service-lake-v1/assets/landing_net.glb",
+      "sha256": "23d716a036a8049d2b9e46140fcf5f31e85255c4ddabd828850411f5ac8cceaa",
+      "bytes": 78668,
+      "provenance": "Original CUNCUN Blender geometry; existing CUNCUN assets reused",
+      "license_note": "No third-party game meshes or reference-product logos used"
+    },
+    {
+      "file": "experiments/service-lake-v1/assets/tai_rod.glb",
+      "sha256": "766b2b32c062cb8f97da90caaa2462158691d1fdf583230cb3d1c3b84f9b13a4",
+      "bytes": 87736,
+      "provenance": "Original CUNCUN Blender geometry; existing CUNCUN assets reused",
+      "license_note": "No third-party game meshes or reference-product logos used"
+    }
+  ],
+  "libraries": [
+    {
+      "name": "Three.js 0.180.0",
+      "license": "MIT",
+      "source": "https://registry.npmjs.org/three/-/three-0.180.0.tgz",
+      "license_file": "experiments/service-lake-v1/vendor/THREE_LICENSE.txt"
+    },
+    {
+      "name": "Three.js 0.160.1 (legacy unchanged version)",
+      "license": "MIT",
+      "source": "https://registry.npmjs.org/three/-/three-0.160.1.tgz",
+      "license_file": "assets/vendor/three160/LICENSE.txt"
+    }
+  ],
+  "audio": "Original Web Audio synthesis",
+  "external_art_downloads_this_stage": false
+}

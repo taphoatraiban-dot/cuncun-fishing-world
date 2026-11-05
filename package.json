@@ -1,1 +1,9 @@
-{"private":true,"type":"module","scripts":{"test:progression":"node --test tests/fishing-progression.test.mjs"}}
+{
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:progression": "node --test tests/fishing-progression.test.mjs",
+    "test:lake": "node --test tests/service-lake.test.mjs",
+    "preview:lake": "node experiments/service-lake-v1/server.mjs"
+  }
+}

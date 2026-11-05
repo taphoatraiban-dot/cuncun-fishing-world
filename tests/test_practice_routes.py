@@ -39,3 +39,15 @@ class PracticeRouteTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+class ServiceLakeRouteTests(unittest.TestCase):
+    def test_demo_asset_routes_are_read_only_and_typed(self):
+        for suffix,mime in [('','text/html; charset=utf-8'),('main.js','text/javascript; charset=utf-8'),('assets/environment.glb','model/gltf-binary')]:
+            handler=object.__new__(Handler);handler.path='/experiments/service-lake-v1/'+suffix
+            with patch.object(Handler,'serve_static',return_value=None) as serve:
+                handler.do_GET();self.assertEqual(serve.call_args.args[1],mime)
+    def test_demo_rejects_traversal_and_non_public_files(self):
+        for suffix in ['../../backend/server.py','%2e%2e/%2e%2e/backend/server.py','.env','node_modules/private.key']:
+            handler=object.__new__(Handler);handler.path='/experiments/service-lake-v1/'+suffix
+            with patch.object(Handler,'respond',return_value=None) as respond,patch.object(Handler,'serve_static') as serve:
+                handler.do_GET();serve.assert_not_called();self.assertEqual(respond.call_args.args[0],404)
