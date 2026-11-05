@@ -70,3 +70,31 @@ docs/{asset-manifest,qa-checklist,release-notes}.md
 
 ## Instructions for execution agent on Mac mini
 Read this document and inspect actual repository and Blender files before acting. Work only on feature/practice-fishing-mvp-20261104 or a new child feature branch. Make incremental commits, run tests, report real changed files, screenshots, blockers and what remains. Do not silently replace working systems, publish production, charge users, or assume unverified local assets exist.
+
+
+## Environment art direction — approved visual polish
+Target: attractive semi-realistic Vietnamese freshwater scenery, colorful and inviting but not cartoonish; visual quality should be noticeably above placeholder geometry while remaining mobile-friendly. Use original assets and legally reusable textures only.
+
+### Service fishing lake
+- Organic lake shoreline, natural terrain transitions, varied grass and shrubs, clusters of trees, flowers and rocks.
+- Well-spaced wooden fishing piers and boxes, rod rests, small resting shelters, walking path, tackle shop backdrop, subtle props (buckets, lamps, benches).
+- Clear water with subtle animated ripples, reflected sky/shore impression, soft bank foam and fish splash effects. Avoid expensive full-scene reflections on mobile.
+- Warm morning and sunset lighting; pleasant night lamps. Preserve playable visibility of float and strike cues.
+
+### Natural river
+- Meandering river with varied bank slope, sand/mud/stone, bamboo and tropical vegetation; distinctive composition from commercial lake.
+- Multiple safe fishing positions along bank, clear collision and walking paths, reeds, driftwood, underwater depth zones.
+- Flow direction, gentle current cues, occasional birds/insects ambient audio and non-intrusive particles.
+
+### Mobile art and performance requirements
+- Three quality presets (low/medium/high), default based on actual device capability; prefer baked lighting and selective real-time shadows.
+- Use instanced foliage, LOD, compressed textures, culled props, lazy-loaded scenes and lightweight water shader.
+- Keep interactive elements legible on landscape iPhone; no visual obstruction of fishing float, rod or HUD.
+- Profile actual Safari device frame time, memory and load time; do not assert a fixed FPS without measurements.
+- Produce screenshots of each location from player camera and LIVE portrait camera; compare against approved art direction before calling it complete.
+
+### Visual acceptance
+- Both locations have clearly different silhouettes and mood, not the same lake with swapped textures.
+- Camera views show depth, rich but controlled vegetation, natural banks and cohesive materials.
+- Character, fishing box, rod, float and landing net are correctly placed in scenes; users can walk to fishing positions and complete the fishing loop.
+- A lightweight fallback remains playable on less powerful iPhones.
