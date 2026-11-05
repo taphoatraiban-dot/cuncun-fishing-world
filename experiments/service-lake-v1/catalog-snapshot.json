@@ -1,0 +1,366 @@
+{
+  "fish": [
+    {
+      "id": "ca-long-tong",
+      "name": "Cá lòng tong",
+      "tier": "small",
+      "min_kg": 0.02,
+      "max_kg": 0.15,
+      "bait_ids": [
+        "giun",
+        "cam"
+      ]
+    },
+    {
+      "id": "ca-me",
+      "name": "Cá mè",
+      "tier": "medium",
+      "min_kg": 1,
+      "max_kg": 12,
+      "bait_ids": [
+        "cam",
+        "bot-thom"
+      ]
+    },
+    {
+      "id": "ca-diec",
+      "name": "Cá diếc",
+      "tier": "small",
+      "min_kg": 0.1,
+      "max_kg": 1.5,
+      "bait_ids": [
+        "giun",
+        "cam"
+      ]
+    },
+    {
+      "id": "ca-ro-dong",
+      "name": "Cá rô đồng",
+      "tier": "small",
+      "min_kg": 0.1,
+      "max_kg": 1.2,
+      "bait_ids": [
+        "giun",
+        "trun-que"
+      ]
+    },
+    {
+      "id": "ca-ro-phi",
+      "name": "Cá rô phi",
+      "tier": "medium",
+      "min_kg": 0.3,
+      "max_kg": 5,
+      "bait_ids": [
+        "cam",
+        "moi-ro-phi"
+      ]
+    },
+    {
+      "id": "ca-tre",
+      "name": "Cá trê",
+      "tier": "medium",
+      "min_kg": 0.5,
+      "max_kg": 8,
+      "bait_ids": [
+        "giun",
+        "trun-que"
+      ]
+    },
+    {
+      "id": "ca-loc",
+      "name": "Cá lóc",
+      "tier": "medium",
+      "min_kg": 0.5,
+      "max_kg": 10,
+      "bait_ids": [
+        "giun",
+        "moi-tanh"
+      ]
+    },
+    {
+      "id": "ca-chep",
+      "name": "Cá chép",
+      "tier": "large",
+      "min_kg": 1,
+      "max_kg": 20,
+      "bait_ids": [
+        "ngo",
+        "moi-chep",
+        "boilies"
+      ]
+    },
+    {
+      "id": "ca-tram-co",
+      "name": "Cá trắm cỏ",
+      "tier": "large",
+      "min_kg": 2,
+      "max_kg": 30,
+      "bait_ids": [
+        "ngo",
+        "co-non",
+        "moi-tram"
+      ]
+    },
+    {
+      "id": "ca-tram-den",
+      "name": "Cá trắm đen",
+      "tier": "huge",
+      "min_kg": 5,
+      "max_kg": 50,
+      "bait_ids": [
+        "oc",
+        "moi-tram"
+      ]
+    },
+    {
+      "id": "ca-trui",
+      "name": "Cá trôi",
+      "tier": "large",
+      "min_kg": 1,
+      "max_kg": 18,
+      "bait_ids": [
+        "cam",
+        "bot-thom"
+      ]
+    },
+    {
+      "id": "ca-trau",
+      "name": "Cá trâu",
+      "tier": "large",
+      "min_kg": 2,
+      "max_kg": 25,
+      "bait_ids": [
+        "ngo",
+        "boilies"
+      ]
+    },
+    {
+      "id": "ca-anh-vu",
+      "name": "Cá anh vũ",
+      "tier": "rare",
+      "min_kg": 1,
+      "max_kg": 12,
+      "bait_ids": [
+        "cam",
+        "trun-que"
+      ]
+    },
+    {
+      "id": "ca-lang",
+      "name": "Cá lăng",
+      "tier": "huge",
+      "min_kg": 3,
+      "max_kg": 45,
+      "bait_ids": [
+        "giun",
+        "moi-tanh"
+      ]
+    },
+    {
+      "id": "ca-bong-tuong",
+      "name": "Cá bống tượng",
+      "tier": "large",
+      "min_kg": 0.5,
+      "max_kg": 8,
+      "bait_ids": [
+        "giun",
+        "trun-que"
+      ]
+    },
+    {
+      "id": "ca-chinh",
+      "name": "Cá chình",
+      "tier": "huge",
+      "min_kg": 2,
+      "max_kg": 35,
+      "bait_ids": [
+        "giun",
+        "moi-tanh"
+      ]
+    },
+    {
+      "id": "ca-ho",
+      "name": "Cá hô",
+      "tier": "boss",
+      "min_kg": 15,
+      "max_kg": 100,
+      "bait_ids": [
+        "boilies",
+        "moi-boss"
+      ]
+    },
+    {
+      "id": "ca-tra",
+      "name": "Cá tra",
+      "tier": "huge",
+      "min_kg": 3,
+      "max_kg": 45,
+      "bait_ids": [
+        "cam",
+        "pellet"
+      ]
+    },
+    {
+      "id": "ca-basa",
+      "name": "Cá basa",
+      "tier": "large",
+      "min_kg": 2,
+      "max_kg": 25,
+      "bait_ids": [
+        "pellet",
+        "cam"
+      ]
+    },
+    {
+      "id": "ca-vang",
+      "name": "Cá vàng",
+      "tier": "rare",
+      "min_kg": 0.1,
+      "max_kg": 2,
+      "bait_ids": [
+        "cam",
+        "bot-thom"
+      ]
+    },
+    {
+      "id": "ca-koi",
+      "name": "Cá koi",
+      "tier": "rare",
+      "min_kg": 1,
+      "max_kg": 15,
+      "bait_ids": [
+        "pellet",
+        "ngo"
+      ]
+    },
+    {
+      "id": "ca-tam",
+      "name": "Cá tầm",
+      "tier": "huge",
+      "min_kg": 3,
+      "max_kg": 40,
+      "bait_ids": [
+        "pellet",
+        "moi-tanh"
+      ]
+    },
+    {
+      "id": "ca-cham",
+      "name": "Cá chấm",
+      "tier": "medium",
+      "min_kg": 0.3,
+      "max_kg": 6,
+      "bait_ids": [
+        "giun",
+        "cam"
+      ]
+    },
+    {
+      "id": "ca-ngu",
+      "name": "Cá ngừ hồ huyền thoại",
+      "tier": "boss",
+      "min_kg": 20,
+      "max_kg": 120,
+      "bait_ids": [
+        "moi-boss"
+      ]
+    },
+    {
+      "id": "ca-rong",
+      "name": "Cá rồng huyền thoại",
+      "tier": "boss",
+      "min_kg": 10,
+      "max_kg": 80,
+      "bait_ids": [
+        "moi-boss"
+      ]
+    }
+  ],
+  "baits": [
+    {
+      "id": "cam",
+      "name": "Cám tổng hợp",
+      "grams": 100,
+      "price_vnd": 2000
+    },
+    {
+      "id": "giun",
+      "name": "Giun đất",
+      "grams": 100,
+      "price_vnd": 3000
+    },
+    {
+      "id": "trun-que",
+      "name": "Trùn quế",
+      "grams": 100,
+      "price_vnd": 4000
+    },
+    {
+      "id": "ngo",
+      "name": "Ngô ngọt",
+      "grams": 200,
+      "price_vnd": 3000
+    },
+    {
+      "id": "bot-thom",
+      "name": "Bột thơm",
+      "grams": 200,
+      "price_vnd": 5000
+    },
+    {
+      "id": "moi-tanh",
+      "name": "Bột tanh",
+      "grams": 200,
+      "price_vnd": 5000
+    },
+    {
+      "id": "moi-ro-phi",
+      "name": "Mồi rô phi",
+      "grams": 200,
+      "price_vnd": 5000
+    },
+    {
+      "id": "moi-chep",
+      "name": "Mồi cá chép",
+      "grams": 200,
+      "price_vnd": 7000
+    },
+    {
+      "id": "moi-tram",
+      "name": "Mồi cá trắm",
+      "grams": 200,
+      "price_vnd": 7000
+    },
+    {
+      "id": "pellet",
+      "name": "Mồi viên pellet",
+      "grams": 200,
+      "price_vnd": 8000
+    },
+    {
+      "id": "boilies",
+      "name": "Mồi boilies",
+      "grams": 100,
+      "price_vnd": 10000
+    },
+    {
+      "id": "oc",
+      "name": "Ốc",
+      "grams": 200,
+      "price_vnd": 6000
+    },
+    {
+      "id": "co-non",
+      "name": "Cỏ non",
+      "grams": 200,
+      "price_vnd": 2000
+    },
+    {
+      "id": "moi-boss",
+      "name": "Mồi săn boss",
+      "grams": 100,
+      "price_vnd": 15000
+    }
+  ],
+  "note": "Giá và loài cá là dữ liệu thiết kế trò chơi; chưa tích hợp thanh toán hoặc tiêu hao mồi."
+}

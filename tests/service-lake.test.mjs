@@ -1,0 +1,13 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import {PracticeSession,DEFAULT_RIG,validateRig,STATIONS} from '../experiments/service-lake-v1/session.js';
+import {FishingGame} from '../experiments/service-lake-v1/game.js';
+import {FISH_CATALOG,BAIT_CATALOG,SPECIES,sampleFish} from '../experiments/service-lake-v1/species.js';
+test('five station IDs and existing catalogs remain stable',()=>{assert.equal(STATIONS.length,5);assert.equal(FISH_CATALOG.length,25);assert.equal(BAIT_CATALOG.length,14);for(const s of SPECIES)assert.ok(FISH_CATALOG.some(f=>f.id===s.catalogId));});
+test('incompatible mainline/leader and float/sinker rejected atomically',()=>{const s=new PracticeSession();assert.throws(()=>s.assemble({...DEFAULT_RIG,main:.20,leader:.22}));assert.equal(s.assembled,false);assert.throws(()=>s.assemble({...DEFAULT_RIG,sinker:3}));assert.equal(validateRig(DEFAULT_RIG).length,0);});
+test('realistic preparation must be complete before cast',()=>{const s=new PracticeSession(),g=new FishingGame({beforeCast:()=>s.canCast});assert.equal(g.cast(),false);s.assemble(DEFAULT_RIG);s.mixBait(['cam'],.6);assert.throws(()=>s.calibrate(2.2));assert.equal(s.measure(),2.2);assert.throws(()=>s.calibrate(3));s.calibrate(2.2);assert.equal(g.cast(),true);});
+test('bait limits and groundbait expiry',()=>{const s=new PracticeSession();assert.throws(()=>s.mixBait(['unknown'],.6));assert.throws(()=>s.mixBait(['cam'],2));s.quickPrepare();assert.ok(s.fed);s.elapsed=91;assert.equal(s.fed,false);});
+test('each station requires a new depth check',()=>{const s=new PracticeSession();s.quickPrepare();for(const st of STATIONS){s.setStation(st.id);assert.equal(s.canCast,false);assert.equal(s.measure(),st.depth);s.calibrate(st.depth);assert.equal(s.canCast,true);}assert.throws(()=>s.setStation(200));});
+test('XP reuses existing rules; duplicate awards rejected; no failed catch income',()=>{const s=new PracticeSession();const r={caught:true,fish:{weight:2}};assert.deepEqual(s.collect(r,1),{xp:24,coins:14});assert.equal(s.collect(r,1),null);assert.equal(s.collect({caught:false},2),null);assert.equal(s.profile.catches,1);assert.equal(s.coins,14);});
+test('easy/realistic tuning uses the same state machine',()=>{for(const mode of ['easy','realistic']){const g=new FishingGame({rng:()=>.3});g.mode=mode;g.cast();for(let i=0;i<1000&&g.state!=='BITE';i++)g.update(.05);assert.equal(g.state,'BITE');assert.equal(g.biteWindow>2,mode==='easy');}});
+
+test('bait preference changes selection using existing catalog IDs',()=>{assert.notEqual(sampleFish(()=>.3,['cam']).id,sampleFish(()=>.3,['ngo']).id);});
