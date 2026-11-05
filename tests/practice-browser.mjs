@@ -8,9 +8,9 @@ try {
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
   page.on('response', response => {if(response.url().includes('/practice-3d.js') && response.status()!==200) errors.push('Practice script HTTP '+response.status())});
-  const response = await page.goto('http://127.0.0.1:8791/practice.html',{waitUntil:'networkidle',timeout:30000});
+  const response = await page.goto('http://127.0.0.1:8791/practice.html',{waitUntil:'domcontentloaded',timeout:30000});
   assert.equal(response.status(),200);
-  await page.waitForTimeout(1800);
+  await page.waitForFunction(()=>window.__practiceReady===true,null,{timeout:90000});
   assert.equal(await page.locator('#render-error').isVisible(),false,'WebGL initialization failed');
   await page.waitForFunction(() => document.querySelector('#cast')?.disabled === false, null, {timeout:10000});
   assert.equal(await page.locator('#cast').isEnabled(),true);
@@ -128,7 +128,7 @@ try {
   await profileLink.click();
   await page.waitForURL('**/profile-demo.html');
   assert.match(await page.locator('h1').innerText(),/Hồ sơ cần thủ/);
-  await page.goBack({waitUntil:'networkidle'});
+  await page.goBack({waitUntil:'domcontentloaded'});
   const dimensions=await page.locator('#lake').boundingBox();
   assert.ok(dimensions.width<=390,'canvas overflows iPhone viewport');
   assert.deepEqual(errors,[],'Unexpected JavaScript errors');

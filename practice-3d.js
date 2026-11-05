@@ -1,4 +1,4 @@
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.module.js';
+import * as THREE from './assets/vendor/three160/three.module.js';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {initialProgress,awardCatch,xpNeeded,PRACTICE_EQUIPMENT,equipPracticeItem} from './fishing-progression.js';
 const $=id=>document.getElementById(id),canvas=$('lake'),cast=$('cast'),hook=$('hook'),reel=$('reel'),reset=$('reset'),status=$('status'),meter=$('tension');
@@ -173,12 +173,12 @@ for(const side of [-1,1])for(const z of [-6,-38,-68]){
   mesh(new THREE.CylinderGeometry(.065,.09,2.6,8),lampPost,x,1.13,z);
   mesh(new THREE.SphereGeometry(.22,10,8),lampGlass,x,2.53,z);
 }
-// External CC0 PBR glTF asset pilot (Khronos Lantern, CC0).
+// Original CUNCUN lamp exported locally from the stage-2 Blender scene.
 // This loads asynchronously and is entirely optional: failures never stop fishing.
-// Attribution/license: https://github.com/KhronosGroup/glTF-Sample-Assets/tree/main/Models/Lantern
+// Original geometry; no external model download.
 const modelLoader=new GLTFLoader();
 modelLoader.load(
- 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/Lantern/glTF-Binary/Lantern.glb',
+ './assets/original/cuncun_lamp.glb',
  gltf=>{
   const model=gltf.scene;
   const bounds=new THREE.Box3().setFromObject(model);
@@ -193,7 +193,7 @@ modelLoader.load(
   scene.add(model);
  },
  undefined,
- error=>console.warn('Optional CC0 lantern model unavailable; fishing continues.',error)
+ error=>console.warn('Optional original CUNCUN lamp unavailable; fishing continues.',error)
 );
 // Fishing station rebuilt around a seated angler facing negative Z (the lake).
 // Rod rest is physically attached to the seat box, not planted separately in water.
@@ -758,7 +758,25 @@ meter.style.width=tension+'%';meter.style.background=tension>75?'#ef6258':'#eab6
 document.getElementById('tension-value').textContent=Math.round(tension)+'%';
 document.getElementById('catch-progress').style.width=Math.min(100,progress)+'%';
 document.getElementById('catch-progress-value').textContent=Math.round(Math.min(100,progress))+'%';
-renderer.render(scene,camera);requestAnimationFrame(frame)}
+renderer.render(scene,camera);globalThis.__practiceReady=true;requestAnimationFrame(frame)}
+// Batch only immutable scenery. All interactive/animated references stay intact.
+function batchPracticeScenery(){
+ const dynamic=new Set([...proceduralAnglerMeshes,water,sky,sunDisc,chair,rod,bob,bobTop,...floatBands,fishModel,catchGlow,biteMarker,stageScreen,
+  ...droplets.map(x=>x.drop),...ripples,...lakeRipples.map(x=>x.ring),...waterGlints.map(x=>x.glint),...waterfalls.flatMap(x=>[x.fall,x.foam])]);
+ const groups=new Map();scene.updateMatrixWorld(true);
+ for(const o of [...scene.children]){
+  if(!o.isMesh||dynamic.has(o)||!o.geometry.parameters||Array.isArray(o.material))continue;
+  const key=o.geometry.type+JSON.stringify(o.geometry.parameters)+o.material.uuid;
+  if(!groups.has(key))groups.set(key,[]);groups.get(key).push(o);
+ }
+ let batches=0;
+ for(const objects of groups.values()){
+  if(objects.length<2)continue;const first=objects[0],im=new THREE.InstancedMesh(first.geometry,first.material,objects.length);
+  objects.forEach((o,i)=>{im.setMatrixAt(i,o.matrixWorld);scene.remove(o)});im.instanceMatrix.needsUpdate=true;im.computeBoundingSphere();scene.add(im);batches++;
+ }
+ globalThis.__practiceStaticBatches=batches;
+}
+batchPracticeScenery();
 showPracticeProgress();buttons();requestAnimationFrame(frame);
 
 // Practice-only inventory: never syncs or persists to accounts.

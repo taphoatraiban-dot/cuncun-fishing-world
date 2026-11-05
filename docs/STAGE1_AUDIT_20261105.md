@@ -10,3 +10,5 @@ Base: `26276ef` on `feature/practice-fishing-mvp-20261104`. Work continues on ch
 - Blender Angler V4 / Lake V2 / Fishing Box V1 and the prior tested MVP are available locally. A new preflight will reopen and back up the assets before the landscape art pass. No claim that the branch's optional `CUNCUN_Angler_Rig.glb` already exists.
 
 Stage 2 adds a separate service-lake page with actual verified assets and shares the existing progression module. Legacy practice/profile/online pages stay available. Hub, river and full economy are deferred to the later stages requested by the user.
+
+Browser follow-up: the old CDN/optional remote model could leave the network-idle browser gate waiting. Bundled the exact existing Three.js 0.160.1 version locally and used the original CUNCUN lamp exported from Blender. The rendering version is unchanged; the new page uses its own r180 import map. Added narrow read-only public-asset routes with traversal tests, without altering transaction routes.

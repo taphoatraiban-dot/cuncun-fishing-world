@@ -125,6 +125,19 @@ class Handler(BaseHTTPRequestHandler):
             return self.serve_static("server-leaderboard.js", "text/javascript; charset=utf-8")
         if path == "/online-fishing.js":
             return self.serve_static("online-fishing.js", "text/javascript; charset=utf-8")
+        public_prefix = next((p for p in ("experiments/service-lake-v1", "assets/vendor/three160", "assets/original") if path.startswith("/" + p + "/")), None)
+        if public_prefix:
+            # Read-only public demo assets; never expose arbitrary repository files.
+            from urllib.parse import unquote
+            prefix = public_prefix
+            relative = unquote(path[len("/" + prefix + "/"):]) or "index.html"
+            parts = Path(relative).parts
+            types = {".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8", ".json": "application/json", ".glb": "model/gltf-binary", ".txt": "text/plain; charset=utf-8", ".md": "text/plain; charset=utf-8"}
+            base = (SITE_ROOT / prefix).resolve()
+            target = (base / relative).resolve()
+            if not parts or any(p.startswith(".") for p in parts) or not target.is_relative_to(base) or target.suffix not in types or not target.is_file():
+                return self.respond(404, {"error": "not_found"})
+            return self.serve_static(str(target.relative_to(SITE_ROOT)), types[target.suffix])
         if path == "/health":
             return self.respond(200, {"ok": True, "service": "cuncun-fishing-backend"})
         if path == "/api/tickets/active":
