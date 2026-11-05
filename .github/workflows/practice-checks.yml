@@ -3,8 +3,11 @@ on:
   push:
     branches:
       - feature/practice-fishing-mvp-20261104
+      - feature/practice-fishing-stage2-20261105
   pull_request:
     paths:
+      - 'experiments/service-lake-v1/**'
+      - 'tests/service-lake*'
       - 'practice.html'
       - 'fishing-progression.js'
       - 'package.json'
@@ -34,16 +37,16 @@ jobs:
         with:
           node-version: '22'
       - name: Test fishing XP and equipment rules
-        run: npm run test:progression
+        run: node --test tests/fishing-progression.test.mjs tests/service-lake.test.mjs experiments/service-lake-v1/tests/game.test.mjs
       - name: Install browser test dependencies
         run: |
           npm install --no-save playwright@1.56.1
           npx playwright install --with-deps chromium
       - name: Chromium iPhone-size smoke test
         env:
-          FISHING_ADMIN_TOKEN: practice-test-token-0123456789abcdef
           FISHING_DB_PATH: /tmp/cuncun-practice-test.sqlite3
         run: |
+          export FISHING_ADMIN_TOKEN="$(python -c 'import secrets; print(secrets.token_urlsafe(32))')"
           python backend/server.py > /tmp/fishing-practice-server.log 2>&1 &
           for i in $(seq 1 30); do
             if curl -fsS http://127.0.0.1:8791/health >/dev/null 2>&1; then break; fi
@@ -51,6 +54,7 @@ jobs:
           done
           curl -fsS http://127.0.0.1:8791/health
           node tests/practice-browser.mjs
+          node tests/service-lake-browser.mjs
       - name: Show server logs on failure
         if: failure()
         run: cat /tmp/fishing-practice-server.log 2>/dev/null || true

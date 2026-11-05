@@ -98,3 +98,7 @@ Target: attractive semi-realistic Vietnamese freshwater scenery, colorful and in
 - Camera views show depth, rich but controlled vegetation, natural banks and cohesive materials.
 - Character, fishing box, rod, float and landing net are correctly placed in scenes; users can walk to fishing positions and complete the fishing loop.
 - A lightweight fallback remains playable on less powerful iPhones.
+
+## Verified stage-2 implementation update (2026-11-05)
+
+A tested child build now exists on `feature/practice-fishing-stage2-20261105`. See `docs/SERVICE_LAKE_STAGE2.md` for implemented features and explicit remaining work. This update does not mark the whole V1.0 blueprint complete or authorize production deployment.
