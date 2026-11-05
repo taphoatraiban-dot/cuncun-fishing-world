@@ -122,7 +122,7 @@ try {
   assert.match(await page.locator('#practice-level').innerText(),/1 cá/);
   assert.equal(await page.locator('#cast').isEnabled(),true);
   await page.locator('#camera').click();
-  assert.match(await page.locator('#camera').innerText(),/Cận phao/);
+  assert.match(await page.locator('#camera').innerText(),/Trên cao/);
   const profileLink = page.locator('a[href="./profile-demo.html"]');
   assert.equal(await profileLink.count(),1);
   await profileLink.click();

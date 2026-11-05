@@ -474,12 +474,12 @@ for(const x of [-10.3,-5.8]){
   mesh(new THREE.CylinderGeometry(.09,.11,2.5,7),mat(0x68452d),x,1.45,4.1);
   mesh(new THREE.BoxGeometry(.55,.72,.55),lanternMat,x,2.7,4.1);
 }
-const foliage=[0xf1a6d0,0xf5bfdc,0xe98fbe,0x4b9e66];
+const festivalFoliage=[0xf1a6d0,0xf5bfdc,0xe98fbe,0x4b9e66];
 for(const side of [-1,1]){
   for(let i=0;i<9;i++){
     const z=-2-i*7.4,x=side*(29+i%3*2.2);
     const trunk=mesh(new THREE.CylinderGeometry(.24,.38,4.4,7),mat(0x694b35),x,2,z);
-    for(let j=0;j<3;j++)mesh(new THREE.IcosahedronGeometry(2.2+(j%2)*.4,1),mat(foliage[(i+j)%foliage.length]),x+(j-1)*1.15,4.6+j*.45,z+(j%2)*.8);
+    for(let j=0;j<3;j++)mesh(new THREE.IcosahedronGeometry(2.2+(j%2)*.4,1),mat(festivalFoliage[(i+j)%festivalFoliage.length]),x+(j-1)*1.15,4.6+j*.45,z+(j%2)*.8);
   }
 }
 for(let i=0;i<7;i++){
