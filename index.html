@@ -173,7 +173,11 @@ const fightFishTail=new THREE.Group();fightFishTail.position.x=-.67;fightFish.ad
 fishPart(fightFishTail,fishSphere,fishSkin,[-.18,0,0],[.28,.18,.18]);
 const tailUpper=fishPart(fightFishTail,new THREE.ConeGeometry(.25,.58,3),fishFinMat,[-.49,.19,0],[1,1,.28]);tailUpper.rotation.z=.85;
 const tailLower=fishPart(fightFishTail,new THREE.ConeGeometry(.25,.58,3),fishFinMat,[-.49,-.19,0],[1,1,.28]);tailLower.rotation.z=2.28;
-fightFish.visible=false;scene.add(fightFish);const floatSplash=new THREE.Mesh(new THREE.RingGeometry(.18,.25,20),new THREE.MeshBasicMaterial({color:0xd9faff,transparent:true,opacity:0,side:THREE.DoubleSide,depthWrite:false}));floatSplash.rotation.x=-Math.PI/2;floatSplash.position.set(0,.035,-8);scene.add(floatSplash);let floatCamera=false;const boss=new THREE.Mesh(new THREE.SphereGeometry(2,20,12),mat(0xffd52e));boss.position.set(0,1,-11);boss.visible=false;scene.add(boss);let overview=false;function view(){
+fightFish.visible=false;scene.add(fightFish);
+// Prefer the dedicated carp GLB when present; preserve procedural fish as offline fallback.
+import {GLTFLoader} from 'https://cdn.jsdelivr.net/npm/three@0.160.1/examples/jsm/loaders/GLTFLoader.js';
+const carpLoader=new GLTFLoader();
+carpLoader.load('./assets/cuncun_carp_v1.glb',gltf=>{const model=gltf.scene;model.scale.setScalar(.72);model.rotation.y=Math.PI;fightFish.add(model);for(const child of [...fightFish.children])if(child!==model)child.visible=false;fightFish.userData.gltf=model;console.info('CUNCUN carp GLB loaded')},undefined,()=>console.info('Carp GLB unavailable; using built-in fish'));const floatSplash=new THREE.Mesh(new THREE.RingGeometry(.18,.25,20),new THREE.MeshBasicMaterial({color:0xd9faff,transparent:true,opacity:0,side:THREE.DoubleSide,depthWrite:false}));floatSplash.rotation.x=-Math.PI/2;floatSplash.position.set(0,.035,-8);scene.add(floatSplash);let floatCamera=false;const boss=new THREE.Mesh(new THREE.SphereGeometry(2,20,12),mat(0xffd52e));boss.position.set(0,1,-11);boss.visible=false;scene.add(boss);let overview=false;function view(){
  if(floatCamera){camera.position.set(1.8,1.2,-4.2);camera.lookAt(floatBobber.position.x,.35,floatBobber.position.z)}else if(overview){camera.position.set(0,145,-75);camera.lookAt(0,0,-105)}
  else{const z=2,t=(12-z)/lakeLength,x=lakeEdge(-1,t)-2.8;camera.position.set(x,3.2,z+5);camera.lookAt(lakeCenter(t),1,z-11)}
  overviewMarkers.visible=overview;camera.updateProjectionMatrix()
